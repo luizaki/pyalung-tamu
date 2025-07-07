@@ -31,7 +31,7 @@ class _StartPageState extends State<StartPage> {
     super.initState();
     Timer(const Duration(seconds: 3), () {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => HomePage(),
+        builder: (context) => const HomePage(),
       ));
     });
   }
