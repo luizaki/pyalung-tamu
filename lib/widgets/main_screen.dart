@@ -22,19 +22,30 @@ class MainScreen extends StatelessWidget {
 
         Center(
           child: SizedBox(
-            width: MediaQuery.of(context).size.width * 3 / 5,
-            child: Card(
-              elevation: 5,
-              margin: const EdgeInsets.all(32),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: children,
-                ),
-              ),
-            ),
-          ),
+              width: MediaQuery.of(context).size.width * 3 / 5,
+              child: Container(
+                  margin: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: const Color(0xF9DD9A00),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xAD572100),
+                      width: 10,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xAD572100).withOpacity(0.2),
+                        blurRadius: 5,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: children,
+                      )))),
         ),
       ],
     );
