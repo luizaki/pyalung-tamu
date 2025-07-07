@@ -11,6 +11,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool _isSettingsPanelOpen = false;
+
+  void _toggleSettingsPanel() {
+    setState(() {
+      _isSettingsPanelOpen = !_isSettingsPanelOpen;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,6 +126,160 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+
+          // Settings icon
+          Positioned(
+            top: 50,
+            right: 20,
+            child: GestureDetector(
+              onTap: _toggleSettingsPanel,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(25),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.settings,
+                  size: 24,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ),
+          ),
+
+          // Overlay to close settings
+          if (_isSettingsPanelOpen)
+            GestureDetector(
+              onTap: _toggleSettingsPanel,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.black.withOpacity(0.3),
+              ),
+            ),
+
+          // Settings panel
+          if (_isSettingsPanelOpen)
+            Center(
+              child: Container(
+                width: MediaQuery.of(context).size.width * 3 / 5,
+                margin: const EdgeInsets.all(32),
+                child: Card(
+                  elevation: 5,
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Settings title
+                        const Text(
+                          'Settings',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Settings options
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            children: [
+                              Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                color: Colors.white,
+                                child: ListTile(
+                                  leading: const Icon(Icons.volume_up,
+                                      color: Colors.brown),
+                                  title: const Text('Sound Effects'),
+                                  trailing: Switch(
+                                    value: true,
+                                    onChanged: (newValue) {
+                                      // TBD: handle sound toggle
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                color: Colors.white,
+                                child: ListTile(
+                                  leading: const Icon(Icons.music_note,
+                                      color: Colors.brown),
+                                  title: const Text('Background Music'),
+                                  trailing: Switch(
+                                    value: true,
+                                    onChanged: (newValue) {
+                                      // TBD: handle music toggle
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                color: Colors.white,
+                                child: ListTile(
+                                  leading: const Icon(Icons.volume_up,
+                                      color: Colors.brown),
+                                  title: const Text('Language'),
+                                  trailing: DropdownButton<String>(
+                                      value: 'English',
+                                      items: const [
+                                        DropdownMenuItem(
+                                          value: 'English',
+                                          child: Text('English'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'Filipino',
+                                          child: Text('Filipino'),
+                                        ),
+                                      ],
+                                      onChanged: (newValue) {
+                                        // TBD: handle language change
+                                      }),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              GestureDetector(
+                                onTap: _toggleSettingsPanel,
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(25),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 24,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
