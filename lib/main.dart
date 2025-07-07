@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import './views/splash.dart';
+
+import 'splash.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
