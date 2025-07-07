@@ -22,21 +22,21 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: MainScreen(
-        children: [
-          const Text(
+        children: const [
+          Text(
             'Pyalung Tamu',
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // Siglulung Bangka
           Card(
-            margin: const EdgeInsets.all(8),
-            color: Colors.grey[100],
-            child: const Padding(
+            margin: EdgeInsets.all(8),
+            color: Color(0xFFF4BE0A),
+            child: Padding(
               padding: EdgeInsets.all(16),
               child: Row(children: [
                 Icon(Icons.directions_boat, size: 32, color: Colors.brown),
@@ -51,9 +51,9 @@ class _HomePageState extends State<HomePage> {
 
           // Tugak Catching
           Card(
-            margin: const EdgeInsets.all(8),
-            color: Colors.grey[100],
-            child: const Padding(
+            margin: EdgeInsets.all(8),
+            color: Color(0xFFF4BE0A),
+            child: Padding(
               padding: EdgeInsets.all(16),
               child: Row(children: [
                 Icon(Icons.gamepad, size: 32, color: Colors.brown),
@@ -68,9 +68,9 @@ class _HomePageState extends State<HomePage> {
 
           // Mitutuglung
           Card(
-            margin: const EdgeInsets.all(8),
-            color: Colors.grey[100],
-            child: const Padding(
+            margin: EdgeInsets.all(8),
+            color: Color(0xFFF4BE0A),
+            child: Padding(
               padding: EdgeInsets.all(16),
               child: Row(children: [
                 Icon(Icons.card_membership, size: 32, color: Colors.brown),

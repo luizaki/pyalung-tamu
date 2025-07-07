@@ -25,7 +25,7 @@ class SettingsPage extends StatelessWidget {
               children: [
                 Card(
                   margin: const EdgeInsets.only(bottom: 8),
-                  color: Colors.white,
+                  color: const Color(0xFFF4BE0A),
                   child: ListTile(
                     leading: const Icon(Icons.volume_up, color: Colors.brown),
                     title: const Text('Sound Effects'),
@@ -37,7 +37,7 @@ class SettingsPage extends StatelessWidget {
                 ),
                 Card(
                   margin: const EdgeInsets.only(bottom: 8),
-                  color: Colors.white,
+                  color: const Color(0xFFF4BE0A),
                   child: ListTile(
                     leading: const Icon(Icons.music_note, color: Colors.brown),
                     title: const Text('Background Music'),
@@ -49,7 +49,7 @@ class SettingsPage extends StatelessWidget {
                 ),
                 Card(
                   margin: const EdgeInsets.only(bottom: 8),
-                  color: Colors.white,
+                  color: const Color(0xFFF4BE0A),
                   child: ListTile(
                     leading: const Icon(Icons.language, color: Colors.brown),
                     title: const Text('Language'),
