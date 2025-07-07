@@ -194,6 +194,7 @@ class _HomePageState extends State<HomePage> {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Column(
                             children: [
+                              // Sound Effects
                               Card(
                                 margin: const EdgeInsets.only(bottom: 8),
                                 color: Colors.white,
@@ -209,6 +210,8 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                               ),
+
+                              // Background Music
                               Card(
                                 margin: const EdgeInsets.only(bottom: 8),
                                 color: Colors.white,
@@ -224,6 +227,8 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                               ),
+
+                              // Language
                               Card(
                                 margin: const EdgeInsets.only(bottom: 8),
                                 color: Colors.white,
@@ -249,6 +254,8 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               const SizedBox(height: 20),
+
+                              // Close button
                               GestureDetector(
                                 onTap: _toggleSettingsPanel,
                                 child: Container(
@@ -281,6 +288,32 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
         ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.leaderboard),
+            label: 'Leaderboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.timeline),
+            label: 'Progress',
+          ),
+        ],
+        onTap: (index) {
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const LeaderboardPage()),
+            );
+          } else if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProgressPage()),
+            );
+          }
+        },
       ),
     );
   }
