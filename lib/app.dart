@@ -25,20 +25,34 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: _pages[_currentIndex],
       bottomNavigationBar: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          Image.asset(
-            'assets/button_boxes/navbar.png',
+          Container(
             width: double.infinity,
-            height: 70,
-            fit: BoxFit.cover,
+            height: 80,
+            decoration: BoxDecoration(
+              image: const DecorationImage(
+                image: AssetImage('assets/button_boxes/navbar.png'),
+                fit: BoxFit.fitWidth,
+                alignment: Alignment.topCenter,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
           ),
           BottomNavigationBar(
             currentIndex: _currentIndex,
             backgroundColor: Colors.transparent,
             elevation: 0,
+            type: BottomNavigationBarType.fixed,
             selectedItemColor: Colors.white,
             unselectedItemColor: Colors.white70,
             items: [
