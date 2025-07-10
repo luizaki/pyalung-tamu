@@ -25,6 +25,7 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: _pages[_currentIndex],
       bottomNavigationBar: Stack(
         alignment: Alignment.bottomCenter,

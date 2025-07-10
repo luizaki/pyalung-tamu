@@ -4,6 +4,7 @@ class MainScreen extends StatelessWidget {
   final List<Widget> children;
 
   MainScreen({required this.children});
+
   @override
   Widget build(BuildContext context) {
     return Stack(
