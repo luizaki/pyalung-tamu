@@ -33,12 +33,19 @@ class _AppState extends State<App> {
           Container(
             width: double.infinity,
             height: 80,
-            decoration: const BoxDecoration(
-              image: DecorationImage(
+            decoration: BoxDecoration(
+              image: const DecorationImage(
                 image: AssetImage('assets/button_boxes/navbar.png'),
                 fit: BoxFit.fitWidth,
                 alignment: Alignment.topCenter,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, -2),
+                ),
+              ],
             ),
           ),
           BottomNavigationBar(
