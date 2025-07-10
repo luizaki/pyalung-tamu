@@ -29,16 +29,22 @@ class _AppState extends State<App> {
       bottomNavigationBar: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          Image.asset(
-            'assets/button_boxes/navbar.png',
+          Container(
             width: double.infinity,
-            height: 70,
-            fit: BoxFit.cover,
+            height: 80,
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/button_boxes/navbar.png'),
+                fit: BoxFit.fitWidth,
+                alignment: Alignment.topCenter,
+              ),
+            ),
           ),
           BottomNavigationBar(
             currentIndex: _currentIndex,
             backgroundColor: Colors.transparent,
             elevation: 0,
+            type: BottomNavigationBarType.fixed,
             selectedItemColor: Colors.white,
             unselectedItemColor: Colors.white70,
             items: [
