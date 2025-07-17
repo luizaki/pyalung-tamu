@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
               onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const BangkaLoadingScreen()),
+                        builder: (context) => const BangkaStartScreen()),
                   )),
 
           // Tugak Catching
@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> {
               onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const TugakLoadingScreen()),
+                        builder: (context) => const TugakStartScreen()),
                   )),
 
           // Mitutuglung
@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage> {
               onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const MitutuglungLoadingScreen()),
+                        builder: (context) => const MitutuglungStartScreen()),
                   )),
         ],
       ),

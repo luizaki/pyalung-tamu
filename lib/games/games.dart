@@ -1,3 +1,3 @@
-export './siglulung_bangka/loading_screen.dart';
-export './tugak_catching/loading_screen.dart';
-export './mitutuglung/loading_screen.dart';
+export 'siglulung_bangka/start_screen.dart';
+export 'tugak_catching/start_screen.dart';
+export 'mitutuglung/start_screen.dart';
