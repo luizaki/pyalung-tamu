@@ -10,14 +10,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _isSettingsPanelOpen = false;
-
-  void _toggleSettingsPanel() {
-    setState(() {
-      _isSettingsPanelOpen = !_isSettingsPanelOpen;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
