@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/main_screen.dart';
+import '../games/games.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -28,17 +29,31 @@ class _HomePageState extends State<HomePage> {
           _buildGameCard(
               icon: Icons.directions_boat,
               title: 'Siglulung Bangka',
-              onTap: () => {}),
+              onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const BangkaLoadingScreen()),
+                  )),
 
           // Tugak Catching
           _buildGameCard(
-              icon: Icons.gamepad, title: 'Tugak Catching', onTap: () => {}),
+              icon: Icons.gamepad,
+              title: 'Tugak Catching',
+              onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const TugakLoadingScreen()),
+                  )),
 
           // Mitutuglung
           _buildGameCard(
               icon: Icons.card_membership,
               title: 'Mitutuglung',
-              onTap: () => {}),
+              onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const MitutuglungLoadingScreen()),
+                  )),
         ],
       ),
     );
