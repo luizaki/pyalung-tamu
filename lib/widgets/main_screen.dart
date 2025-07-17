@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class MainScreen extends StatelessWidget {
   final List<Widget> children;
 
-  MainScreen({required this.children});
+  const MainScreen({super.key, required this.children});
 
   @override
   Widget build(BuildContext context) {
