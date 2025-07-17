@@ -14,68 +14,60 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: MainScreen(
-        children: const [
-          Text(
+        children: [
+          const Text(
             'Pyalung Tamu',
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Siglulung Bangka
-          Card(
-            margin: EdgeInsets.all(8),
-            color: Color(0xFFF4BE0A),
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Row(children: [
-                Icon(Icons.directions_boat, size: 32, color: Colors.brown),
-                Expanded(
-                  child: Text('Siglulung Bangka',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16)),
-                ),
-              ]),
-            ),
-          ),
+          _buildGameCard(
+              icon: Icons.directions_boat,
+              title: 'Siglulung Bangka',
+              onTap: () => {}),
 
           // Tugak Catching
-          Card(
-            margin: EdgeInsets.all(8),
-            color: Color(0xFFF4BE0A),
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Row(children: [
-                Icon(Icons.gamepad, size: 32, color: Colors.brown),
-                Expanded(
-                  child: Text('Tugak Catching',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16)),
-                ),
-              ]),
-            ),
-          ),
+          _buildGameCard(
+              icon: Icons.gamepad, title: 'Tugak Catching', onTap: () => {}),
 
           // Mitutuglung
-          Card(
-            margin: EdgeInsets.all(8),
-            color: Color(0xFFF4BE0A),
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Row(children: [
-                Icon(Icons.card_membership, size: 32, color: Colors.brown),
-                Expanded(
-                  child: Text('Mitutuglung',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16)),
-                ),
-              ]),
-            ),
-          ),
+          _buildGameCard(
+              icon: Icons.card_membership,
+              title: 'Mitutuglung',
+              onTap: () => {}),
         ],
       ),
     );
+  }
+
+  // Helper method for building game cards
+  Widget _buildGameCard({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+        margin: const EdgeInsets.all(8),
+        color: const Color(0xFFF4BE0A),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          highlightColor: const Color(0xFFCA8505),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(children: [
+              Icon(icon, size: 32, color: Colors.brown),
+              Expanded(
+                child: Text(title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 16)),
+              ),
+            ]),
+          ),
+        ));
   }
 }
