@@ -65,14 +65,10 @@ flutter:
   uses-material-design: true
   assets:
     - .env
-    - assets/icons/logo.png
-    - assets/bg/bg_simple.png
-    - assets/icons/home.png
-    - assets/icons/leaderboard.png
-    - assets/icons/progress.png
-    - assets/button_boxes/navbar.png
-    - assets/button_boxes/main_box.png
-    - assets/button_boxes/main_button.png
+    - assets/avatar/
+    - assets/bg/
+    - assets/button_boxes/
+    - assets/icons/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
