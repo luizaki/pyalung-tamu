@@ -79,8 +79,12 @@ class _AppState extends State<App> {
                 ),
                 label: 'Progress',
               ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.settings, size: 35),
+              BottomNavigationBarItem(
+                icon: Image.asset(
+                  'assets/icons/settings.png',
+                  width: 35,
+                  height: 35,
+                ),
                 label: 'Settings',
               ),
             ],
