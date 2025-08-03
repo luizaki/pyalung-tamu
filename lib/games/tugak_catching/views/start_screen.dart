@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../widgets/start_screen.dart';
+import '../../../widgets/start_screen.dart';
 
 class TugakStartScreen extends StatelessWidget {
   const TugakStartScreen({super.key});
