@@ -70,7 +70,8 @@ class TugakGameScreenState extends State<TugakGameScreen>
                 ..._buildLilypads(),
                 ..._buildFrogs(),
                 _buildGameUI(),
-                _buildBackButton(),
+                if (_controller.isGamePaused) _buildPauseOverlay(),
+                _buildPauseButton(),
                 if (_controller.isGameOver) _buildGameOverDialog(),
               ],
             ),
@@ -154,17 +155,77 @@ class TugakGameScreenState extends State<TugakGameScreen>
     );
   }
 
-  Widget _buildBackButton() {
+  Widget _buildPauseButton() {
     return Positioned(
-      top: 50,
-      left: 20,
-      child: CircleAvatar(
-        backgroundColor: Colors.white,
+      top: 30,
+      left: 30,
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: const Color(0xF9DD9A00),
+          shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xAD572100), width: 4),
+        ),
         child: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.brown),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.pause, color: Colors.brown),
+          onPressed: () {
+            if (_controller.isGamePaused) {
+              _controller.resumeGame();
+            } else {
+              _controller.pauseGame();
+            }
+          },
         ),
       ),
+    );
+  }
+
+  Widget _buildPauseOverlay() {
+    return Positioned.fill(
+      child: Container(
+          color: Colors.black54,
+          child: Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width * 1 / 4,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xF9DD9A00),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xAD572100), width: 5),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Game Paused',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.brown,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Divider
+                  Container(
+                    height: 2,
+                    width: double.infinity,
+                    color: const Color(0xAD572100),
+                  ),
+                  const SizedBox(height: 15),
+
+                  const Text(
+                    'Click the pause button to resume',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.brown,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )),
     );
   }
 
