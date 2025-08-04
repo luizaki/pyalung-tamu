@@ -338,6 +338,9 @@ class TugakGameController extends ChangeNotifier {
 
     final isCorrect = selectedIndex == frog.question.correctIndex;
 
+    frog.answerResult =
+        isCorrect ? AnswerResult.correct : AnswerResult.incorrect;
+
     if (isCorrect) {
       _gameState.score += 10;
       _gameState.correctAnswers++;
@@ -357,6 +360,8 @@ class TugakGameController extends ChangeNotifier {
     if (_gameState.status != GameStatus.playing) return;
 
     frog.isAnswered = true;
+    frog.isBeingQuestioned = false;
+    frog.answerResult = AnswerResult.timeout;
 
     Timer(const Duration(seconds: 1), () {
       _replaceFrog(frog);

@@ -1,5 +1,7 @@
 import './question.dart';
 
+enum AnswerResult { none, correct, incorrect, timeout }
+
 class Frog {
   // frog position
   double x;
@@ -16,6 +18,7 @@ class Frog {
 
   // assigned question
   Question question;
+  AnswerResult answerResult;
 
   Frog(
       {required this.x,
@@ -25,7 +28,8 @@ class Frog {
       this.targetY = 0.0,
       this.isJumping = false,
       this.isBeingQuestioned = false,
-      this.isAnswered = false});
+      this.isAnswered = false,
+      this.answerResult = AnswerResult.none});
 
   void jumpTo(double newX, double newY) {
     targetX = newX;

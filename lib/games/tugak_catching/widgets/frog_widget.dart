@@ -23,10 +23,10 @@ class FrogWidget extends StatelessWidget {
           width: 60,
           height: 60,
           decoration: BoxDecoration(
-            color: frog.isAnswered ? Colors.green[800] : Colors.green[600],
+            color: _getFrogColor(),
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
-              color: Colors.green[900] ?? Colors.green,
+              color: _getFrogBorderColor(),
               width: 3,
             ),
           ),
@@ -38,5 +38,33 @@ class FrogWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Color _getFrogColor() {
+    switch (frog.answerResult) {
+      case AnswerResult.correct:
+        return Colors.green[800]!;
+      case AnswerResult.incorrect:
+        return Colors.brown[600]!;
+      case AnswerResult.timeout:
+        return Colors.grey[700]!;
+      case AnswerResult.none:
+      default:
+        return Colors.green[600]!;
+    }
+  }
+
+  Color _getFrogBorderColor() {
+    switch (frog.answerResult) {
+      case AnswerResult.correct:
+        return Colors.green[900]!;
+      case AnswerResult.incorrect:
+        return Colors.brown[700]!;
+      case AnswerResult.timeout:
+        return Colors.grey[800]!;
+      case AnswerResult.none:
+      default:
+        return Colors.green[700]!;
+    }
   }
 }
