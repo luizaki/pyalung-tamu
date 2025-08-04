@@ -69,9 +69,9 @@ class TugakGameScreenState extends State<TugakGameScreen>
               children: [
                 ..._buildLilypads(),
                 ..._buildFrogs(),
-                _buildGameUI(_controller),
+                _buildGameUI(),
                 _buildBackButton(),
-                if (_controller.isGameOver) _buildGameOverDialog(_controller),
+                if (_controller.isGameOver) _buildGameOverDialog(),
               ],
             ),
           );
@@ -95,7 +95,7 @@ class TugakGameScreenState extends State<TugakGameScreen>
         .toList();
   }
 
-  Widget _buildGameUI(TugakGameController controller) {
+  Widget _buildGameUI() {
     return Positioned(
       top: 50,
       left: 20,
@@ -103,9 +103,9 @@ class TugakGameScreenState extends State<TugakGameScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildScoreWidget(controller.gameState.score),
+          _buildScoreWidget(_controller.gameState.score),
           _buildTimeWidget(
-              controller.formattedTime, controller.gameState.timeLeft),
+              _controller.formattedTime, _controller.gameState.timeLeft),
         ],
       ),
     );
@@ -160,7 +160,7 @@ class TugakGameScreenState extends State<TugakGameScreen>
     );
   }
 
-  Widget _buildGameOverDialog(TugakGameController controller) {
+  Widget _buildGameOverDialog() {
     return Positioned.fill(
       child: Container(
         color: Colors.black54,
@@ -170,9 +170,9 @@ class TugakGameScreenState extends State<TugakGameScreen>
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Final Score: ${controller.gameState.score}'),
+                Text('Final Score: ${_controller.gameState.score}'),
                 Text(
-                    'Accuracy: ${(controller.gameState.accuracy * 100).toStringAsFixed(1)}%'),
+                    'Accuracy: ${(_controller.gameState.accuracy * 100).toStringAsFixed(1)}%'),
               ],
             ),
             actions: [
@@ -183,7 +183,7 @@ class TugakGameScreenState extends State<TugakGameScreen>
               TextButton(
                 onPressed: () {
                   final screenSize = MediaQuery.of(context).size;
-                  controller.restartGame(screenSize);
+                  _controller.restartGame(screenSize);
                 },
                 child: const Text('Play Again'),
               ),
