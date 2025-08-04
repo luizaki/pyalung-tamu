@@ -422,7 +422,7 @@ class TugakGameController extends ChangeNotifier {
   String get formattedTime {
     final minutes = _gameState.timeLeft ~/ 60;
     final seconds = _gameState.timeLeft % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
   // ================== CLEANUP ==================
