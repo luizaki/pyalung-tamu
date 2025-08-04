@@ -10,12 +10,17 @@ class TugakGameState {
   GameStatus status;
   List<Frog> frogs;
 
+  bool isCountingDown;
+  int countdownValue;
+
   TugakGameState({
     this.score = 0,
     this.timeLeft = 60,
     this.frogsAnswered = 0,
     this.correctAnswers = 0,
     this.status = GameStatus.menu,
+    this.isCountingDown = false,
+    this.countdownValue = 3,
     List<Frog>? frogs,
   }) : frogs = frogs ?? [];
 

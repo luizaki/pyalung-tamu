@@ -18,6 +18,7 @@ class TugakGameController extends ChangeNotifier {
   final Set<int> _occupiedLilypadIndices = <int>{};
 
   // Timers
+  Timer? _countdownTimer;
   Timer? _gameTimer;
   final Map<Frog, Timer?> _frogJumpTimers = {};
 
@@ -157,6 +158,25 @@ class TugakGameController extends ChangeNotifier {
   }
 
   // ================== TIMER MANAGEMENT ==================
+
+  void startCountdown() {
+    _gameState.isCountingDown = true;
+    _gameState.status = GameStatus.menu;
+    notifyListeners();
+
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_gameState.countdownValue > 0) {
+        _gameState.countdownValue--;
+        notifyListeners();
+      } else {
+        timer.cancel();
+        _gameState.isCountingDown = false;
+        _gameState.status = GameStatus.playing;
+        _startGameTimer();
+        notifyListeners();
+      }
+    });
+  }
 
   void _startGameTimer() {
     _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -429,6 +449,7 @@ class TugakGameController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _countdownTimer?.cancel();
     _stopAllTimers();
     super.dispose();
   }

@@ -30,7 +30,7 @@ class TugakGameScreenState extends State<TugakGameScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final screenSize = MediaQuery.of(context).size;
       _controller.initializeGame(screenSize);
-      _controller.startGame();
+      _controller.startCountdown();
     });
 
     _jumpAnimationController.addListener(() {
@@ -73,10 +73,44 @@ class TugakGameScreenState extends State<TugakGameScreen>
                 if (_controller.isGamePaused) _buildPauseOverlay(),
                 _buildPauseButton(),
                 if (_controller.isGameOver) _buildGameOverDialog(),
+                if (_controller.gameState.isCountingDown)
+                  _buildCountdownOverlay(),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildCountdownOverlay() {
+    return Positioned.fill(
+      child: Container(
+        color: Colors.black54,
+        child: Center(
+          child: Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xF9DD9A00),
+              border: Border.all(color: const Color(0xAD572100), width: 8),
+            ),
+            child: Center(
+              child: Text(
+                _controller.gameState.countdownValue > 0
+                    ? '${_controller.gameState.countdownValue}'
+                    : 'GO!',
+                key: ValueKey(_controller.gameState.countdownValue),
+                style: TextStyle(
+                  fontSize: _controller.gameState.countdownValue > 0 ? 72 : 48,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.brown,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
