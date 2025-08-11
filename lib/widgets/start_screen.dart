@@ -8,6 +8,7 @@ class StartScreen extends StatelessWidget {
   final Color color4;
   final String gameTitle;
   final String instructions;
+  final Widget gameScreen;
 
   const StartScreen({
     super.key,
@@ -17,6 +18,7 @@ class StartScreen extends StatelessWidget {
     required this.color4,
     required this.gameTitle,
     required this.instructions,
+    required this.gameScreen,
   });
 
   @override
@@ -134,7 +136,12 @@ class StartScreen extends StatelessWidget {
                   ),
                 ),
                 child: InkWell(
-                  onTap: () => {},
+                  onTap: () => {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => gameScreen),
+                    )
+                  },
                   borderRadius: BorderRadius.circular(8),
                   highlightColor: const Color(0xFFCA8505),
                   child: const Padding(
