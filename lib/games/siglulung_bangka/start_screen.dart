@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../shared/widgets/start_screen.dart';
+import '../shared/widgets/base_start_screen.dart';
 import '../../views/home.dart';
 
 class BangkaStartScreen extends StatelessWidget {
