@@ -70,9 +70,13 @@ class TugakGameScreenState extends State<TugakGameScreen>
                 ..._buildLilypads(),
                 ..._buildFrogs(),
                 _buildGameUI(),
-                if (_controller.isGamePaused) _buildPauseOverlay(),
+
+                // TODO: might need to remove pausing if multiplayer is implemented
                 _buildPauseButton(),
+                if (_controller.isGamePaused) _buildPauseOverlay(),
+
                 if (_controller.isGameOver) _buildGameOverDialog(),
+
                 if (_controller.gameState.isCountingDown)
                   _buildCountdownOverlay(),
               ],
@@ -204,11 +208,7 @@ class TugakGameScreenState extends State<TugakGameScreen>
         child: IconButton(
           icon: const Icon(Icons.pause, color: Colors.brown),
           onPressed: () {
-            if (_controller.isGamePaused) {
-              _controller.resumeGame();
-            } else {
-              _controller.pauseGame();
-            }
+            _controller.pauseGame();
           },
         ),
       ),
@@ -221,7 +221,7 @@ class TugakGameScreenState extends State<TugakGameScreen>
           color: Colors.black54,
           child: Center(
             child: Container(
-              width: MediaQuery.of(context).size.width * 1 / 4,
+              width: MediaQuery.of(context).size.width * 2 / 5,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: const Color(0xF9DD9A00),
@@ -247,14 +247,55 @@ class TugakGameScreenState extends State<TugakGameScreen>
                     width: double.infinity,
                     color: const Color(0xAD572100),
                   ),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 20),
 
-                  const Text(
-                    'Click the pause button to resume',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.brown,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.popUntil(context, (route) => route.isFirst);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red[600],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                        ),
+                        child: const Text('Exit Game'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          final screenSize = MediaQuery.of(context).size;
+                          _controller.restartGame(screenSize);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange[600],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                        ),
+                        child: const Text('Restart Game'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          _controller.resumeGame();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[600],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                        ),
+                        child: const Text('Resume Game'),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -316,36 +357,39 @@ class TugakGameScreenState extends State<TugakGameScreen>
                 const SizedBox(height: 20),
 
                 Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red[600],
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
-                          ),
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.popUntil(context, (route) => route.isFirst);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[600],
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
                         ),
-                        child: const Text('Back to Menu'),
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          final screenSize = MediaQuery.of(context).size;
-                          _controller.restartGame(screenSize);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green[600],
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
-                          ),
+                      child: const Text('Back to Menu'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        final screenSize = MediaQuery.of(context).size;
+                        _controller.restartGame(screenSize);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[600],
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
                         ),
-                        child: const Text('Play Again'),
                       ),
-                    ])
+                      child: const Text('Play Again'),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
