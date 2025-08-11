@@ -2,50 +2,83 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 
+import '../../shared/controllers/base_game_controller.dart';
+import '../../shared/models/base_game_state.dart';
+
 import '../models/frog.dart';
 import '../models/question.dart';
 import '../models/game_state.dart';
 
-class TugakGameController extends ChangeNotifier {
-  // Game state
-  TugakGameState _gameState = TugakGameState();
-  TugakGameState get gameState => _gameState;
-
+class TugakGameController extends BaseGameController<TugakGameState> {
   // Game data
   List<Question> _questions = [];
+  List<Question> get questions => _questions;
+
   final List<Offset> _lilypadPositions = [];
   List<Offset> get lilypadPositions => List.unmodifiable(_lilypadPositions);
   final Set<int> _occupiedLilypadIndices = <int>{};
 
   // Timers
-  Timer? _countdownTimer;
-  Timer? _gameTimer;
   final Map<Frog, Timer?> _frogJumpTimers = {};
 
   // Constants
-  static const int GAME_DURATION = 60;
   static const int MAX_FROGS = 4;
   static const int MAX_LILYPADS = 8;
-
-  // Size constants
   static const double FROG_OFFSET = (80.0 - 60.0) / 2;
 
-  TugakGameController() {
-    _initializeQuestions();
-  }
+  TugakGameController() : super(TugakGameState());
 
-  // ================== INITIALIZATION ==================
+  // ================== IMPLEMENTED INITS ==================
 
-  void _initializeQuestions() {
+  @override
+  void initializeGameData() {
     _questions = QuestionBank.getQuestions();
   }
 
-  void initializeGame(Size screenSize) {
+  @override
+  void initializeGameSpecifics(Size screenSize) {
     _generateLilypadPositions(screenSize);
-    _resetGameState();
     _spawnInitialFrogs();
-    notifyListeners();
   }
+
+  @override
+  void resetGameState() {
+    gameState = TugakGameState(timeLeft: gameDuration);
+  }
+
+  // ============== IMPLEMENTED LIFECYCLES ==============
+
+  @override
+  void onGameStarted() {
+    for (final frog in gameState.frogs) {
+      _startFrogJumpTimer(frog);
+    }
+  }
+
+  // ================ IMPLEMENTED TIMERS ================
+
+  @override
+  void pauseGameSpecificTimers() {
+    for (final timer in _frogJumpTimers.values) {
+      timer?.cancel();
+    }
+  }
+
+  @override
+  void resumeGameSpecificTimers() {
+    for (final frog in gameState.frogs) {
+      if (!frog.isAnswered) {
+        _startFrogJumpTimer(frog);
+      }
+    }
+  }
+
+  @override
+  void stopGameSpecificTimers() {
+    _cancelAllFrogTimers();
+  }
+
+  // ==================== TUGAK INITS ====================
 
   void _generateLilypadPositions(Size screenSize) {
     _lilypadPositions.clear();
@@ -88,15 +121,8 @@ class TugakGameController extends ChangeNotifier {
     }
   }
 
-  void _resetGameState() {
-    _gameState = TugakGameState(
-      timeLeft: GAME_DURATION,
-      status: GameStatus.playing,
-    );
-  }
-
   void _spawnInitialFrogs() {
-    _gameState.frogs.clear();
+    gameState.frogs.clear();
     _occupiedLilypadIndices.clear();
     _cancelAllFrogTimers();
 
@@ -117,7 +143,7 @@ class TugakGameController extends ChangeNotifier {
           question: question,
         );
 
-        _gameState.frogs.add(frog);
+        gameState.frogs.add(frog);
 
         _occupiedLilypadIndices.add(lilypadIndex);
         _startFrogJumpTimer(frog);
@@ -125,90 +151,7 @@ class TugakGameController extends ChangeNotifier {
     }
   }
 
-  // ================== GAME LIFECYCLE ==================
-
-  void startGame() {
-    _gameState.status = GameStatus.playing;
-    _startGameTimer();
-    notifyListeners();
-  }
-
-  void pauseGame() {
-    _gameState.status = GameStatus.paused;
-    _pauseTimers();
-    notifyListeners();
-  }
-
-  void resumeGame() {
-    _gameState.status = GameStatus.playing;
-    _resumeTimers();
-    notifyListeners();
-  }
-
-  void endGame() {
-    _gameState.status = GameStatus.gameOver;
-    _stopAllTimers();
-    notifyListeners();
-  }
-
-  void restartGame(Size screenSize) {
-    _stopAllTimers();
-    initializeGame(screenSize);
-    startGame();
-  }
-
-  // ================== TIMER MANAGEMENT ==================
-
-  void startCountdown() {
-    _gameState.isCountingDown = true;
-    _gameState.status = GameStatus.menu;
-    notifyListeners();
-
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_gameState.countdownValue > 0) {
-        _gameState.countdownValue--;
-        notifyListeners();
-      } else {
-        timer.cancel();
-        _gameState.isCountingDown = false;
-        _gameState.status = GameStatus.playing;
-        _startGameTimer();
-        notifyListeners();
-      }
-    });
-  }
-
-  void _startGameTimer() {
-    _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_gameState.status == GameStatus.playing) {
-        _gameState.timeLeft--;
-
-        if (_gameState.timeLeft <= 0) {
-          endGame();
-        } else {
-          notifyListeners();
-        }
-      }
-    });
-  }
-
-  void _pauseTimers() {
-    _gameTimer?.cancel();
-    for (final timer in _frogJumpTimers.values) {
-      timer?.cancel();
-    }
-  }
-
-  void _resumeTimers() {
-    if (_gameState.status == GameStatus.playing) {
-      _startGameTimer();
-      for (final frog in _gameState.frogs) {
-        if (!frog.isAnswered) {
-          _startFrogJumpTimer(frog);
-        }
-      }
-    }
-  }
+  // =================== TUGAK TIMERS ===================
 
   void _startFrogJumpTimer(Frog frog) {
     final random = Random();
@@ -219,7 +162,7 @@ class TugakGameController extends ChangeNotifier {
     _frogJumpTimers[frog] = Timer.periodic(
       Duration(seconds: jumpInterval),
       (timer) {
-        if (_gameState.status == GameStatus.playing &&
+        if (gameState.status == GameStatus.playing &&
             !frog.isAnswered &&
             !frog.isJumping &&
             !frog.isBeingQuestioned) {
@@ -230,22 +173,6 @@ class TugakGameController extends ChangeNotifier {
         }
       },
     );
-  }
-
-  void pauseFrogTimer(Frog frog) {
-    _frogJumpTimers[frog]?.cancel();
-    _frogJumpTimers[frog] = null;
-  }
-
-  void resumeFrogTimer(Frog frog) {
-    if (!frog.isAnswered && _gameState.status == GameStatus.playing) {
-      _startFrogJumpTimer(frog);
-    }
-  }
-
-  void _stopAllTimers() {
-    _gameTimer?.cancel();
-    _cancelAllFrogTimers();
   }
 
   void _cancelAllFrogTimers() {
@@ -282,7 +209,7 @@ class TugakGameController extends ChangeNotifier {
   void _updateOccupiedLilypads() {
     _occupiedLilypadIndices.clear();
 
-    for (var frog in _gameState.frogs) {
+    for (var frog in gameState.frogs) {
       if (!frog.isJumping) {
         final lilypadIndex = _findLilypadIndex(frog);
         if (lilypadIndex != null) {
@@ -335,63 +262,15 @@ class TugakGameController extends ChangeNotifier {
   }
 
   void updateFrogPositions(double animationValue) {
-    for (var frog in _gameState.frogs) {
+    for (var frog in gameState.frogs) {
       if (frog.isJumping) {
         frog.updatePosition(animationValue);
       }
     }
   }
 
-  // ================== USER INTERACTIONS ==================
-
-  bool canTapFrog(Frog frog) {
-    return _gameState.status == GameStatus.playing &&
-        !frog.isJumping &&
-        !frog.isAnswered &&
-        !frog.isBeingQuestioned;
-  }
-
-  void onAnswerSelected(Frog frog, int selectedIndex) {
-    if (_gameState.status != GameStatus.playing) return;
-
-    frog.isAnswered = true;
-
-    final isCorrect = selectedIndex == frog.question.correctIndex;
-
-    frog.answerResult =
-        isCorrect ? AnswerResult.correct : AnswerResult.incorrect;
-
-    if (isCorrect) {
-      _gameState.score += 10;
-      _gameState.correctAnswers++;
-    }
-
-    _gameState.frogsAnswered++;
-
-    // create a new frog
-    Timer(const Duration(seconds: 2), () {
-      _replaceFrog(frog);
-    });
-
-    notifyListeners();
-  }
-
-  void onQuestionTimeout(Frog frog) {
-    if (_gameState.status != GameStatus.playing) return;
-
-    frog.isAnswered = true;
-    frog.isBeingQuestioned = false;
-    frog.answerResult = AnswerResult.timeout;
-
-    Timer(const Duration(seconds: 1), () {
-      _replaceFrog(frog);
-    });
-
-    notifyListeners();
-  }
-
   void _replaceFrog(Frog oldFrog) {
-    if (_gameState.status != GameStatus.playing) return;
+    if (gameState.status != GameStatus.playing) return;
 
     final random = Random();
 
@@ -403,10 +282,10 @@ class TugakGameController extends ChangeNotifier {
       _occupiedLilypadIndices.remove(oldLilypadIndex);
     }
 
-    // Remove old frog
-    _gameState.frogs.removeWhere((f) => f == oldFrog);
+    // remove old frog
+    gameState.frogs.removeWhere((f) => f == oldFrog);
 
-    // Add new frog
+    // add new frog
     if (_lilypadPositions.isNotEmpty && _questions.isNotEmpty) {
       final availableIndices = _getAvailableLilypadIndices();
 
@@ -422,7 +301,7 @@ class TugakGameController extends ChangeNotifier {
           question: question,
         );
 
-        _gameState.frogs.add(newFrog);
+        gameState.frogs.add(newFrog);
 
         _occupiedLilypadIndices.add(lilypadIndex);
 
@@ -433,24 +312,56 @@ class TugakGameController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ================== GETTERS ==================
+  // ================== USER INTERACTIONS ==================
 
-  bool get isGameActive => _gameState.status == GameStatus.playing;
-  bool get isGameOver => _gameState.status == GameStatus.gameOver;
-  bool get isGamePaused => _gameState.status == GameStatus.paused;
-
-  String get formattedTime {
-    final minutes = _gameState.timeLeft ~/ 60;
-    final seconds = _gameState.timeLeft % 60;
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  bool canTapFrog(Frog frog) {
+    return gameState.status == GameStatus.playing &&
+        !frog.isJumping &&
+        !frog.isAnswered &&
+        !frog.isBeingQuestioned;
   }
 
-  // ================== CLEANUP ==================
+  void onAnswerSelected(Frog frog, int selectedIndex) {
+    if (gameState.status != GameStatus.playing) return;
 
-  @override
-  void dispose() {
-    _countdownTimer?.cancel();
-    _stopAllTimers();
-    super.dispose();
+    frog.isAnswered = true;
+
+    final isCorrect = selectedIndex == frog.question.correctIndex;
+
+    frog.answerResult =
+        isCorrect ? AnswerResult.correct : AnswerResult.incorrect;
+
+    if (isCorrect) {
+      onCorrectAnswer(points: 10);
+    } else {
+      onIncorrectAnswer();
+    }
+
+    gameState.frogsAnswered++;
+
+    // create a new frog
+    Timer(const Duration(seconds: 2), () {
+      _replaceFrog(frog);
+    });
+
+    notifyListeners();
+  }
+
+  void onQuestionTimeout(Frog frog) {
+    if (gameState.status != GameStatus.playing) return;
+
+    frog.isAnswered = true;
+    frog.isBeingQuestioned = false;
+    frog.answerResult = AnswerResult.timeout;
+
+    // update total answers
+    onIncorrectAnswer();
+    gameState.frogsAnswered++;
+
+    Timer(const Duration(seconds: 1), () {
+      _replaceFrog(frog);
+    });
+
+    notifyListeners();
   }
 }
