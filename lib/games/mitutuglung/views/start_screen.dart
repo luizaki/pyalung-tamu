@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../shared/widgets/base_start_screen.dart';
-import '../../views/home.dart';
+import '../../shared/widgets/base_start_screen.dart';
+import '../../../views/home.dart';
 
 class MitutuglungStartScreen extends StatelessWidget {
   const MitutuglungStartScreen({super.key});
