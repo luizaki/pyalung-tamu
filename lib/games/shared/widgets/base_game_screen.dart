@@ -11,6 +11,9 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     with TickerProviderStateMixin {
   late T controller;
 
+  List<Color> get backgroundColors =>
+      [Colors.lightBlue[200]!, Colors.blue[400]!];
+
   @override
   void initState() {
     super.initState();
@@ -364,7 +367,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.lightBlue[200]!, Colors.blue[400]!],
+                colors: backgroundColors,
               ),
             ),
             child: Stack(

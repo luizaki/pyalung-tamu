@@ -32,6 +32,9 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
   bool _wasRevealed = false;
   bool _wasMatched = false;
 
+  static const Color REVEALED_COLOR = Color(0xFFC6F7EA);
+  static const Color MATCHED_COLOR = Color(0xFF7ACFB8);
+
   @override
   void initState() {
     super.initState();
@@ -55,8 +58,8 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
     );
 
     _colorAnimation = ColorTween(
-      begin: const Color(0xF9DD9A00),
-      end: const Color(0xFFBA750D),
+      begin: REVEALED_COLOR,
+      end: MATCHED_COLOR,
     ).animate(CurvedAnimation(
       parent: _colorController,
       curve: Curves.easeInOut,
@@ -127,7 +130,7 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
                   color: _getCardColor(),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: const Color(0xAD572100),
+                    color: const Color(0xFF2F3699),
                     width: 3,
                   ),
                 ),
@@ -140,13 +143,9 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
 
   Color _getCardColor() {
     if (widget.card.isMatched) {
-      return _colorAnimation.value ?? const Color(0xFFBA750D);
-    }
-
-    if (_flipAnimation.value <= 0.5) {
-      return const Color(0xFF2BB495);
+      return _colorAnimation.value ?? MATCHED_COLOR;
     } else {
-      return const Color(0xF9DD9A00);
+      return REVEALED_COLOR;
     }
   }
 
@@ -168,7 +167,7 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
       child: Icon(
         Icons.help_outline,
         size: 40,
-        color: Colors.brown,
+        color: Color(0xFF6F3198),
       ),
     );
   }

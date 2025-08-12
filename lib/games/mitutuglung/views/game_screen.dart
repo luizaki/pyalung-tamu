@@ -34,6 +34,10 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
     ];
   }
 
+  @override
+  List<Color> get backgroundColors =>
+      [const Color(0xFFF58347), const Color(0xFFED7738)];
+
   Widget _buildCardsGrid() {
     final cardsGrid = controller.getCardsGrid();
 
