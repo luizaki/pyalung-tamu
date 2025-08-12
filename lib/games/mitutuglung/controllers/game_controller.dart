@@ -143,6 +143,7 @@ class MitutuglungGameController
     gameState.revealedCards.clear();
     gameState.isProcessingMove = false;
 
+    // TODO: fix scoring based on accuracy?
     onCorrectAnswer(points: 20);
 
     notifyListeners();
