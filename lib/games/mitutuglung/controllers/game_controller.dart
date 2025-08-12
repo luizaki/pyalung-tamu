@@ -93,6 +93,8 @@ class MitutuglungGameController
   void _startPreviewPhase() {
     gameState.isShowingCards = true;
 
+    pauseGameTimer();
+
     for (final card in gameState.cards) {
       card.reveal();
     }
@@ -110,6 +112,8 @@ class MitutuglungGameController
     for (final card in gameState.cards) {
       card.hide();
     }
+
+    resumeGameTimer();
 
     notifyListeners();
   }
