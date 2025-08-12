@@ -12,7 +12,7 @@ class CardWidget extends StatelessWidget {
     required this.card,
     required this.onTap,
     this.width = 75.0,
-    this.height = 90.0,
+    this.height = 100.0,
   });
 
   @override
