@@ -38,7 +38,7 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
     final cardsGrid = controller.getCardsGrid();
 
     return Positioned(
-      top: 220,
+      top: 100,
       left: 0,
       right: 0,
       bottom: 0,
