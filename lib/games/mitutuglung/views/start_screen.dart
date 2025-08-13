@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../shared/widgets/base_start_screen.dart';
-import '../../views/home.dart';
+import '../../shared/widgets/base_start_screen.dart';
+
+import './game_screen.dart';
 
 class MitutuglungStartScreen extends StatelessWidget {
   const MitutuglungStartScreen({super.key});
@@ -15,7 +16,7 @@ class MitutuglungStartScreen extends StatelessWidget {
       gameTitle: 'Mitutuglung',
       instructions:
           'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-      gameScreen: HomePage(), // placeholder
+      gameScreen: MitutuglungGameScreen(),
     );
   }
 }

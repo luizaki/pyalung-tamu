@@ -96,7 +96,7 @@ abstract class BaseGameController<T extends BaseGameState>
   }
 
   void _pauseTimers() {
-    _gameTimer?.cancel();
+    pauseGameTimer();
     pauseGameSpecificTimers();
   }
 
@@ -111,6 +111,21 @@ abstract class BaseGameController<T extends BaseGameState>
     _gameTimer?.cancel();
     _countdownTimer?.cancel();
     stopGameSpecificTimers();
+  }
+
+  // public start timer variant
+  void startGameTimer() {
+    _startGameTimer();
+  }
+
+  void pauseGameTimer() {
+    _gameTimer?.cancel();
+  }
+
+  void resumeGameTimer() {
+    if (_gameState.status == GameStatus.playing && _gameState.timeLeft > 0) {
+      _startGameTimer();
+    }
   }
 
   // ============== ANSWER HANDLING ==============
