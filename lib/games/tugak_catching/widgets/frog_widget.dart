@@ -39,5 +39,4 @@ class FrogWidget extends StatelessWidget {
       return 'assets/tugak/frog_land_500.png';
     }
   }
-  
 }
