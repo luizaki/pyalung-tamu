@@ -20,8 +20,8 @@ class Lilypad extends StatelessWidget {
       top: y,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        width: 80,
-        height: 80,
+        width: 120,
+        height: 120,
         child: Image.asset(
           _getLilypadAsset(),
           fit: BoxFit.contain,
