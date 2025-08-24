@@ -20,8 +20,8 @@ class FrogWidget extends StatelessWidget {
         onTap: frog.isJumping ? null : onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          width: 60,
-          height: 60,
+          width: 100,
+          height: 100,
           child: Image.asset(
             _getFrogAsset(),
             fit: BoxFit.contain,
@@ -34,9 +34,9 @@ class FrogWidget extends StatelessWidget {
 
   String _getFrogAsset() {
     if (frog.isJumping) {
-      return 'assets/tugak/frog_jump_500.png';
+      return 'assets/tugak/tugak_jump.PNG';
     } else {
-      return 'assets/tugak/frog_land_500.png';
+      return "assets/tugak/tugak_land.PNG";
     }
   }
 }
