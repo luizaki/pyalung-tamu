@@ -58,6 +58,7 @@ class BangkaGameScreenState
       MovingBackground(
         boatSpeed: controller.boatSpeed,
         screenSize: screenSize,
+        isGameActive: controller.isGameActive,
       ),
 
       // Boat

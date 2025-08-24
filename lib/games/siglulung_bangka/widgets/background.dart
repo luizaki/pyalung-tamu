@@ -69,11 +69,13 @@ class _MovingWavesPainter extends CustomPainter {
 class MovingBackground extends StatefulWidget {
   final double boatSpeed;
   final Size screenSize;
+  final bool isGameActive;
 
   const MovingBackground({
     super.key,
     required this.boatSpeed,
     required this.screenSize,
+    required this.isGameActive,
   });
 
   @override
@@ -99,7 +101,22 @@ class _MovingBackgroundState extends State<MovingBackground>
       end: 2 * math.pi,
     ).animate(_animationController);
 
-    _animationController.repeat();
+    if (widget.isGameActive) {
+      _animationController.repeat();
+    }
+  }
+
+  @override
+  void didUpdateWidget(MovingBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.isGameActive != oldWidget.isGameActive) {
+      if (widget.isGameActive) {
+        _animationController.repeat();
+      } else {
+        _animationController.stop();
+      }
+    }
   }
 
   @override
