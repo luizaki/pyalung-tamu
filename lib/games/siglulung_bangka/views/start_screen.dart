@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../shared/widgets/base_start_screen.dart';
-import '../../../views/home.dart';
+
+import './game_screen.dart';
 
 class BangkaStartScreen extends StatelessWidget {
   const BangkaStartScreen({super.key});
@@ -15,7 +16,7 @@ class BangkaStartScreen extends StatelessWidget {
       gameTitle: 'Siglulung Bangka',
       instructions:
           'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-      gameScreen: HomePage(), // placeholder
+      gameScreen: BangkaGameScreen(),
     );
   }
 }
