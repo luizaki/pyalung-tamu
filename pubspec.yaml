@@ -38,6 +38,7 @@ dependencies:
   stroke_text: any
   supabase_flutter: ^2.0.0
   flutter_dotenv: ^5.2.1
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
