@@ -13,7 +13,14 @@ Future<void> main() async {
     DeviceOrientation.landscapeRight,
   ]);
 
-  if (kIsWeb) {
+  if (kDebugMode) {
+    // TODO: ugly fix on connecting in debug mode
+    await dotenv.load();
+    await Supabase.initialize(
+      url: dotenv.env['SUPABASE_PROJECT_URL']!,
+      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    );
+  } else if (kIsWeb) {
     // Use dart-define for web
     await Supabase.initialize(
       url: const String.fromEnvironment('SUPABASE_PROJECT_URL'),
