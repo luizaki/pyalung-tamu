@@ -23,6 +23,9 @@ class MitutuglungGameController
   // Timers
   Timer? _previewTimer;
   Timer? _mismatchTimer;
+  bool _isPreviewPaused = false;
+  DateTime? _previewStartTime;
+  int _previewDuration = PREVIEW_DURATION;
 
   MitutuglungGameController() : super(MitutuglungGameState());
 
@@ -75,12 +78,31 @@ class MitutuglungGameController
 
   @override
   void pauseGameSpecificTimers() {
-    _previewTimer?.cancel();
+    if (gameState.isShowingCards) {
+      _isPreviewPaused = true;
+      _previewTimer?.cancel();
+
+      if (_previewStartTime != null) {
+        final elapsed = DateTime.now().difference(_previewStartTime!).inSeconds;
+        _previewDuration =
+            (PREVIEW_DURATION - elapsed).clamp(1, PREVIEW_DURATION);
+      }
+    }
+
     _mismatchTimer?.cancel();
   }
 
   @override
-  void resumeGameSpecificTimers() {}
+  void resumeGameSpecificTimers() {
+    if (_isPreviewPaused && gameState.isShowingCards) {
+      _isPreviewPaused = false;
+      _previewStartTime = DateTime.now();
+
+      _previewTimer = Timer(Duration(seconds: _previewDuration), () {
+        _endPreviewPhase();
+      });
+    }
+  }
 
   @override
   void stopGameSpecificTimers() {
@@ -92,6 +114,9 @@ class MitutuglungGameController
 
   void _startPreviewPhase() {
     gameState.isShowingCards = true;
+    _isPreviewPaused = false;
+    _previewStartTime = DateTime.now();
+    _previewDuration = PREVIEW_DURATION;
 
     pauseGameTimer();
 
@@ -101,13 +126,16 @@ class MitutuglungGameController
 
     notifyListeners();
 
-    _previewTimer = Timer(const Duration(seconds: PREVIEW_DURATION), () {
-      _endPreviewPhase();
+    _previewTimer = Timer(Duration(seconds: _previewDuration), () {
+      if (!_isPreviewPaused) {
+        _endPreviewPhase();
+      }
     });
   }
 
   void _endPreviewPhase() {
     gameState.isShowingCards = false;
+    _isPreviewPaused = false;
 
     for (final card in gameState.cards) {
       card.hide();
