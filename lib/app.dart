@@ -63,7 +63,7 @@ class _AppState extends State<App> {
   void _onUserStateChanged() {
     setState(() {});
 
-    // ✅ If no player after state change, show auth popup
+    // If no player after state change, show auth popup
     if (_authService.currentPlayer == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showAuthPopup();

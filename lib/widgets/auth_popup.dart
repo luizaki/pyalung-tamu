@@ -416,7 +416,7 @@ class _AuthPopupState extends State<AuthPopup> {
 
     if (result.isSuccess) {
       if (mounted) {
-        final needsVerification = result.message.contains('Check your email');
+        final needsVerification = result.message.contains('check your email');
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -429,7 +429,6 @@ class _AuthPopupState extends State<AuthPopup> {
         if (needsVerification) {
           setState(() => _currentMode = AuthMode.login);
         } else {
-          // Registration complete without verification, close dialog
           Navigator.of(context).pop(true);
         }
       }
