@@ -8,6 +8,8 @@ class TugakStartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StartScreen(
+      backgroundImage: 'assets/bg/tugak_bg.PNG',
+      gameIcon: 'assets/icons/tugak.PNG',
       color1: const Color(0xFF1D6DAF),
       color2: const Color(0xFF3B8DD0),
       color3: const Color(0xFF50ACF7),

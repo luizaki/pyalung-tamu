@@ -14,20 +14,16 @@ class _MovingWavesPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
-    // Wave intensity and movement based on boat speed
     final waveIntensity = (boatSpeed * 2).clamp(1.0, 10.0);
     final waveSpeed = boatSpeed * 0.1;
 
-    // Draw multiple wave lines that move faster with higher speed
     for (int i = 0; i < 8; i++) {
       final y = size.height * 0.15 * (i + 1);
       final path = Path();
 
       for (double x = 0; x < size.width; x += 12) {
-        // More pronounced wave movement
         final offset = (x * 0.03 + animationTime * waveSpeed) % (2 * math.pi);
         final waveY = y + (waveIntensity * math.sin(offset));
-
         if (x == 0) {
           path.moveTo(x, waveY);
         } else {
@@ -38,10 +34,7 @@ class _MovingWavesPainter extends CustomPainter {
       canvas.drawPath(path, paint);
     }
 
-    // Add foam/spray effects when going fast
-    if (boatSpeed > 4.0) {
-      _drawSprayEffect(canvas, size, boatSpeed);
-    }
+    if (boatSpeed > 4.0) _drawSprayEffect(canvas, size, boatSpeed);
   }
 
   void _drawSprayEffect(Canvas canvas, Size size, double speed) {
@@ -49,16 +42,10 @@ class _MovingWavesPainter extends CustomPainter {
       ..color = Colors.white.withOpacity(0.6)
       ..style = PaintingStyle.fill;
 
-    // Draw spray particles across the screen
     for (int i = 0; i < (speed * 3).round(); i++) {
       final x = (size.width * 0.3) + (i * 15.0) % (size.width * 0.4);
       final y = size.height * 0.6 + (math.sin(i * 0.3) * 20);
-
-      canvas.drawCircle(
-        Offset(x, y),
-        2.0,
-        sprayPaint,
-      );
+      canvas.drawCircle(Offset(x, y), 2.0, sprayPaint);
     }
   }
 
@@ -66,16 +53,34 @@ class _MovingWavesPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
+class Obstacle {
+  Offset position;
+  double size;
+  String imageAsset;
+  String? word;
+  bool isHit;
+
+  Obstacle({
+    required this.position,
+    required this.size,
+    required this.imageAsset,
+    this.word,
+    this.isHit = false,
+  });
+}
+
 class MovingBackground extends StatefulWidget {
   final double boatSpeed;
   final Size screenSize;
   final bool isGameActive;
+  final String? currentWord;
 
   const MovingBackground({
     super.key,
     required this.boatSpeed,
     required this.screenSize,
     required this.isGameActive,
+    this.currentWord,
   });
 
   @override
@@ -87,6 +92,14 @@ class _MovingBackgroundState extends State<MovingBackground>
   late AnimationController _animationController;
   late Animation<double> _animation;
 
+  final List<String> obstacleImages = [
+    'assets/siglulung/obs1.PNG',
+    'assets/siglulung/obs2.PNG',
+  ];
+
+  final List<Obstacle> obstacles = [];
+  final math.Random _random = math.Random();
+
   @override
   void initState() {
     super.initState();
@@ -94,25 +107,64 @@ class _MovingBackgroundState extends State<MovingBackground>
     _animationController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
-    );
+    )..addListener(() {
+        _updateObstacles();
+      });
 
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 2 * math.pi,
-    ).animate(_animationController);
+    _animation = Tween<double>(begin: 0.0, end: 2 * math.pi)
+        .animate(_animationController);
 
     if (widget.isGameActive) {
       _animationController.repeat();
+      _spawnObstacle();
     }
+  }
+
+  void _spawnObstacle() {
+    if (!widget.isGameActive) return;
+
+    final size = 25 + _random.nextDouble() * 20;
+    final y = _random.nextDouble() * (widget.screenSize.height * 0.6);
+
+    obstacles.add(
+      Obstacle(
+        position: Offset(widget.screenSize.width + size, y),
+        size: size,
+        imageAsset: obstacleImages[_random.nextInt(obstacleImages.length)],
+        word: widget.currentWord ?? 'default',
+      ),
+    );
+
+    Future.delayed(const Duration(seconds: 2), _spawnObstacle);
+  }
+
+  void _updateObstacles() {
+    setState(() {
+      for (var obs in obstacles) {
+        if (!obs.isHit) {
+          obs.position = Offset(
+            obs.position.dx - widget.boatSpeed * 0.3,
+            obs.position.dy,
+          );
+          if (obs.position.dx + obs.size < 0) obs.isHit = true;
+        }
+      }
+
+      if (widget.currentWord != null) {
+        for (var obs in obstacles) {
+          if (obs.word == widget.currentWord) obs.isHit = true;
+        }
+      }
+    });
   }
 
   @override
   void didUpdateWidget(MovingBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
-
     if (widget.isGameActive != oldWidget.isGameActive) {
       if (widget.isGameActive) {
         _animationController.repeat();
+        _spawnObstacle();
       } else {
         _animationController.stop();
       }
@@ -144,7 +196,6 @@ class _MovingBackgroundState extends State<MovingBackground>
           builder: (context, child) {
             return Stack(
               children: [
-                // Moving water waves with animation time
                 CustomPaint(
                   size: Size.infinite,
                   painter: _MovingWavesPainter(
@@ -152,9 +203,7 @@ class _MovingBackgroundState extends State<MovingBackground>
                     animationTime: _animation.value,
                   ),
                 ),
-
-                // Moving islands
-                _buildMovingIslands(),
+                _buildObstaclesStack(),
               ],
             );
           },
@@ -163,40 +212,23 @@ class _MovingBackgroundState extends State<MovingBackground>
     );
   }
 
-  Widget _buildMovingIslands() {
-    // Move islands based on boat speed
-    final islandOffset = _animation.value * widget.boatSpeed * 10;
-
+  Widget _buildObstaclesStack() {
     return Stack(
-      children: [
-        _buildMovingIsland(widget.screenSize.width * 0.2 - islandOffset,
-            widget.screenSize.height * 0.3, 25),
-        _buildMovingIsland(widget.screenSize.width * 0.7 - islandOffset,
-            widget.screenSize.height * 0.4, 30),
-        _buildMovingIsland(widget.screenSize.width * 0.4 - islandOffset,
-            widget.screenSize.height * 0.2, 20),
-        _buildMovingIsland(widget.screenSize.width * 0.8 - islandOffset,
-            widget.screenSize.height * 0.6, 35),
-      ],
-    );
-  }
-
-  Widget _buildMovingIsland(double x, double y, double size) {
-    return Positioned(
-      left: x % (widget.screenSize.width + 100) - 50, // Wrap around screen
-      top: y,
-      child: Container(
-        width: size,
-        height: size * 0.6,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(size / 2),
-          color: Colors.green[700],
-          border: Border.all(
-            color: Colors.green[800]!,
-            width: 1,
-          ),
-        ),
-      ),
+      children: obstacles
+          .where((o) => !o.isHit)
+          .map(
+            (o) => Positioned(
+              left: o.position.dx,
+              top: o.position.dy,
+              child: Image.asset(
+                o.imageAsset,
+                width: o.size,
+                height: o.size,
+                fit: BoxFit.contain,
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 }

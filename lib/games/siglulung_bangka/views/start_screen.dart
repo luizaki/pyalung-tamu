@@ -9,6 +9,8 @@ class BangkaStartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const StartScreen(
+      backgroundImage: 'assets/bg/boat_bg.PNG',
+      gameIcon: 'assets/icons/siglulung.PNG',
       color1: Color(0xFF070635),
       color2: Color(0xFF14085C),
       color3: Color(0xFF0A0C80),

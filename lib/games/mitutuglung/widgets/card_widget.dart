@@ -12,8 +12,8 @@ class CardWidget extends StatefulWidget {
     super.key,
     required this.card,
     required this.onTap,
-    this.width = 75.0,
-    this.height = 100.0,
+    this.width = 110.0,
+    this.height = 110.0,
   });
 
   @override
@@ -21,19 +21,16 @@ class CardWidget extends StatefulWidget {
 }
 
 class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
+  //sprites
+  static const String _backCard = 'assets/mitutuglung/back_card.png';
+  static const String _frontCard = 'assets/mitutuglung/front_card.png';
+  static const String _flipCard = 'assets/mitutuglung/flip_card.png';
+
   // Handle flip anim
   late AnimationController _flipController;
   late Animation<double> _flipAnimation;
 
-  // Handle color transition
-  late AnimationController _colorController;
-  late Animation<Color?> _colorAnimation;
-
   bool _wasRevealed = false;
-  bool _wasMatched = false;
-
-  static const Color REVEALED_COLOR = Color(0xFFC6F7EA);
-  static const Color MATCHED_COLOR = Color(0xFF7ACFB8);
 
   @override
   void initState() {
@@ -52,28 +49,9 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
       curve: Curves.easeInOut,
     ));
 
-    _colorController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _colorAnimation = ColorTween(
-      begin: REVEALED_COLOR,
-      end: MATCHED_COLOR,
-    ).animate(CurvedAnimation(
-      parent: _colorController,
-      curve: Curves.easeInOut,
-    ));
-
     _wasRevealed = widget.card.isRevealed || widget.card.isMatched;
-    _wasMatched = widget.card.isMatched;
-
     if (_wasRevealed) {
       _flipController.value = 1.0;
-    }
-
-    if (_wasMatched) {
-      _colorController.value = 1.0;
     }
   }
 
@@ -82,7 +60,6 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
     super.didUpdateWidget(oldWidget);
 
     final isCurrentlyRevealed = widget.card.isRevealed || widget.card.isMatched;
-    final isCurrentlyMatched = widget.card.isMatched;
 
     if (isCurrentlyRevealed != _wasRevealed) {
       if (isCurrentlyRevealed) {
@@ -92,21 +69,11 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
       }
       _wasRevealed = isCurrentlyRevealed;
     }
-
-    if (isCurrentlyMatched != _wasMatched) {
-      if (isCurrentlyMatched) {
-        _colorController.forward();
-      } else {
-        _colorController.reverse();
-      }
-      _wasMatched = isCurrentlyMatched;
-    }
   }
 
   @override
   void dispose() {
     _flipController.dispose();
-    _colorController.dispose();
     super.dispose();
   }
 
@@ -115,8 +82,10 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
     return GestureDetector(
       onTap: widget.onTap,
       child: AnimatedBuilder(
-        animation: Listenable.merge([_flipAnimation, _colorAnimation]),
-        builder: (context, child) {
+        animation: _flipAnimation,
+        builder: (context, _) {
+          final v = _flipAnimation.value;
+
           return Transform(
               alignment: Alignment.center,
               transform: Matrix4.identity()
@@ -126,69 +95,66 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
                 width: widget.width,
                 height: widget.height,
                 margin: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: _getCardColor(),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF2F3699),
-                    width: 3,
-                  ),
-                ),
-                child: _buildCardContent(),
+                child: _buildCardContent(v),
               ));
         },
       ),
     );
   }
 
-  Color _getCardColor() {
-    if (widget.card.isMatched) {
-      return _colorAnimation.value ?? MATCHED_COLOR;
-    } else {
-      return REVEALED_COLOR;
-    }
-  }
-
-  Widget _buildCardContent() {
+  Widget _buildCardContent(double value) {
     // build card depending on face
-    if (_flipAnimation.value <= 0.5) {
-      return _buildCardBack();
+    if (value > 0.40 && value < 0.60) {
+      return _buildSprite(_flipCard);
     }
-
+    if (value <= 0.50) {
+      return _buildSprite(_frontCard);
+    }
     return Transform(
       alignment: Alignment.center,
       transform: Matrix4.identity()..rotateY(math.pi),
-      child: _buildCardFront(),
-    );
-  }
-
-  Widget _buildCardBack() {
-    return const Center(
-      child: Icon(
-        Icons.help_outline,
-        size: 40,
-        color: Color(0xFF6F3198),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          _buildSprite(_backCard),
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+              child: widget.card.isWord
+                  ? FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        widget.card.content,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 200,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.brown,
+                        ),
+                      ),
+                    )
+                  : FittedBox(
+                      fit: BoxFit.contain,
+                      child: Image.network(
+                        widget.card.content,
+                        filterQuality: FilterQuality.none,
+                      ),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildCardFront() {
-    if (widget.card.isWord) {
-      return Center(
-        child: Text(widget.card.content,
-            style: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown),
-            textAlign: TextAlign.center),
-      );
-    } else {
-      return Center(
-        child: Image.network(
-          widget.card.content,
-          fit: BoxFit.cover,
-          width: 40,
-          height: 40,
-        ),
-      );
-    }
+  Widget _buildSprite(String assetPath) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.asset(
+        assetPath,
+        fit: BoxFit.fill,
+        filterQuality: FilterQuality.none,
+      ),
+    );
   }
 }

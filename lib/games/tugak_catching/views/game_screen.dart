@@ -55,6 +55,12 @@ class TugakGameScreenState
   @override
   List<Widget> buildGameSpecificWidgets() {
     return [
+      Positioned.fill(
+        child: Image.asset(
+          'assets/bg/tugak_bg.PNG',
+          fit: BoxFit.cover,
+        ),
+      ),
       ..._buildLilypads(),
       ..._buildFrogs(),
     ];

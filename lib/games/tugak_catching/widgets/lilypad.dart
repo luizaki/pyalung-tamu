@@ -20,22 +20,21 @@ class Lilypad extends StatelessWidget {
       top: y,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        width: 80,
-        height: 80,
-        decoration: BoxDecoration(
-          color: hasRipple ? Colors.lightBlue[300] : Colors.green[400],
-          borderRadius: BorderRadius.circular(40),
-          border: Border.all(
-            color: hasRipple ? Colors.blue[600]! : Colors.green[700]!,
-            width: 3,
-          ),
-        ),
-        child: Icon(
-          Icons.local_florist,
-          size: 30,
-          color: hasRipple ? Colors.blue[800] : Colors.green[800],
+        width: 120,
+        height: 120,
+        child: Image.asset(
+          _getLilypadAsset(),
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.none,
         ),
       ),
     );
+  }
+  String _getLilypadAsset() {
+    if (hasRipple) {
+      return 'assets/tugak/lily1.png';
+    } else {
+      return 'assets/tugak/lily2.png';
+    }
   }
 }
