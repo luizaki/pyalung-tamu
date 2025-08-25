@@ -160,9 +160,7 @@ class _AppState extends State<App> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 4, vertical: 1),
                       decoration: BoxDecoration(
-                        color: player.isGuest
-                            ? Colors.orange.withOpacity(0.8)
-                            : Colors.blue.withOpacity(0.8),
+                        color: const Color(0xF9DD9A00),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
