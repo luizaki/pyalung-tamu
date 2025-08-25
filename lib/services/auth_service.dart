@@ -27,7 +27,7 @@ class AuthService {
 
   void _logError(String message, [dynamic error]) {
     if (kDebugMode) {
-      print('🔐 ERROR: $message');
+      print('AuthService Error: $message');
       if (error != null) print('AuthService Error: $error');
     }
   }
