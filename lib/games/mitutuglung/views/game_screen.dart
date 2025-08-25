@@ -36,12 +36,11 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
           fit: BoxFit.cover,
         ),
       ),
-      _buildTable(),
-      _buildCardsGrid(),
+      _buildGameArea(),
     ];
   }
 
-  Widget _buildCardsGrid() {
+  Widget _buildGameArea() {
     final cardsGrid = controller.getCardsGrid();
 
     return Positioned(
@@ -50,23 +49,18 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
       right: 0,
       bottom: 50,
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: cardsGrid.map((row) => _buildCardRow(row)).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTable() {
-    return Positioned(
-      top: 100,
-      left: 0,
-      right: 0,
-      child: Center(
-        child: Image.asset(
-          'assets/mitutuglung/Table.PNG',
-          fit: BoxFit.contain,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Image.asset(
+              'assets/mitutuglung/Table.PNG',
+              fit: BoxFit.contain,
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: cardsGrid.map((row) => _buildCardRow(row)).toList(),
+            ),
+          ],
         ),
       ),
     );
