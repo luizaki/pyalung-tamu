@@ -53,20 +53,14 @@ class TugakGameScreenState
   }
 
   @override
-  Widget buildBackground() {
-    return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/bg/tugak_bg.PNG'),
+  List<Widget> buildGameSpecificWidgets() {
+    return [
+      Positioned.fill(
+        child: Image.asset(
+          'assets/bg/tugak_bg.PNG',
           fit: BoxFit.cover,
         ),
       ),
-    );
-  }
-
-  @override
-  List<Widget> buildGameSpecificWidgets() {
-    return [
       ..._buildLilypads(),
       ..._buildFrogs(),
     ];

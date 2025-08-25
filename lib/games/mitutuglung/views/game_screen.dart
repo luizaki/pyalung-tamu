@@ -30,7 +30,7 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
   @override
   List<Widget> buildGameSpecificWidgets() {
     return [
-      Poditioned.fill(
+      Positioned.fill(
         child: Image.asset(
           'assets/bg/card_bg.PNG',
           fit: BoxFit.cover,
@@ -57,6 +57,7 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
       ),
     );
   }
+
   Widget _buildTable() {
     return Positioned(
       top: 100,
@@ -70,7 +71,7 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
       ),
     );
   }
-  
+
   Widget _buildCardRow(List<dynamic> cards) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
