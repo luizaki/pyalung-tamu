@@ -22,10 +22,20 @@ class _BoatWidgetState extends State<BoatWidget> with TickerProviderStateMixin {
   late AnimationController _tiltController;
   late Animation<double> _bobAnimation;
   late Animation<double> _tiltAnimation;
+  late String _boatImage;
 
   @override
   void initState() {
     super.initState();
+
+    final boats = [
+      'assets/siglulung/boat.PNG',
+      'assets/siglulung/boat1.PNG',
+      'assets/siglulung/boat2.PNG',
+      'assets/siglulung/boat3.PNG',
+      'assets/siglulung/boat4.PNG',
+    ];
+    _boatImage = boats[math.Random().nextInt(boats.length)];
 
     // Bobbing animation (up and down movement)
     _bobController = AnimationController(
@@ -97,44 +107,21 @@ class _BoatWidgetState extends State<BoatWidget> with TickerProviderStateMixin {
         builder: (context, child) {
           return Transform.rotate(
             angle: _getTiltAngle(),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 100),
-              width: 80,
-              height: 40,
-              decoration: BoxDecoration(
-                color: widget.boat.isHit ? Colors.red[400] : Colors.blue[600],
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color:
-                      widget.boat.isHit ? Colors.red[700]! : Colors.blue[800]!,
-                  width: 2,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Image.asset(
+                  _boatImage,
+                  width: 150,
+                  height: 110,
+                  fit: BoxFit.contain,
+                  color: widget.boat.isHit ? Colors.red.withOpacity(0.6) : null,
+                  colorBlendMode:
+                      widget.boat.isHit ? BlendMode.modulate : BlendMode.srcIn,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius:
-                        4 + (widget.boat.speed * 0.5), // More blur when faster
-                    offset: Offset(2, 2 + _getBobOffset() * 0.5),
-                  ),
-                ],
-              ),
-              child: Stack(
-                children: [
-                  const Center(
-                    child: Text(
-                      'BOAT',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-
-                  // Speed indicator particles when going fast
-                  if (widget.boat.speed > 3.0) _buildSpeedParticles(),
-                ],
-              ),
+                // Speed indicator particles when going fast
+                if (widget.boat.speed > 3.0) _buildSpeedParticles(),
+              ],
             ),
           );
         },
@@ -158,7 +145,7 @@ class _BoatWidgetState extends State<BoatWidget> with TickerProviderStateMixin {
     return Positioned(
       right: -5,
       top: 15,
-      child: Container(
+      child: SizedBox(
         width: 20,
         height: 10,
         child: CustomPaint(

@@ -12,8 +12,8 @@ class CardWidget extends StatefulWidget {
     super.key,
     required this.card,
     required this.onTap,
-    this.width = 100.0,
-    this.height = 100.0,
+    this.width = 110.0,
+    this.height = 110.0,
   });
 
   @override
@@ -85,7 +85,7 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
         animation: _flipAnimation,
         builder: (context, _) {
           final v = _flipAnimation.value;
-          
+
           return Transform(
               alignment: Alignment.center,
               transform: Matrix4.identity()
@@ -120,26 +120,26 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
           Positioned.fill(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-            child: widget.card.isWord
-            ? FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-              widget.card.content,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 200,
-                fontWeight: FontWeight.w900,
-                color: Colors.brown,
-              ),
-            ),
-          )
-          : FittedBox(
-            fit: BoxFit.contain,
-            child: Image.network(
-            widget.card.content,
-            filterQuality: FilterQuality.none,
-          ),
-          ),
+              child: widget.card.isWord
+                  ? FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        widget.card.content,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 200,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.brown,
+                        ),
+                      ),
+                    )
+                  : FittedBox(
+                      fit: BoxFit.contain,
+                      child: Image.network(
+                        widget.card.content,
+                        filterQuality: FilterQuality.none,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -151,9 +151,10 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: Image.asset(
-        assetPath, fit: BoxFit.fill, filterQuality: FilterQuality.none,
+        assetPath,
+        fit: BoxFit.fill,
+        filterQuality: FilterQuality.none,
       ),
     );
-    
   }
 }

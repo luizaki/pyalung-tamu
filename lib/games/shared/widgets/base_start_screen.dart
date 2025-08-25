@@ -10,6 +10,9 @@ class StartScreen extends StatelessWidget {
   final String instructions;
   final Widget gameScreen;
 
+  final String? backgroundImage;
+  final String? gameIcon;
+
   const StartScreen({
     super.key,
     required this.color1,
@@ -19,6 +22,8 @@ class StartScreen extends StatelessWidget {
     required this.gameTitle,
     required this.instructions,
     required this.gameScreen,
+    this.backgroundImage,
+    this.gameIcon,
   });
 
   @override
@@ -26,26 +31,32 @@ class StartScreen extends StatelessWidget {
     return Scaffold(
         body: Stack(
       children: [
-        // Background
         Container(
             width: double.infinity,
             height: double.infinity,
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                color1,
-                color1,
-                color2,
-                color2,
-                color3,
-                color3,
-                color4,
-                color4
-              ],
-              stops: const [0.0, 0.25, 0.25, 0.5, 0.5, 0.75, 0.75, 1.0],
-            ))),
+            decoration: backgroundImage != null
+                ? BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage(backgroundImage!),
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : BoxDecoration(
+                    gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      color1,
+                      color1,
+                      color2,
+                      color2,
+                      color3,
+                      color3,
+                      color4,
+                      color4
+                    ],
+                    stops: const [0.0, 0.25, 0.25, 0.5, 0.5, 0.75, 0.75, 1.0],
+                  ))),
 
         // Back button
         Positioned(
@@ -76,7 +87,6 @@ class StartScreen extends StatelessWidget {
             child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Game Icon
             Container(
                 width: 200,
                 height: 200,
@@ -85,11 +95,18 @@ class StartScreen extends StatelessWidget {
                   color: const Color(0xFFF9DD9A),
                   border: Border.all(color: const Color(0xFFAD5721), width: 10),
                 ),
-                child: const Icon(
-                  Icons.games,
-                  size: 100,
-                  color: Colors.brown,
-                )),
+                child: gameIcon != null
+                    ? ClipOval(
+                        child: Image.asset(
+                          gameIcon!,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.games,
+                        size: 100,
+                        color: Colors.brown,
+                      )),
 
             const SizedBox(height: 20),
 

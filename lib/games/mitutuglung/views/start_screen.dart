@@ -9,6 +9,8 @@ class MitutuglungStartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const StartScreen(
+      backgroundImage: 'assets/bg/card_bg.PNG',
+      gameIcon: 'assets/icons/mitutuglung.PNG',
       color1: Color(0xFFFF5E2D),
       color2: Color(0xFFFF7E47),
       color3: Color(0xFFFFAF55),
