@@ -26,7 +26,8 @@ class _UserMenuState extends State<UserMenu> {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
-      offset: const Offset(0, -180),
+      offset:
+          widget.player.isGuest ? const Offset(0, -120) : const Offset(0, -180),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       color: const Color(0xFFF4BE0A),
       itemBuilder: (context) => [
@@ -76,20 +77,10 @@ class _UserMenuState extends State<UserMenu> {
               children: [
                 Icon(Icons.face, size: 20),
                 SizedBox(width: 8),
-                Text('Change Avatar'),
-              ],
-            ),
-          ),
-
-        // Login option for guests
-        if (widget.player.isGuest)
-          const PopupMenuItem<String>(
-            value: 'login',
-            child: Row(
-              children: [
-                Icon(Icons.login, size: 16),
-                SizedBox(width: 8),
-                Text('Login to Save Progress'),
+                Text('Change Avatar',
+                    style: TextStyle(
+                      fontSize: 12,
+                    )),
               ],
             ),
           ),
@@ -107,7 +98,7 @@ class _UserMenuState extends State<UserMenu> {
               const SizedBox(width: 8),
               Text(
                 widget.player.isGuest ? 'Exit Guest Mode' : 'Logout',
-                style: const TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red, fontSize: 12),
               ),
             ],
           ),
