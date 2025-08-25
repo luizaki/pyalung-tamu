@@ -183,7 +183,7 @@ class _AuthPopupState extends State<AuthPopup> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleLogin,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[600],
+                backgroundColor: const Color(0xFFF4BE0A),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
@@ -305,7 +305,7 @@ class _AuthPopupState extends State<AuthPopup> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleRegister,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[600],
+                backgroundColor: const Color(0xFFF4BE0A),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
