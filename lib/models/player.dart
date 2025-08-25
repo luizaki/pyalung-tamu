@@ -22,7 +22,7 @@ class Player {
   factory Player.guest() {
     return Player(
       authId: 'guest',
-      username: 'Guest Player',
+      username: 'Guest',
       avatar: 'boy.PNG',
       isGuest: true,
     );
