@@ -255,13 +255,9 @@ class AuthService {
       // Generate a unique user_id
       final userId = await _generateUniqueUserId();
 
-      // TODO: Generate a dummy MAC address (cuz idk if this is needed)
-      final macAddress = _generateMacAddress();
-
       await _supabase.from('users').insert({
         'user_id': userId,
         'auth_id': authUser.id, // Link to Supabase auth user
-        'mac_address': macAddress,
         'user_name': username,
         'avatar': 'boy.PNG', // Default avatar
         'total_score': 0,
@@ -292,15 +288,6 @@ class AuthService {
     } while (true);
 
     return userId;
-  }
-
-  String _generateMacAddress() {
-    // TODO: Generate a dummy MAC address (cuz idk if this is needed)
-    final random = Random();
-    final mac = List.generate(
-            6, (index) => random.nextInt(256).toRadixString(16).padLeft(2, '0'))
-        .join(':');
-    return mac.toUpperCase();
   }
 
   Future<void> _clearGuestMode() async {

@@ -1,7 +1,6 @@
 class Player {
   final String? authId; // from Supabase Auth
   final int? userId; // from users table
-  final String? macAddress;
   final String? username;
   final String? email; // from Supabase Auth
   final int? totalScore;
@@ -11,7 +10,6 @@ class Player {
   Player({
     this.authId,
     this.userId,
-    this.macAddress,
     this.username,
     this.email,
     this.totalScore,
@@ -32,7 +30,6 @@ class Player {
     return Player(
       authId: json['auth_id'] as String?,
       userId: json['user_id'] as int?,
-      macAddress: json['mac_address'] as String?,
       username: json['user_name'] as String?,
       email: email,
       totalScore: json['total_score'] as int?,
@@ -45,7 +42,6 @@ class Player {
     return {
       'auth_id': authId,
       'user_id': userId,
-      'mac_address': macAddress,
       'user_name': username,
       'total_score': totalScore,
       'avatar': avatar,
@@ -55,7 +51,6 @@ class Player {
   Player copyWith({
     String? authId,
     int? userId,
-    String? macAddress,
     String? username,
     String? email,
     int? totalScore,
@@ -65,7 +60,6 @@ class Player {
     return Player(
       authId: authId ?? this.authId,
       userId: userId ?? this.userId,
-      macAddress: macAddress ?? this.macAddress,
       username: username ?? this.username,
       email: email ?? this.email,
       totalScore: totalScore ?? this.totalScore,
