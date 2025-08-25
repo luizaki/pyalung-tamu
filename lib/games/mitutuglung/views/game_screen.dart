@@ -30,13 +30,16 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
   @override
   List<Widget> buildGameSpecificWidgets() {
     return [
+      Poditioned.fill(
+        child: Image.asset(
+          'assets/bg/card_bg.PNG',
+          fit: BoxFit.cover,
+        ),
+      ),
+      _buildTable(),
       _buildCardsGrid(),
     ];
   }
-
-  @override
-  List<Color> get backgroundColors =>
-      [const Color(0xFFF58347), const Color(0xFFED7738)];
 
   Widget _buildCardsGrid() {
     final cardsGrid = controller.getCardsGrid();
@@ -54,7 +57,20 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
       ),
     );
   }
-
+  Widget _buildTable() {
+    return Positioned(
+      top: 100,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: Image.asset(
+          'assets/mitutuglung/Table.PNG',
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+  
   Widget _buildCardRow(List<dynamic> cards) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
