@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import './views/home.dart';
 import './views/leaderboard.dart';
-import './views/progress.dart';
+import 'views/progress/progress.dart';
 import './views/settings.dart';
 
 class App extends StatefulWidget {

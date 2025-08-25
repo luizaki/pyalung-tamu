@@ -27,7 +27,11 @@ class _HomePageState extends State<HomePage> {
 
           // Siglulung Bangka
           _buildGameCard(
-              icon: Icons.directions_boat,
+              icon: Image.asset(
+                'assets/icons/siglulung.PNG',
+                width: 80,
+                height: 80,
+              ),
               title: 'Siglulung Bangka',
               onTap: () => Navigator.push(
                     context,
@@ -37,7 +41,11 @@ class _HomePageState extends State<HomePage> {
 
           // Tugak Catching
           _buildGameCard(
-              icon: Icons.gamepad,
+              icon: Image.asset(
+                'assets/icons/tugak.PNG',
+                width: 80,
+                height: 80,
+              ),
               title: 'Tugak Catching',
               onTap: () => Navigator.push(
                     context,
@@ -47,7 +55,11 @@ class _HomePageState extends State<HomePage> {
 
           // Mitutuglung
           _buildGameCard(
-              icon: Icons.card_membership,
+              icon: Image.asset(
+                'assets/icons/mitutuglung.PNG',
+                width: 80,
+                height: 80,
+              ),
               title: 'Mitutuglung',
               onTap: () => Navigator.push(
                     context,
@@ -61,7 +73,7 @@ class _HomePageState extends State<HomePage> {
 
   // Helper method for building game cards
   Widget _buildGameCard({
-    required IconData icon,
+    required Widget icon,
     required String title,
     required VoidCallback onTap,
   }) {
@@ -75,7 +87,7 @@ class _HomePageState extends State<HomePage> {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(children: [
-              Icon(icon, size: 32, color: Colors.brown),
+              icon,
               Expanded(
                 child: Text(title,
                     textAlign: TextAlign.center,
