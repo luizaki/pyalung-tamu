@@ -380,7 +380,14 @@ class _AuthPopupState extends State<AuthPopup> {
 
     if (result.isSuccess) {
       if (mounted) {
-        Navigator.of(context).pop(true); // Return true to indicate success
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        Navigator.of(context).pop(true);
       }
     } else {
       if (mounted) {
