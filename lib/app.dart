@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
+import './services/auth_service.dart';
+
 import './views/home.dart';
 import './views/leaderboard.dart';
 import './views/progress.dart';
 import './views/settings.dart';
 
-import './services/auth_service.dart';
 import './widgets/auth_popup.dart';
+import './widgets/user_menu.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -58,10 +60,15 @@ class _AppState extends State<App> {
     }
   }
 
-  Future<void> _handleLogout() async {
-    await _authService.logout();
+  void _onUserStateChanged() {
     setState(() {});
-    _showAuthPopup();
+
+    // ✅ If no player after state change, show auth popup
+    if (_authService.currentPlayer == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showAuthPopup();
+      });
+    }
   }
 
   @override
@@ -76,152 +83,143 @@ class _AppState extends State<App> {
 
     return Scaffold(
       extendBody: true,
-      body: Column(
-        children: [
-          _buildUserInfoBar(),
+      body: _pages[_currentIndex],
+      bottomNavigationBar: _buildBottomNavBar(),
+    );
+  }
 
-          // ✅ Main content area
-          Expanded(child: _pages[_currentIndex]),
-        ],
-      ),
-      bottomNavigationBar: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          Container(
-            width: double.infinity,
-            height: 80,
-            decoration: BoxDecoration(
-              image: const DecorationImage(
-                image: AssetImage('assets/button_boxes/navbar.png'),
-                fit: BoxFit.fitWidth,
-                alignment: Alignment.topCenter,
+  Widget _buildBottomNavBar() {
+    final player = _authService.currentPlayer;
+
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        // Background image
+        Container(
+          width: double.infinity,
+          height: 80,
+          decoration: BoxDecoration(
+            image: const DecorationImage(
+              image: AssetImage('assets/button_boxes/navbar.png'),
+              fit: BoxFit.fitWidth,
+              alignment: Alignment.topCenter,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
+            ],
+          ),
+        ),
+
+// Nav items
+        Positioned(
+          left: 16,
+          right: 16,
+          bottom: 8,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildNavItem(0, 'assets/icons/home.png', 'Home'),
+              _buildNavItem(1, 'assets/icons/leaderboard.png', 'Leaderboard'),
+              _buildNavItem(2, 'assets/icons/progress.png', 'Progress'),
+              _buildNavItem(3, 'assets/icons/settings.png', 'Settings'),
+            ],
+          ),
+        ),
+
+// Profile
+        if (player != null)
+          Positioned(
+            left: 18,
+            bottom: 12,
+            child: Row(
+              children: [
+                UserMenu(
+                  player: player,
+                  onUpdate: _onUserStateChanged,
+                ),
+                const SizedBox(width: 8),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      player.username ?? 'Player',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: player.isGuest
+                            ? Colors.orange.withOpacity(0.8)
+                            : Colors.blue.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        player.isGuest
+                            ? 'Guest'
+                            : 'Score: ${player.totalScore ?? 0}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          BottomNavigationBar(
-            currentIndex: _currentIndex,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: Colors.white,
-            unselectedItemColor: Colors.white70,
-            items: [
-              BottomNavigationBarItem(
-                  icon: Image.asset(
-                    'assets/icons/home.png',
-                    width: 35,
-                    height: 35,
-                  ),
-                  label: 'Home'),
-              BottomNavigationBarItem(
-                icon: Image.asset(
-                  'assets/icons/leaderboard.png',
-                  width: 35,
-                  height: 35,
-                ),
-                label: 'Leaderboard',
-              ),
-              BottomNavigationBarItem(
-                icon: Image.asset(
-                  'assets/icons/progress.png',
-                  width: 35,
-                  height: 35,
-                ),
-                label: 'Progress',
-              ),
-              BottomNavigationBarItem(
-                icon: Image.asset(
-                  'assets/icons/settings.png',
-                  width: 35,
-                  height: 35,
-                ),
-                label: 'Settings',
-              ),
-            ],
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-          ),
-        ],
-      ),
+      ],
     );
   }
 
-  Widget _buildUserInfoBar() {
-    final player = _authService.currentPlayer;
+  Widget _buildNavItem(int index, String iconPath, String label) {
+    final isSelected = _currentIndex == index;
 
-    if (player == null) return const SizedBox.shrink();
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.1),
-        border: const Border(
-          bottom: BorderSide(color: Colors.white24, width: 1),
+    return GestureDetector(
+      onTap: () => setState(() => _currentIndex = index),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: 8,
+          horizontal: 12,
         ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            player.isGuest ? Icons.person_outline : Icons.person,
-            color: Colors.white,
-            size: 16,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'Welcome, ${player.username ?? 'Player'}!',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-          ),
-          if (player.isGuest) ...[
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.8),
+        decoration: isSelected
+            ? BoxDecoration(
+                color: Colors.black.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                'Guest',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
+              )
+            : null,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              iconPath,
+              width: 32,
+              height: 32,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.white70,
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ],
-          const Spacer(),
-          if (player.isGuest)
-            TextButton(
-              onPressed: _showAuthPopup,
-              child: const Text(
-                'Login to Save Progress',
-                style: TextStyle(color: Colors.white, fontSize: 12),
-              ),
-            )
-          else
-            TextButton(
-              onPressed: _handleLogout,
-              child: const Text(
-                'Logout',
-                style: TextStyle(color: Colors.white, fontSize: 12),
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }
