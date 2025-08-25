@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -12,12 +13,20 @@ Future<void> main() async {
     DeviceOrientation.landscapeRight,
   ]);
 
-  await dotenv.load();
-
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_PROJECT_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-  );
+  if (kIsWeb) {
+    // Use dart-define for web
+    await Supabase.initialize(
+      url: const String.fromEnvironment('SUPABASE_PROJECT_URL'),
+      anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
+    );
+  } else {
+    // Use dotenv for mobile/desktop
+    await dotenv.load();
+    await Supabase.initialize(
+      url: dotenv.env['SUPABASE_PROJECT_URL']!,
+      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    );
+  }
 
   runApp(const MyApp());
 }
