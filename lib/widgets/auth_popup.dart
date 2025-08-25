@@ -235,7 +235,7 @@ class _AuthPopupState extends State<AuthPopup> {
                   textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(width: 48), // Balance the back button
+              const SizedBox(width: 48),
             ],
           ),
 
@@ -409,7 +409,22 @@ class _AuthPopupState extends State<AuthPopup> {
 
     if (result.isSuccess) {
       if (mounted) {
-        Navigator.of(context).pop(true); // Return true to indicate success
+        final needsVerification = result.message.contains('Check your email');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: needsVerification ? Colors.orange : Colors.green,
+            duration: Duration(seconds: needsVerification ? 8 : 3),
+          ),
+        );
+
+        if (needsVerification) {
+          setState(() => _currentMode = AuthMode.login);
+        } else {
+          // Registration complete without verification, close dialog
+          Navigator.of(context).pop(true);
+        }
       }
     } else {
       if (mounted) {

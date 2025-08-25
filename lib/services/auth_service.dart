@@ -86,10 +86,8 @@ class AuthService {
         await _loadUserProfile(user);
       } catch (e) {
         _logError('Error creating delayed profile: $e');
-        // Could show a "complete your profile" screen here
       }
     } else {
-      // Profile exists, load it
       _currentPlayer = Player.fromJson(existing, email: user.email);
       _log('Loaded existing user profile: ${_currentPlayer?.username}');
     }
@@ -117,6 +115,12 @@ class AuthService {
       );
 
       if (response.user != null) {
+        if (response.user!.emailConfirmedAt == null) {
+          return AuthResult.error(
+            'Please verify your email address before logging in. Check your email for the verification link.',
+          );
+        }
+
         await _loadUserProfile(response.user!);
 
         if (_currentPlayer == null) {
@@ -172,6 +176,7 @@ class AuthService {
       if (response.user != null) {
         if (response.session == null) {
           // Email confirmation required - user will get verification email
+          _log('Email verification required for: $email');
           return AuthResult.success(
             'Please check your email and click the verification link to complete registration.',
           );
@@ -258,6 +263,7 @@ class AuthService {
         'auth_id': authUser.id, // Link to Supabase auth user
         'mac_address': macAddress,
         'user_name': username,
+        'avatar': 'boy.PNG', // Default avatar
         'total_score': 0,
       });
 
@@ -377,6 +383,26 @@ class AuthService {
     }
 
     return null;
+  }
+
+  // ================== UPDATE AVATAR ===================
+  Future<AuthResult> updateAvatar(String newAvatar) async {
+    if (_currentPlayer == null || _currentPlayer!.isGuest) {
+      return AuthResult.error('You must be logged in to change your avatar.');
+    }
+
+    try {
+      await _supabase
+          .from('users')
+          .update({'avatar': newAvatar}).eq('auth_id', _currentPlayer!.authId!);
+
+      _currentPlayer = _currentPlayer!.copyWith(avatar: newAvatar);
+      _log('Avatar updated to: $newAvatar');
+      return AuthResult.success('Avatar updated successfully!');
+    } catch (e) {
+      _logError('Error updating avatar: $e');
+      return AuthResult.error('Failed to update avatar. Please try again.');
+    }
   }
 }
 

@@ -23,6 +23,7 @@ class Player {
     return Player(
       authId: 'guest',
       username: 'Guest Player',
+      avatar: 'boy.PNG',
       isGuest: true,
     );
   }
