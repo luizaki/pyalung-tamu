@@ -14,6 +14,7 @@ extension LevelX on Level {
       };
 }
 
+//stats
 class SiglulungStats {
   final double wpm, accuracy;
   const SiglulungStats({required this.wpm, required this.accuracy});
@@ -39,17 +40,13 @@ class GameProgress {
 }
 
 //thresholds
-
 class Thresholds {
-  // Siglulung
   static const wpm = [30, 50, 70];
   static const sigAccuracy = [85, 92, 97];
 
-  // Tugak Catching
   static const fluency = [10, 20, 35];
   static const tugAccuracy = [80, 90, 95];
 
-  // Mitutuglung
   static const perfectPairs = [6, 10, 14];
   static const timeSecs = [120, 75, 45];
 }
@@ -82,7 +79,6 @@ double _pDown(num v, List<num> t) {
   return 1;
 }
 
-//stats
 GameProgress evalSiglulung(SiglulungStats s) {
   final a = _inc(s.wpm, Thresholds.wpm);
   final b = _inc(s.accuracy, Thresholds.sigAccuracy);
@@ -124,7 +120,6 @@ Level evalMacro(GameProgress g1, GameProgress g2, GameProgress g3) {
 }
 
 //controller
-
 class ProgressController {
   SiglulungStats? _sig;
   TugakStats? _tug;
@@ -144,8 +139,6 @@ class ProgressController {
   Level get macro => evalMacro(sig, tug, mit);
 }
 
-//ui widget
-
 class BadgePill extends StatelessWidget {
   final String text;
   const BadgePill(this.text, {super.key});
@@ -153,9 +146,9 @@ class BadgePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (text) {
-      'Expert' => Colors.amber,
-      'Intermediate' => Colors.orangeAccent,
-      'Beginner' => Colors.lightBlueAccent,
+      'Expert' => Colors.lightGreenAccent,
+      'Intermediate' => Colors.yellowAccent,
+      'Beginner' => Colors.orangeAccent,
       _ => Theme.of(context).disabledColor.withOpacity(.25),
     };
 
@@ -171,48 +164,18 @@ class BadgePill extends StatelessWidget {
   }
 }
 
-class ProgressRow extends StatelessWidget {
-  final String level, skill, high, xp;
-  final double progress;
-  const ProgressRow({
-    super.key,
-    required this.level,
-    required this.skill,
-    required this.high,
-    required this.xp,
-    required this.progress,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          SizedBox(width: 92, child: Text(level)),
-          Expanded(child: Text(skill)),
-          SizedBox(width: 110, child: Text(high, textAlign: TextAlign.center)),
-          SizedBox(
-            width: 160,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 8,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                      const Color.fromARGB(255, 4, 209, 148)),
-                  backgroundColor: const Color(0xAD572100),
-                ),
-                const SizedBox(height: 4),
-                Text(xp),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+class ProgressRow extends TableRow {
+  ProgressRow({
+    required String col1,
+    required String col2,
+    required String col3,
+    required String col4,
+  }) : super(children: [
+          Padding(padding: const EdgeInsets.all(12), child: Text(col1)),
+          Padding(padding: const EdgeInsets.all(12), child: Text(col2)),
+          Padding(padding: const EdgeInsets.all(12), child: Text(col3)),
+          Padding(padding: const EdgeInsets.all(12), child: Text(col4)),
+        ]);
 }
 
 class GameProgressCard extends StatelessWidget {
@@ -237,37 +200,88 @@ class GameProgressCard extends StatelessWidget {
       color: const Color(0xF9DD9A00),
       elevation: 0,
       margin: const EdgeInsets.symmetric(vertical: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: const [
-              Expanded(child: Text('Level')),
-              Expanded(child: Text('Skill')),
-              Expanded(child: Text('High Score')),
-              Expanded(child: Text('XP to Level Up')),
-            ]),
-            const Divider(
-              color: const Color(0xAD572100),
-            ),
-            const SizedBox(height: 10),
-            ProgressRow(
-              level: p.metricA.label,
-              skill: rowLabels[0],
-              high: high[0],
-              xp: xp[0],
-              progress: p.progA,
-            ),
-            ProgressRow(
-              level: p.metricB.label,
-              skill: rowLabels[1],
-              high: high[1],
-              xp: xp[1],
-              progress: p.progB,
-            ),
-          ],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+        side: const BorderSide(color: Color(0xFF5A3A00), width: 3),
+      ),
+      child: Table(
+        columnWidths: const {
+          0: FlexColumnWidth(1.2),
+          1: FlexColumnWidth(2),
+          2: FlexColumnWidth(1.5),
+          3: FlexColumnWidth(2),
+        },
+        border: const TableBorder(
+          horizontalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.5),
+          verticalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.5),
         ),
+        children: [
+          //headers
+          const TableRow(children: [
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Text("LEVEL",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Text("SKILL",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Text("HIGH SCORE",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Text("XP TO LEVEL UP",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ]),
+
+          TableRow(children: [
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(p.metricA.label, textAlign: TextAlign.center),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(rowLabels[0], textAlign: TextAlign.center),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(high[0], textAlign: TextAlign.center),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(xp[0], textAlign: TextAlign.center),
+            ),
+          ]),
+
+          TableRow(children: [
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(p.metricB.label, textAlign: TextAlign.center),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(rowLabels[1], textAlign: TextAlign.center),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(high[1], textAlign: TextAlign.center),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(xp[1], textAlign: TextAlign.center),
+            ),
+          ]),
+        ],
       ),
     );
   }
@@ -275,57 +289,129 @@ class GameProgressCard extends StatelessWidget {
 
 class MacroProgressTable extends StatelessWidget {
   final ProgressController c;
-  final List<String> high; //score
-  final List<String> last; //score
-  const MacroProgressTable(
-      {super.key, required this.c, required this.high, required this.last});
+  final List<String> high;
+  final List<String> last;
+
+  const MacroProgressTable({
+    super.key,
+    required this.c,
+    required this.high,
+    required this.last,
+  });
 
   @override
   Widget build(BuildContext context) {
     final sig = c.sig, tug = c.tug, mit = c.mit;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 8),
-        Card(
-          color: const Color(0xF9DD9A00),
-          elevation: 0,
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              children: [
-                Row(children: const [
-                  Expanded(child: Text('Level')),
-                  Expanded(child: Text('Game')),
-                  Expanded(child: Text('High Score')),
-                  Expanded(child: Text('Last Score')),
-                ]),
-                const Divider(
-                  color: const Color(0xAD572100),
-                ),
-                Row(children: [
-                  Expanded(child: Text(sig.badge.label)),
-                  const Expanded(child: Text('Siglulung')),
-                  Expanded(child: Text(high[0])),
-                  Expanded(child: Text(last[0])),
-                ]),
-                Row(children: [
-                  Expanded(child: Text(tug.badge.label)),
-                  const Expanded(child: Text('Tugak Catching')),
-                  Expanded(child: Text(high[1])),
-                  Expanded(child: Text(last[1])),
-                ]),
-                Row(children: [
-                  Expanded(child: Text(mit.badge.label)),
-                  const Expanded(child: Text('Mitutuglung')),
-                  Expanded(child: Text(high[2])),
-                  Expanded(child: Text(last[2])),
-                ]),
-              ],
-            ),
-          ),
+
+    return Card(
+      color: const Color(0xF9DD9A00),
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+        side: const BorderSide(color: Color(0xFF5A3A00), width: 3),
+      ),
+      child: Table(
+        columnWidths: const {
+          0: FlexColumnWidth(1.2),
+          1: FlexColumnWidth(2),
+          2: FlexColumnWidth(1.5),
+          3: FlexColumnWidth(1.5),
+        },
+        border: const TableBorder(
+          horizontalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.5),
+          verticalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.5),
         ),
-      ],
+        children: [
+          //headers
+          const TableRow(children: [
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Text("LEVEL",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Text("GAME",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Text("HIGH SCORE",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Text("LAST SCORE",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ]),
+
+          //siglulung
+          TableRow(children: [
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(sig.badge.label, textAlign: TextAlign.center),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(8),
+              child: Text("Siglulung", textAlign: TextAlign.center),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(high[0], textAlign: TextAlign.center),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(last[0], textAlign: TextAlign.center),
+            ),
+          ]),
+
+          //tugak
+          TableRow(children: [
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(tug.badge.label, textAlign: TextAlign.center),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(8),
+              child: Text("Tugak Catching", textAlign: TextAlign.center),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(high[1], textAlign: TextAlign.center),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(last[1], textAlign: TextAlign.center),
+            ),
+          ]),
+
+          //mitutuglung
+          TableRow(children: [
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(mit.badge.label, textAlign: TextAlign.center),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(8),
+              child: Text("Mitutuglung", textAlign: TextAlign.center),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(high[2], textAlign: TextAlign.center),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(last[2], textAlign: TextAlign.center),
+            ),
+          ]),
+        ],
+      ),
     );
   }
 }

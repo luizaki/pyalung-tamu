@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../features/progress_feature.dart';
-import 'progress.dart';
 
 class MitutuglungProgressScreen extends StatelessWidget {
   const MitutuglungProgressScreen({super.key});
@@ -10,40 +9,28 @@ class MitutuglungProgressScreen extends StatelessWidget {
     final ctrl = ProgressController()
       ..setMitutuglung(const MitutuglungStats(perfectPairs: 9, timeSecs: 70));
 
-    return Stack(
+    final mit = ctrl.mit;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Positioned.fill(
-          child: Image.asset(
-            'assets/bg/card_bgSmallFlag.PNG',
-            fit: BoxFit.cover,
-          ),
-        ),
-        ProgressBox(
+        Row(
           children: [
-            Row(
-              children: [
-                const Text(
-                  'MITUTUGLUNG',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Spacer(),
-                BadgePill(ctrl.mit.badge.label),
-              ],
+            const Text(
+              'MITUTUGLUNG',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            ProgressCard(
-              child: GameProgressCard(
-                title: 'MITUTUGLUNG',
-                p: ctrl.mit,
-                rowLabels: const ['Perfect Matches', 'Speed'],
-                high: const ['009 pairs', '070s'],
-                xp: const ['next 10 pairs', 'next ≤75s'],
-              ),
-            ),
+            const Spacer(),
+            BadgePill(mit.badge.label),
           ],
+        ),
+        const SizedBox(height: 12),
+        GameProgressCard(
+          title: "Mitutuglung",
+          p: mit,
+          rowLabels: const ['Perfect Matches', 'Speed'],
+          high: const ['009 pairs', '070 s'],
+          xp: const ['next 10 pairs', 'next 100 s'],
         ),
       ],
     );
