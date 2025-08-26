@@ -1,12 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+
 import '../models/base_game_state.dart';
+import '../../../services/game_service.dart';
 
 abstract class BaseGameController<T extends BaseGameState>
     extends ChangeNotifier {
   T _gameState;
   T get gameState => _gameState;
   set gameState(T newState) => _gameState = newState;
+
+  final GameService _gameService = GameService();
 
   // Timers
   Timer? _countdownTimer;
@@ -142,6 +146,18 @@ abstract class BaseGameController<T extends BaseGameState>
     notifyListeners();
   }
 
+  // ================= FINISHING =================
+
+  Future<void> saveGameResults() async {
+    await _gameService.saveGameScore(
+      gameType: getGameType(),
+      accuracy: (gameState.accuracy * 100).round(),
+      secondaryScore: getSecondaryScore(),
+      score: gameState.score,
+      difficulty: getCurrentDifficulty(),
+    );
+  }
+
   // ============== ABSTRACT METHODS ==============
 
   void initializeGameData();
@@ -157,6 +173,12 @@ abstract class BaseGameController<T extends BaseGameState>
   void resumeGameSpecificTimers();
 
   void stopGameSpecificTimers();
+
+  String getGameType();
+
+  int getSecondaryScore();
+
+  String getCurrentDifficulty();
 
   // ================== GETTERS ==================
 
