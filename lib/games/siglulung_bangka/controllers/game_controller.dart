@@ -126,7 +126,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
   }
 
   void _generateFirstWord() {
-    if (_upcomingWords.isNotEmpty && isGameActive) {
+    if (_upcomingWords.isNotEmpty) {
       final word = _upcomingWords.removeAt(0);
       gameState.currentWord = TypedWord(word: word);
 
@@ -249,12 +249,12 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
     gameState.completedWords.add(currentWord!);
     gameState.totalWords++;
 
-    if (currentWord.typedText != currentWord.word) {
-      return;
+    if (currentWord.typedText == currentWord.word) {
+      final points = currentWord.word.length * 2;
+      onCorrectAnswer(points: points);
+    } else {
+      gameState.boat.hit();
     }
-
-    final points = currentWord.word.length * 2;
-    onCorrectAnswer(points: points);
 
     _generateNextWord();
   }
