@@ -1,4 +1,4 @@
-enum GameStatus { menu, playing, paused, gameOver }
+enum GameStatus { menu, playing, paused, completed, ended }
 
 class BaseGameState {
   int score;

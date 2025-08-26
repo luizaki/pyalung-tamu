@@ -73,9 +73,21 @@ abstract class BaseGameController<T extends BaseGameState>
   }
 
   void endGame() {
-    _gameState.status = GameStatus.gameOver;
+    _gameState.status = GameStatus.ended;
     _stopAllTimers();
     notifyListeners();
+  }
+
+  void completeGame() {
+    gameState.status = GameStatus.completed;
+    _stopAllTimers();
+    notifyListeners();
+
+    saveGameResults();
+  }
+
+  void onTimeUp() {
+    completeGame();
   }
 
   void restartGame(Size screenSize) {
@@ -91,7 +103,7 @@ abstract class BaseGameController<T extends BaseGameState>
       if (_gameState.status == GameStatus.playing) {
         _gameState.timeLeft--;
         if (_gameState.timeLeft <= 0) {
-          endGame();
+          onTimeUp();
         } else {
           notifyListeners();
         }
@@ -183,8 +195,13 @@ abstract class BaseGameController<T extends BaseGameState>
   // ================== GETTERS ==================
 
   bool get isGameActive => _gameState.status == GameStatus.playing;
-  bool get isGameOver => _gameState.status == GameStatus.gameOver;
+  bool get isGameCompleted => _gameState.status == GameStatus.completed;
+  bool get isGameEnded => _gameState.status == GameStatus.ended;
+  bool get isGameOver =>
+      _gameState.status == GameStatus.completed ||
+      _gameState.status == GameStatus.ended;
   bool get isGamePaused => _gameState.status == GameStatus.paused;
+  bool get isGameFinished => isGameOver;
 
   String get formattedTime {
     final minutes = _gameState.timeLeft ~/ 60;
