@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 //levels
-
 enum Level { none, beginner, intermediate, expert }
 
 extension LevelX on Level {
@@ -145,21 +144,26 @@ class BadgePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
     final color = switch (text) {
       'Expert' => Colors.lightGreenAccent,
       'Intermediate' => Colors.yellowAccent,
       'Beginner' => Colors.orangeAccent,
       _ => Theme.of(context).disabledColor.withOpacity(.25),
     };
+    final padH = (w * 0.008).clamp(8.0, 16.0);
+    final padV = (w * 0.004).clamp(4.0, 10.0);
+    final fs = (w * 0.014).clamp(10.0, 18.0);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: padH, vertical: padV),
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: Colors.black54, width: 1.2),
       ),
-      child: Text(text, style: const TextStyle(fontWeight: FontWeight.w700)),
+      child: Text(text,
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: fs)),
     );
   }
 }
@@ -170,11 +174,13 @@ class ProgressRow extends TableRow {
     required String col2,
     required String col3,
     required String col4,
+    EdgeInsets padding = const EdgeInsets.all(12),
+    TextStyle? style,
   }) : super(children: [
-          Padding(padding: const EdgeInsets.all(12), child: Text(col1)),
-          Padding(padding: const EdgeInsets.all(12), child: Text(col2)),
-          Padding(padding: const EdgeInsets.all(12), child: Text(col3)),
-          Padding(padding: const EdgeInsets.all(12), child: Text(col4)),
+          Padding(padding: padding, child: Text(col1, style: style)),
+          Padding(padding: padding, child: Text(col2, style: style)),
+          Padding(padding: padding, child: Text(col3, style: style)),
+          Padding(padding: padding, child: Text(col4, style: style)),
         ]);
 }
 
@@ -196,92 +202,121 @@ class GameProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final cellFs = (w * 0.012).clamp(10.0, 16.0);
+    final headFs = (w * 0.014).clamp(11.0, 18.0);
+    final cellPad = EdgeInsets.symmetric(
+      horizontal: (w * 0.008).clamp(6.0, 12.0),
+      vertical: (w * 0.006).clamp(4.0, 10.0),
+    );
+    final cardPad = EdgeInsets.all((w * 0.010).clamp(8.0, 16.0));
+
     return Card(
       color: const Color(0xF9DD9A00),
       elevation: 0,
-      margin: const EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(8),
         side: const BorderSide(color: Color(0xFF5A3A00), width: 3),
       ),
-      child: Table(
-        columnWidths: const {
-          0: FlexColumnWidth(1.2),
-          1: FlexColumnWidth(2),
-          2: FlexColumnWidth(1.5),
-          3: FlexColumnWidth(2),
-        },
-        border: const TableBorder(
-          horizontalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.5),
-          verticalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.5),
+      child: Padding(
+        padding: cardPad,
+        child: Table(
+          columnWidths: const {
+            0: FlexColumnWidth(1.2),
+            1: FlexColumnWidth(2),
+            2: FlexColumnWidth(1.5),
+            3: FlexColumnWidth(2),
+          },
+          border: const TableBorder(
+            horizontalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.2),
+            verticalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.2),
+          ),
+          children: [
+            TableRow(children: [
+              Padding(
+                padding: cellPad,
+                child: Text("LEVEL",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: headFs)),
+              ),
+              Padding(
+                padding: cellPad,
+                child: Text("SKILL",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: headFs)),
+              ),
+              Padding(
+                padding: cellPad,
+                child: Text("HIGH SCORE",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: headFs)),
+              ),
+              Padding(
+                padding: cellPad,
+                child: Text("XP TO LEVEL UP",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: headFs)),
+              ),
+            ]),
+            TableRow(children: [
+              Padding(
+                padding: cellPad,
+                child: Text(p.metricA.label,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: cellFs)),
+              ),
+              Padding(
+                padding: cellPad,
+                child: Text(rowLabels[0],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: cellFs)),
+              ),
+              Padding(
+                padding: cellPad,
+                child: Text(high[0],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: cellFs)),
+              ),
+              Padding(
+                padding: cellPad,
+                child: Text(xp[0],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: cellFs)),
+              ),
+            ]),
+            TableRow(children: [
+              Padding(
+                padding: cellPad,
+                child: Text(p.metricB.label,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: cellFs)),
+              ),
+              Padding(
+                padding: cellPad,
+                child: Text(rowLabels[1],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: cellFs)),
+              ),
+              Padding(
+                padding: cellPad,
+                child: Text(high[1],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: cellFs)),
+              ),
+              Padding(
+                padding: cellPad,
+                child: Text(xp[1],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: cellFs)),
+              ),
+            ]),
+          ],
         ),
-        children: [
-          //headers
-          const TableRow(children: [
-            Padding(
-              padding: EdgeInsets.all(8),
-              child: Text("LEVEL",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            Padding(
-              padding: EdgeInsets.all(8),
-              child: Text("SKILL",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            Padding(
-              padding: EdgeInsets.all(8),
-              child: Text("HIGH SCORE",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            Padding(
-              padding: EdgeInsets.all(8),
-              child: Text("XP TO LEVEL UP",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ]),
-
-          TableRow(children: [
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(p.metricA.label, textAlign: TextAlign.center),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(rowLabels[0], textAlign: TextAlign.center),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(high[0], textAlign: TextAlign.center),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(xp[0], textAlign: TextAlign.center),
-            ),
-          ]),
-
-          TableRow(children: [
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(p.metricB.label, textAlign: TextAlign.center),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(rowLabels[1], textAlign: TextAlign.center),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(high[1], textAlign: TextAlign.center),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(xp[1], textAlign: TextAlign.center),
-            ),
-          ]),
-        ],
       ),
     );
   }
@@ -301,14 +336,22 @@ class MacroProgressTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final cellFs = (w * 0.012).clamp(10.0, 16.0);
+    final headFs = (w * 0.014).clamp(11.0, 18.0);
+    final cellPad = EdgeInsets.symmetric(
+      horizontal: (w * 0.008).clamp(6.0, 12.0),
+      vertical: (w * 0.006).clamp(4.0, 10.0),
+    );
+    final cardMarginV = (w * 0.006).clamp(6.0, 12.0);
     final sig = c.sig, tug = c.tug, mit = c.mit;
 
     return Card(
       color: const Color(0xF9DD9A00),
       elevation: 0,
-      margin: const EdgeInsets.symmetric(vertical: 10),
+      margin: EdgeInsets.symmetric(vertical: cardMarginV),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(8),
         side: const BorderSide(color: Color(0xFF5A3A00), width: 3),
       ),
       child: Table(
@@ -319,95 +362,110 @@ class MacroProgressTable extends StatelessWidget {
           3: FlexColumnWidth(1.5),
         },
         border: const TableBorder(
-          horizontalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.5),
-          verticalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.5),
+          horizontalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.2),
+          verticalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.2),
         ),
         children: [
-          //headers
-          const TableRow(children: [
+          TableRow(children: [
             Padding(
-              padding: EdgeInsets.all(8),
+              padding: cellPad,
               child: Text("LEVEL",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  style:
+                      TextStyle(fontWeight: FontWeight.w700, fontSize: headFs)),
             ),
             Padding(
-              padding: EdgeInsets.all(8),
+              padding: cellPad,
               child: Text("GAME",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  style:
+                      TextStyle(fontWeight: FontWeight.w700, fontSize: headFs)),
             ),
             Padding(
-              padding: EdgeInsets.all(8),
+              padding: cellPad,
               child: Text("HIGH SCORE",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  style:
+                      TextStyle(fontWeight: FontWeight.w700, fontSize: headFs)),
             ),
             Padding(
-              padding: EdgeInsets.all(8),
+              padding: cellPad,
               child: Text("LAST SCORE",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  style:
+                      TextStyle(fontWeight: FontWeight.w700, fontSize: headFs)),
             ),
           ]),
-
-          //siglulung
           TableRow(children: [
             Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(sig.badge.label, textAlign: TextAlign.center),
-            ),
-            const Padding(
-              padding: EdgeInsets.all(8),
-              child: Text("Siglulung", textAlign: TextAlign.center),
+              padding: cellPad,
+              child: Text(sig.badge.label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: cellFs)),
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(high[0], textAlign: TextAlign.center),
+              padding: cellPad,
+              child: const Text("Siglulung", textAlign: TextAlign.center),
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(last[0], textAlign: TextAlign.center),
+              padding: cellPad,
+              child: Text(high[0],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: cellFs)),
+            ),
+            Padding(
+              padding: cellPad,
+              child: Text(last[0],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: cellFs)),
             ),
           ]),
-
-          //tugak
           TableRow(children: [
             Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(tug.badge.label, textAlign: TextAlign.center),
-            ),
-            const Padding(
-              padding: EdgeInsets.all(8),
-              child: Text("Tugak Catching", textAlign: TextAlign.center),
+              padding: cellPad,
+              child: Text(tug.badge.label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: cellFs)),
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(high[1], textAlign: TextAlign.center),
+              padding: cellPad,
+              child: const Text("Tugak Catching", textAlign: TextAlign.center),
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(last[1], textAlign: TextAlign.center),
+              padding: cellPad,
+              child: Text(high[1],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: cellFs)),
+            ),
+            Padding(
+              padding: cellPad,
+              child: Text(last[1],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: cellFs)),
             ),
           ]),
-
-          //mitutuglung
           TableRow(children: [
             Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(mit.badge.label, textAlign: TextAlign.center),
-            ),
-            const Padding(
-              padding: EdgeInsets.all(8),
-              child: Text("Mitutuglung", textAlign: TextAlign.center),
+              padding: cellPad,
+              child: Text(mit.badge.label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: cellFs)),
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(high[2], textAlign: TextAlign.center),
+              padding: cellPad,
+              child: const Text("Mitutuglung", textAlign: TextAlign.center),
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(last[2], textAlign: TextAlign.center),
+              padding: cellPad,
+              child: Text(high[2],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: cellFs)),
+            ),
+            Padding(
+              padding: cellPad,
+              child: Text(last[2],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: cellFs)),
             ),
           ]),
         ],

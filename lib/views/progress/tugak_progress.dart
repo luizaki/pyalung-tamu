@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stroke_text/stroke_text.dart';
 import '../../../features/progress_feature.dart';
 
 class TugakProgressScreen extends StatelessWidget {
@@ -8,23 +9,35 @@ class TugakProgressScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final ctrl = ProgressController()
       ..setTugak(const TugakStats(fluency: 18, accuracy: 88));
-
     final tug = ctrl.tug;
+
+    final scale = MediaQuery.of(context).size.width / 1280;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text(
-              'TUGAK CATCHING',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            Flexible(
+              child: StrokeText(
+                text: 'TUGAK CATCHING',
+                textStyle: TextStyle(
+                  fontSize: 24 * scale,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFFFCF7D0),
+                ),
+                strokeColor: Colors.black,
+                strokeWidth: 2 * scale,
+                textAlign: TextAlign.left,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            const Spacer(),
+            SizedBox(width: 12 * scale),
             BadgePill(tug.badge.label),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12 * scale),
         GameProgressCard(
           title: "Tugak Catching",
           p: tug,

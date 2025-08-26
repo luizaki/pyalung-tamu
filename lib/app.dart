@@ -9,6 +9,7 @@ import './views/settings.dart';
 
 import './widgets/auth_popup.dart';
 import './widgets/user_menu.dart';
+import './audio/audio_controller.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -33,6 +34,7 @@ class _AppState extends State<App> {
   void initState() {
     super.initState();
     _initializeAuth();
+    AudioController.init(enabled: true);
   }
 
   Future<void> _initializeAuth() async {
@@ -94,7 +96,6 @@ class _AppState extends State<App> {
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
-        // Background image
         Container(
           width: double.infinity,
           height: 80,

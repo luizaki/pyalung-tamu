@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stroke_text/stroke_text.dart';
 import '../../../features/progress_feature.dart';
 
 class SiglulungProgressScreen extends StatelessWidget {
@@ -10,21 +11,33 @@ class SiglulungProgressScreen extends StatelessWidget {
       ..setSiglulung(const SiglulungStats(wpm: 62, accuracy: 93));
 
     final sig = ctrl.sig;
+    final scale = MediaQuery.of(context).size.width / 1280;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text(
-              'SIGLULUNG',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            Flexible(
+              child: StrokeText(
+                text: 'SIGLULUNG',
+                textStyle: TextStyle(
+                  fontSize: 24 * scale,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFFFCF7D0),
+                ),
+                strokeColor: Colors.black,
+                strokeWidth: 2 * scale,
+                textAlign: TextAlign.left,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            const Spacer(),
+            SizedBox(width: 12 * scale),
             BadgePill(sig.badge.label),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12 * scale),
         GameProgressCard(
           title: "Siglulung",
           p: sig,
