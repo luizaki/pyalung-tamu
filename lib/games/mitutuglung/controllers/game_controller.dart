@@ -32,11 +32,34 @@ class MitutuglungGameController
   @override
   int get gameDuration => 90;
 
+  // ================== SETUPS ==================
+
+  @override
+  String getGameType() => 'mitutuglung';
+
+  @override
+  int getSecondaryScore() {
+    return gameState.pairsFound;
+  }
+
+  @override
+  String getCurrentDifficulty() {
+    return _currentDifficulty ?? 'beginner';
+  }
+
+  String? _currentDifficulty;
+
   // ================== IMPLEMENTED INITS ==================
 
   @override
   void initializeGameData() {
     _cardPairs = CardBank.getRandomPairs(PAIRS_COUNT);
+    _loadUserDifficulty();
+  }
+
+  Future<void> _loadUserDifficulty() async {
+    _currentDifficulty = await gameService.getUserDifficulty('mitutuglung');
+    notifyListeners();
   }
 
   @override
@@ -53,6 +76,11 @@ class MitutuglungGameController
     gameState =
         MitutuglungGameState(timeLeft: gameDuration, totalPairs: PAIRS_COUNT);
   }
+
+//   Future<void> _loadUserDifficulty() async {
+//     _currentDifficulty = await gameService.getUserDifficulty('mitutuglung');
+//     notifyListeners();
+//   }
 
   void _prepareCardPairs() {
     final cards = <MitutuglungCard>[];
@@ -176,9 +204,9 @@ class MitutuglungGameController
 
     notifyListeners();
 
-    if (gameState.isComplete) {
+    if (gameState.pairsFound >= gameState.totalPairs) {
       Timer(const Duration(milliseconds: 500), () {
-        endGame();
+        completeGame();
       });
     }
   }

@@ -28,11 +28,34 @@ class TugakGameController extends BaseGameController<TugakGameState> {
 
   TugakGameController() : super(TugakGameState());
 
+  // ================== SETUPS ==================
+
+  @override
+  String getGameType() => 'tugak_catching';
+
+  @override
+  int getSecondaryScore() {
+    return gameState.correctAnswers;
+  }
+
+  @override
+  String getCurrentDifficulty() {
+    return _currentDifficulty ?? 'beginner';
+  }
+
+  String? _currentDifficulty;
+
   // ================== IMPLEMENTED INITS ==================
 
   @override
   void initializeGameData() {
     _questions = QuestionBank.getQuestions();
+    _loadUserDifficulty();
+  }
+
+  Future<void> _loadUserDifficulty() async {
+    _currentDifficulty = await gameService.getUserDifficulty('tugak_catching');
+    notifyListeners();
   }
 
   @override

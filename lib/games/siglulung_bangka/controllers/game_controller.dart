@@ -26,11 +26,39 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
   @override
   int get gameDuration => 30;
 
+  // ================== SETUPS ==================
+
+  @override
+  String getGameType() => 'siglulung_bangka';
+
+  @override
+  int getSecondaryScore() {
+    final timeElapsed = (gameDuration - gameState.timeLeft);
+    if (timeElapsed <= 0) return 0;
+
+    final wpm = (gameState.correctAnswers * 60) ~/ timeElapsed;
+    return wpm;
+  }
+
+  @override
+  String getCurrentDifficulty() {
+    return _currentDifficulty ?? 'beginner';
+  }
+
+  String? _currentDifficulty;
+
   // ================== IMPLEMENTED INITS ==================
 
   @override
   void initializeGameData() {
     gameState.wordBank = WordBank.getWords();
+    _loadUserDifficulty();
+  }
+
+  Future<void> _loadUserDifficulty() async {
+    _currentDifficulty =
+        await gameService.getUserDifficulty('siglulung_bangka');
+    notifyListeners();
   }
 
   @override
@@ -98,7 +126,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
   }
 
   void _generateFirstWord() {
-    if (_upcomingWords.isNotEmpty && gameState.status != GameStatus.gameOver) {
+    if (_upcomingWords.isNotEmpty && isGameActive) {
       final word = _upcomingWords.removeAt(0);
       gameState.currentWord = TypedWord(word: word);
 
@@ -112,7 +140,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
   }
 
   void _generateNextWord() {
-    if (_upcomingWords.isNotEmpty && gameState.status != GameStatus.gameOver) {
+    if (_upcomingWords.isNotEmpty && isGameActive) {
       final word = _upcomingWords.removeAt(0);
       gameState.currentWord = TypedWord(word: word);
 

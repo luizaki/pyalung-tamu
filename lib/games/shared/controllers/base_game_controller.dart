@@ -11,6 +11,7 @@ abstract class BaseGameController<T extends BaseGameState>
   set gameState(T newState) => _gameState = newState;
 
   final GameService _gameService = GameService();
+  GameService get gameService => _gameService;
 
   // Timers
   Timer? _countdownTimer;
