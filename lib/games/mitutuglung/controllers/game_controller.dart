@@ -77,11 +77,6 @@ class MitutuglungGameController
         MitutuglungGameState(timeLeft: gameDuration, totalPairs: PAIRS_COUNT);
   }
 
-  Future<void> _loadUserDifficulty() async {
-    _currentDifficulty = await gameService.getUserDifficulty('mitutuglung');
-    notifyListeners();
-  }
-
   void _prepareCardPairs() {
     final cards = <MitutuglungCard>[];
 
