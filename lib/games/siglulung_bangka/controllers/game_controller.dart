@@ -271,12 +271,8 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
     return '$typed|$remaining'; // | represents cursor
   }
 
-  String get wpmDisplay => '${gameState.currentWPM.toStringAsFixed(0)} WPM';
-
   String get progressDisplay =>
       '${(gameState.boat.position * 100).toStringAsFixed(0)}%';
-
-  String get wordsCompletedDisplay => '${gameState.wordsCompleted} words';
 
   bool get isBoatHit => gameState.boat.isHit;
 

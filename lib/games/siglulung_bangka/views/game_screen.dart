@@ -70,9 +70,6 @@ class BangkaGameScreenState
       // Word queue display
       _buildWordQueueArea(screenSize),
 
-      // Game stats
-      _buildGameStats(screenSize),
-
       // Keyboard listener
       _buildKeyboardListener(),
     ];
@@ -92,42 +89,6 @@ class BangkaGameScreenState
             upcomingWords: controller.upcomingWords,
             screenWidth: screenSize.width,
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGameStats(Size screenSize) {
-    return Positioned(
-      top: 30,
-      right: 20,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: const Color(0xF9DD9A00),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xAD572100), width: 2),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              controller.wpmDisplay,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.brown,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              controller.wordsCompletedDisplay,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.brown,
-              ),
-            ),
-          ],
         ),
       ),
     );
