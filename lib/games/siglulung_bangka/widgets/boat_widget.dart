@@ -115,7 +115,9 @@ class _BoatWidgetState extends State<BoatWidget> with TickerProviderStateMixin {
                   width: 150,
                   height: 110,
                   fit: BoxFit.contain,
-                  color: widget.boat.isHit ? Colors.red.withOpacity(0.6) : null,
+                  color: widget.boat.isHit
+                      ? Colors.red.withValues(alpha: 0.6)
+                      : null,
                   colorBlendMode:
                       widget.boat.isHit ? BlendMode.modulate : BlendMode.srcIn,
                 ),
@@ -164,7 +166,7 @@ class _SpeedParticlesPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.8)
+      ..color = Colors.white.withValues(alpha: 0.8)
       ..style = PaintingStyle.fill;
 
     // Draw speed particles

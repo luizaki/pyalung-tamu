@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import './services/auth_service.dart';
+import './services/game_service.dart';
 
 import './views/home.dart';
 import './views/leaderboard.dart';
@@ -20,7 +21,10 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   int _currentIndex = 0;
+
   final AuthService _authService = AuthService();
+  final GameService _gameService = GameService();
+
   bool _isInitialized = false;
 
   final List<Widget> _pages = const [
@@ -39,7 +43,6 @@ class _AppState extends State<App> {
 
   Future<void> _initializeAuth() async {
     await _authService.initialize();
-
     setState(() => _isInitialized = true);
 
     // Show auth popup if user is not logged in
@@ -62,7 +65,7 @@ class _AppState extends State<App> {
     }
   }
 
-  void _onUserStateChanged() {
+  void _onUserStateChanged() async {
     setState(() {});
 
     // If no player after state change, show auth popup
@@ -107,7 +110,7 @@ class _AppState extends State<App> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 10,
                 offset: const Offset(0, -2),
               ),
@@ -115,7 +118,7 @@ class _AppState extends State<App> {
           ),
         ),
 
-// Nav items
+        // Nav items
         Positioned(
           left: 16,
           right: 16,
@@ -131,7 +134,7 @@ class _AppState extends State<App> {
           ),
         ),
 
-// Profile
+        // Profile
         if (player != null)
           Positioned(
             left: 18,
@@ -157,24 +160,7 @@ class _AppState extends State<App> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: const Color(0xF9DD9A00),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        player.isGuest
-                            ? 'Guest'
-                            : 'Score: ${player.totalScore ?? 0}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    _buildScoreWidget(player),
                   ],
                 ),
               ],
@@ -196,7 +182,7 @@ class _AppState extends State<App> {
         ),
         decoration: isSelected
             ? BoxDecoration(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               )
             : null,
@@ -220,6 +206,49 @@ class _AppState extends State<App> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildScoreWidget(player) {
+    if (player.isGuest) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+        decoration: BoxDecoration(
+          color: const Color(0xF9DD9A00),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: const Text(
+          'Guest',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 8,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    return FutureBuilder<int>(
+      future: _gameService.getUserTotalScore(),
+      builder: (context, snapshot) {
+        final score = snapshot.data ?? 0;
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+          decoration: BoxDecoration(
+            color: const Color(0xF9DD9A00),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            'Score: $score',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 8,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      },
     );
   }
 }

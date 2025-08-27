@@ -99,8 +99,8 @@ class WordQueueDisplay extends StatelessWidget {
         style: TextStyle(
           color: isCorrect ? Colors.green[700] : Colors.red[700],
           backgroundColor: isCorrect
-              ? Colors.green.withOpacity(0.2)
-              : Colors.red.withOpacity(0.2),
+              ? Colors.green.withValues(alpha: 0.2)
+              : Colors.red.withValues(alpha: 0.2),
         ),
       ));
     }
@@ -114,7 +114,7 @@ class WordQueueDisplay extends StatelessWidget {
         text: remaining[i],
         style: TextStyle(
           color: isNext ? Colors.blue[800] : Colors.grey[700],
-          backgroundColor: isNext ? Colors.blue.withOpacity(0.1) : null,
+          backgroundColor: isNext ? Colors.blue.withValues(alpha: 0.1) : null,
           decoration: isNext ? TextDecoration.underline : null,
           decorationColor: Colors.blue[800],
           decorationThickness: 3,

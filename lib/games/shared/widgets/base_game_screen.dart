@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../controllers/base_game_controller.dart';
 
+import '../../../services/auth_service.dart';
+
 abstract class BaseGameScreen<T extends BaseGameController>
     extends StatefulWidget {
   const BaseGameScreen({super.key});
@@ -122,13 +124,26 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
   Widget _buildScoreWidget() {
     return Text(
-      'Score: ${controller.gameState.score} pts',
+      'Score: ${controller.getSecondaryScore()} ${_getSecondaryScoreLabel()}',
       style: const TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.bold,
         color: Colors.brown,
       ),
     );
+  }
+
+  String _getSecondaryScoreLabel() {
+    switch (controller.getGameType()) {
+      case 'siglulung_bangka':
+        return 'WPM';
+      case 'tugak_catching':
+        return 'Frogs';
+      case 'mitutuglung':
+        return 'Pairs';
+      default:
+        return 'Score';
+    }
   }
 
   Widget _buildTimeWidget() {
@@ -259,6 +274,9 @@ abstract class BaseGameScreenState<T extends BaseGameController,
   }
 
   Widget _buildGameOverDialog() {
+    final authService = AuthService();
+    final isGuest = authService.isGuest;
+
     return Positioned.fill(
       child: Container(
         color: Colors.black54,
@@ -293,22 +311,35 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                 ),
                 const SizedBox(height: 10),
 
-                // Score
-                Text(
-                  'Final Score: ${controller.gameState.score}',
-                  style: const TextStyle(
-                    color: Colors.brown,
-                  ),
-                ),
-                const SizedBox(height: 8),
-
                 // Accuracy
-                Text(
-                    'Accuracy: ${(controller.gameState.accuracy * 100).toStringAsFixed(1)}%',
-                    style: const TextStyle(
-                      color: Colors.brown,
-                    )),
-                const SizedBox(height: 20),
+                _buildStatRow(
+                  'Accuracy:',
+                  '${(controller.gameState.accuracy * 100).toStringAsFixed(1)}%',
+                  Icons.my_location,
+                ),
+
+                // Secondary score
+                _buildStatRow(
+                  '${_getSecondaryScoreLabel()}:',
+                  '${controller.getSecondaryScore()}',
+                  _getSecondaryScoreIcon(),
+                ),
+
+                // Points and difficulty for non-guest
+                if (!isGuest) ...[
+                  _buildStatRow(
+                    'Points:',
+                    '${controller.gameState.score} pts',
+                    Icons.stars,
+                  ),
+
+                  // Show if they leveled up
+                  if (controller.difficultyChanged)
+                    _buildDifficultyChangeWidget(),
+                ],
+
+                // Guest login reminder
+                if (isGuest) _buildGuestMessage(),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -353,6 +384,143 @@ abstract class BaseGameScreenState<T extends BaseGameController,
         ),
       ),
     );
+  }
+
+  Widget _buildStatRow(String label, String value, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.brown, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.brown,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.brown,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDifficultyChangeWidget() {
+    final isLevelUp = controller.newDifficulty != null &&
+        controller.previousDifficulty != null &&
+        _getDifficultyLevel(controller.newDifficulty!) >
+            _getDifficultyLevel(controller.previousDifficulty!);
+
+    final changeText = isLevelUp
+        ? 'Level Up! ${_capitalizeDifficulty(controller.previousDifficulty)} → ${_capitalizeDifficulty(controller.newDifficulty)}'
+        : 'Level Down: ${_capitalizeDifficulty(controller.previousDifficulty)} → ${_capitalizeDifficulty(controller.newDifficulty)}';
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isLevelUp
+            ? const Color(0xFFD4A574).withValues(alpha: 0.4)
+            : const Color(0xFFB8860B).withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isLevelUp ? const Color(0xFF8B4513) : const Color(0xAD572100),
+          width: 2,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isLevelUp ? Icons.trending_up : Icons.trending_down,
+            color:
+                isLevelUp ? const Color(0xFF8B4513) : const Color(0xAD572100),
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              changeText,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isLevelUp
+                    ? const Color(0xFF4A2C17)
+                    : const Color(0xFF2D1810),
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _capitalizeDifficulty(String? difficulty) {
+    if (difficulty == null || difficulty.isEmpty) return '';
+    return difficulty[0].toUpperCase() + difficulty.substring(1);
+  }
+
+  Widget _buildGuestMessage() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD4A574).withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xAD572100), width: 2),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.info, color: Color(0xAD572100), size: 20),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Create an account to save your progress and track improvements!',
+              style: TextStyle(
+                color: Color(0xFF4A2C17),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getSecondaryScoreIcon() {
+    switch (controller.getGameType()) {
+      case 'siglulung_bangka':
+        return Icons.speed;
+      case 'tugak_catching':
+        return Icons.catching_pokemon;
+      case 'mitutuglung':
+        return Icons.extension;
+      default:
+        return Icons.score;
+    }
+  }
+
+  int _getDifficultyLevel(String difficulty) {
+    switch (difficulty) {
+      case 'beginner':
+        return 1;
+      case 'intermediate':
+        return 2;
+      case 'advanced':
+        return 3;
+      default:
+        return 1;
+    }
   }
 
   // ================ MAIN BUILDER ================

@@ -373,6 +373,7 @@ class AuthService {
   }
 
   // ================== UPDATE AVATAR ===================
+
   Future<AuthResult> updateAvatar(String newAvatar) async {
     if (_currentPlayer == null || _currentPlayer!.isGuest) {
       return AuthResult.error('You must be logged in to change your avatar.');
