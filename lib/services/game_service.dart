@@ -6,6 +6,8 @@ import './auth_service.dart';
 class GameService {
   final _supabase = Supabase.instance.client;
 
+  // =========== SCORES AND DIFFICULTY ===============
+
   Future<String> getUserDifficulty(String gameType) async {
     try {
       final authService = AuthService();
@@ -192,6 +194,29 @@ class GameService {
     } else {
       // 30-69% accuracy: retain current difficulty
       return currentDifficulty;
+    }
+  }
+
+  // =========== QUESTIONS FETCHING ===============
+
+  Future<List<String>> getWordsByDifficulty(
+      {required String difficulty}) async {
+    try {
+      // First, get total count of words for this difficulty
+      final response = await _supabase
+          .from('words')
+          .select('word_id, base_form')
+          .eq('word_difficulty', difficulty);
+
+      final words =
+          response.map<String>((row) => row['base_form'] as String).toList();
+
+      print('Fetched ${words.length} words for difficulty $difficulty');
+
+      return words;
+    } catch (e) {
+      print('Error fetching random words: $e');
+      rethrow;
     }
   }
 }

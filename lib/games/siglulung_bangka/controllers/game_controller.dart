@@ -50,8 +50,9 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
   // ================== IMPLEMENTED INITS ==================
 
   @override
-  void initializeGameData() {
-    gameState.wordBank = WordBank.getWords();
+  void initializeGameData() async {
+    gameState.wordBank =
+        await WordBank.getWords(difficulty: getCurrentDifficulty());
     _loadUserDifficulty();
   }
 
@@ -109,7 +110,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
 
   // ================ WORDS MANAGEMENT ================
 
-  void _resetGameSpecifics() {
+  void _resetGameSpecifics() async {
     gameState.currentWord = null;
     gameState.completedWords.clear();
     gameState.boat = Boat();
@@ -118,35 +119,37 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
     gameState.currentWPM = 0.0;
     gameState.gameStartTime = null;
 
-    _generateWordQueue();
+    await _generateWordQueue();
   }
 
-  void _generateWordQueue() {
-    _upcomingWords = WordBank.getRandomWords(10);
+  Future<void> _generateWordQueue() async {
+    _upcomingWords = await WordBank.getRandomWords(getCurrentDifficulty(), 10);
   }
 
-  void _generateFirstWord() {
+  void _generateFirstWord() async {
     if (_upcomingWords.isNotEmpty) {
       final word = _upcomingWords.removeAt(0);
       gameState.currentWord = TypedWord(word: word);
 
       // Refill queue if running low
       if (_upcomingWords.length < 5) {
-        _upcomingWords.addAll(WordBank.getRandomWords(5));
+        _upcomingWords
+            .addAll(await WordBank.getRandomWords(getCurrentDifficulty(), 5));
       }
 
       notifyListeners();
     }
   }
 
-  void _generateNextWord() {
+  void _generateNextWord() async {
     if (_upcomingWords.isNotEmpty && isGameActive) {
       final word = _upcomingWords.removeAt(0);
       gameState.currentWord = TypedWord(word: word);
 
       // Keep queue filled
       if (_upcomingWords.length < 5) {
-        _upcomingWords.addAll(WordBank.getRandomWords(5));
+        _upcomingWords
+            .addAll(await WordBank.getRandomWords(getCurrentDifficulty(), 5));
       }
 
       notifyListeners();
