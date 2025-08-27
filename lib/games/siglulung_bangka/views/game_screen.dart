@@ -20,15 +20,13 @@ class BangkaGameScreenState
   final FocusNode _focusNode = FocusNode();
 
   @override
-  List<Color> get backgroundColors => [
-        const Color(0xFF87CEEB),
-        const Color(0xFF4682B4),
+  List<Color> get backgroundColors => const [
+        Color(0xFF87CEEB),
+        Color(0xFF4682B4),
       ];
 
   @override
-  BangkaGameController createController() {
-    return BangkaGameController();
-  }
+  BangkaGameController createController() => BangkaGameController();
 
   @override
   void setupController() {
@@ -54,7 +52,7 @@ class BangkaGameScreenState
     final screenSize = MediaQuery.of(context).size;
 
     return [
-      // Moving background
+      // Moving background (full screen)
       MovingBackground(
         boatSpeed: controller.boatSpeed,
         screenSize: screenSize,
@@ -67,28 +65,41 @@ class BangkaGameScreenState
         screenSize: screenSize,
       ),
 
-      // Word queue display
-      _buildWordQueueArea(screenSize),
-
-      // Keyboard listener
+      _buildWordQueueArea(),
       _buildKeyboardListener(),
     ];
   }
 
-  Widget _buildWordQueueArea(Size screenSize) {
-    return Positioned(
-      top: 130,
-      left: 0,
-      right: 0,
-      child: Center(
-        child: Container(
-          width: screenSize.width * 0.8,
-          alignment: Alignment.centerLeft,
-          child: WordQueueDisplay(
-            currentWord: controller.gameState.currentWord,
-            upcomingWords: controller.upcomingWords,
-            screenWidth: screenSize.width,
-          ),
+  Widget _buildWordQueueArea() {
+    return Positioned.fill(
+      child: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            const double topFrac = 0.10;
+            const double widthFactor = 0.72;
+
+            final double topOffset =
+                (constraints.maxHeight * topFrac).clamp(64.0, 240.0);
+
+            final double contentWidth =
+                (constraints.maxWidth * widthFactor).clamp(280.0, 1100.0);
+
+            return Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: EdgeInsets.only(top: topOffset),
+                child: Container(
+                  width: contentWidth,
+                  alignment: Alignment.centerLeft,
+                  child: WordQueueDisplay(
+                    currentWord: controller.gameState.currentWord,
+                    upcomingWords: controller.upcomingWords,
+                    screenWidth: contentWidth,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

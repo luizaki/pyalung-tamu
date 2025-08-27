@@ -19,31 +19,27 @@ class TugakGameScreenState
   late AnimationController _jumpAnimationController;
 
   @override
-  TugakGameController createController() {
-    return TugakGameController();
-  }
+  TugakGameController createController() => TugakGameController();
 
   @override
   void setupController() {
     _jumpAnimationController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
-    );
-
-    _jumpAnimationController.addListener(() {
-      controller.updateFrogPositions(_jumpAnimationController.value);
-      setState(() {});
-    });
+    )..addListener(() {
+        controller.updateFrogPositions(_jumpAnimationController.value);
+        setState(() {});
+      });
   }
 
   @override
   void onControllerUpdate() {
     final hasJumpingFrog =
         controller.gameState.frogs.any((frog) => frog.isJumping);
-
     if (hasJumpingFrog && !_jumpAnimationController.isAnimating) {
-      _jumpAnimationController.reset();
-      _jumpAnimationController.forward();
+      _jumpAnimationController
+        ..reset()
+        ..forward();
     }
   }
 
@@ -56,19 +52,36 @@ class TugakGameScreenState
   List<Widget> buildGameSpecificWidgets() {
     return [
       Positioned.fill(
-        child: Image.asset(
-          'assets/bg/tugak_bg.PNG',
-          fit: BoxFit.cover,
+        child: Image.asset('assets/bg/tugak_bg.PNG', fit: BoxFit.cover),
+      ),
+      Positioned.fill(
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final size = MediaQuery.of(context).size;
+              final hPad = (size.width * 0.02).clamp(8.0, 24.0);
+              final vPad = (size.height * 0.02).clamp(8.0, 28.0);
+
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ..._buildLilypads(),
+                    ..._buildFrogs(),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
-      ..._buildLilypads(),
-      ..._buildFrogs(),
     ];
   }
 
   List<Widget> _buildLilypads() {
     return controller.lilypadPositions
-        .map((position) => Lilypad(x: position.dx, y: position.dy))
+        .map((p) => Lilypad(x: p.dx, y: p.dy))
         .toList();
   }
 
@@ -88,7 +101,7 @@ class TugakGameScreenState
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => QuestionDialog(
+        builder: (_) => QuestionDialog(
           question: frog.question,
           onAnswer: (index) {
             frog.isBeingQuestioned = false;
@@ -99,9 +112,7 @@ class TugakGameScreenState
             controller.onQuestionTimeout(frog);
           },
         ),
-      ).then((_) {
-        frog.isBeingQuestioned = false;
-      });
+      ).then((_) => frog.isBeingQuestioned = false);
     }
   }
 }

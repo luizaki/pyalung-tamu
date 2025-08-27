@@ -100,8 +100,8 @@ class _BoatWidgetState extends State<BoatWidget> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Positioned(
       // Fixed horizontal position, but add slight movement
-      left: widget.screenSize.width * 0.4 + (_getBobOffset() * 2),
-      top: widget.screenSize.height * 0.55 + _getBobOffset(),
+      left: widget.screenSize.width * 0.45 + (_getBobOffset() * 2),
+      top: widget.screenSize.height * 0.20 + _getBobOffset(),
       child: AnimatedBuilder(
         animation: Listenable.merge([_bobAnimation, _tiltAnimation]),
         builder: (context, child) {

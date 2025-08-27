@@ -30,11 +30,12 @@ class Lilypad extends StatelessWidget {
       ),
     );
   }
+
   String _getLilypadAsset() {
     if (hasRipple) {
-      return 'assets/tugak/lily1.png';
+      return 'assets/tugak/lily1.PNG';
     } else {
-      return 'assets/tugak/lily2.png';
+      return 'assets/tugak/lily2.PNG';
     }
   }
 }

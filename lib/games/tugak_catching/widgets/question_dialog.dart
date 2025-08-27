@@ -21,22 +21,18 @@ class QuestionDialogState extends State<QuestionDialog>
     with TickerProviderStateMixin {
   late AnimationController _timerController;
 
-  // 10 seconds to answer
-  int timeLeft = 10;
-
   @override
   void initState() {
     super.initState();
     _timerController = AnimationController(
       duration: const Duration(seconds: 10),
       vsync: this,
-    );
+    )..forward();
 
-    _timerController.forward();
     _timerController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         widget.onTimeout();
-        Navigator.of(context).pop();
+        if (mounted) Navigator.of(context).pop();
       }
     });
   }
@@ -49,94 +45,130 @@ class QuestionDialogState extends State<QuestionDialog>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final maxW = (size.width * 0.90).clamp(300.0, 680.0);
+    final maxH = size.height * 0.80;
+
+    final choices = widget.question.shuffledChoices;
+
     return Dialog(
       backgroundColor: Colors.transparent,
-      child: Container(
-        width: MediaQuery.of(context).size.width * 3 / 5,
-        margin: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          color: const Color(0xF9DD9A00),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xAD572100), width: 10),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xAD572100).withValues(alpha: 0.2),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxW, maxHeight: maxH),
+          child: Container(
+            margin: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xF9DD9A00),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xAD572100), width: 10),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xAD572100).withOpacity(0.2),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Timer bar
-              AnimatedBuilder(
-                animation: _timerController,
-                builder: (context, child) {
-                  return SizedBox(
-                    height: 8,
-                    child: LinearProgressIndicator(
-                      value: 1.0 - _timerController.value,
-                      backgroundColor: Colors.grey[300],
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        _timerController.value > 0.7
-                            ? Colors.red
-                            : Colors.green[600]!,
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Timer bar
+                  AnimatedBuilder(
+                    animation: _timerController,
+                    builder: (_, __) => SizedBox(
+                      height: 8,
+                      child: LinearProgressIndicator(
+                        value: 1.0 - _timerController.value,
+                        backgroundColor: Colors.grey[300],
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          _timerController.value > 0.7
+                              ? Colors.red
+                              : Colors.green[600]!,
+                        ),
                       ),
                     ),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 20),
-
-              // Question
-              Text(
-                widget.question.question,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.brown,
-                ),
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 20),
-
-              // Answer choices
-              ...widget.question.shuffledChoices.asMap().entries.map((entry) {
-                int index = entry.key;
-                String choice = entry.value;
-
-                return Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.symmetric(
-                    vertical: 5,
-                    horizontal: 8,
                   ),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      widget.onAnswer(index);
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF4BE0A),
-                      foregroundColor: Colors.brown,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
+
+                  const SizedBox(height: 20),
+
+                  // Question text
+                  Text(
+                    widget.question.question,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.brown,
                     ),
-                    child: Text(
-                      choice,
-                      style: const TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        const gap = 12.0;
+                        final n = choices.length;
+                        final totalGaps = gap * (n - 1);
+                        final perButtonH =
+                            ((constraints.maxHeight - totalGaps) / n)
+                                .clamp(44.0, 72.0);
+
+                        return Column(
+                          children: List.generate(n, (i) {
+                            final choice = choices[i];
+                            return SizedBox(
+                              height: perButtonH,
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  widget.onAnswer(i);
+                                  Navigator.of(context).pop();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFF4BE0A),
+                                  foregroundColor: Colors.brown,
+                                  padding: EdgeInsets.zero,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      choice,
+                                      style: const TextStyle(fontSize: 18),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ).withGapBelow(i < n - 1 ? gap : 0);
+                          }),
+                        );
+                      },
                     ),
                   ),
-                );
-              }),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+extension _Gap on Widget {
+  Widget withGapBelow(double gap) => gap > 0
+      ? Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [this, SizedBox(height: gap)])
+      : this;
 }

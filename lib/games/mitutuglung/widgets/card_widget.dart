@@ -22,9 +22,9 @@ class CardWidget extends StatefulWidget {
 
 class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
   //sprites
-  static const String _backCard = 'assets/mitutuglung/back_card.png';
-  static const String _frontCard = 'assets/mitutuglung/front_card.png';
-  static const String _flipCard = 'assets/mitutuglung/flip_card.png';
+  static const String _backCard = 'assets/mitutuglung/back_card.PNG';
+  static const String _frontCard = 'assets/mitutuglung/front_card.PNG';
+  static const String _flipCard = 'assets/mitutuglung/flip_card.PNG';
 
   // Handle flip anim
   late AnimationController _flipController;

@@ -55,17 +55,23 @@ abstract class BaseGameScreenState<T extends BaseGameController,
   // ============= COMMON UI BUIILDERS =============
 
   Widget _buildCountdownOverlay() {
+    final size = MediaQuery.of(context).size;
+    final d = (size.shortestSide * 0.35).clamp(140.0, 260.0);
+    final isGo = controller.gameState.countdownValue <= 0;
+    final fs = isGo ? (d * 0.42) : (d * 0.52);
+
     return Positioned.fill(
       child: Container(
         color: Colors.black54,
         child: Center(
           child: Container(
-            width: 200,
-            height: 200,
+            width: d,
+            height: d,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: const Color(0xF9DD9A00),
-              border: Border.all(color: const Color(0xAD572100), width: 8),
+              border:
+                  Border.all(color: const Color(0xAD572100), width: d * 0.04),
             ),
             child: Center(
               child: Text(
@@ -74,7 +80,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                     : 'GO!',
                 key: ValueKey(controller.gameState.countdownValue),
                 style: TextStyle(
-                  fontSize: controller.gameState.countdownValue > 0 ? 72 : 48,
+                  fontSize: fs,
                   fontWeight: FontWeight.bold,
                   color: Colors.brown,
                 ),
@@ -87,18 +93,23 @@ abstract class BaseGameScreenState<T extends BaseGameController,
   }
 
   Widget _buildGameUI() {
+    final size = MediaQuery.of(context).size;
+    final topPad = (size.height * 0.03).clamp(12.0, 40.0);
+    final boxW = (size.width * 0.16).clamp(180.0, 360.0);
+    final borderW = (boxW * 0.012).clamp(3.0, 6.0);
+
     return Positioned(
-      top: 30,
+      top: topPad,
       left: 0,
       right: 0,
       child: Center(
         child: Container(
-          width: MediaQuery.of(context).size.width * 1 / 6,
+          width: boxW,
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: const Color(0xF9DD9A00),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xAD572100), width: 5),
+            border: Border.all(color: const Color(0xAD572100), width: borderW),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -158,16 +169,22 @@ abstract class BaseGameScreenState<T extends BaseGameController,
   }
 
   Widget _buildPauseButton() {
+    final size = MediaQuery.of(context).size;
+    final top = (size.height * 0.03).clamp(12.0, 40.0);
+    final left = (size.width * 0.03).clamp(12.0, 40.0);
+    final d = (size.shortestSide * 0.08).clamp(44.0, 64.0);
+    final bw = (d * 0.08).clamp(3.0, 5.0);
+
     return Positioned(
-      top: 30,
-      left: 30,
+      top: top,
+      left: left,
       child: Container(
-        width: 50,
-        height: 50,
+        width: d,
+        height: d,
         decoration: BoxDecoration(
           color: const Color(0xF9DD9A00),
           shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xAD572100), width: 4),
+          border: Border.all(color: const Color(0xAD572100), width: bw),
         ),
         child: IconButton(
           icon: const Icon(Icons.pause, color: Colors.brown),
@@ -180,96 +197,108 @@ abstract class BaseGameScreenState<T extends BaseGameController,
   }
 
   Widget _buildPauseOverlay() {
+    final size = MediaQuery.of(context).size;
+    final maxW = (size.width * 0.55).clamp(280.0, size.width * 0.9);
+    final maxH = (size.height * 0.85);
+
     return Positioned.fill(
       child: Container(
-          color: Colors.black54,
-          child: Center(
+        color: Colors.black54,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxW, maxHeight: maxH),
             child: Container(
-              width: MediaQuery.of(context).size.width * 2 / 5,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: const Color(0xF9DD9A00),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xAD572100), width: 5),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Game Paused',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.brown,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Game Paused',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.brown,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
+                    const SizedBox(height: 10),
 
-                  // Divider
-                  Container(
-                    height: 2,
-                    width: double.infinity,
-                    color: const Color(0xAD572100),
-                  ),
-                  const SizedBox(height: 20),
+                    // Divider
+                    Container(
+                      height: 2,
+                      width: double.infinity,
+                      color: const Color(0xAD572100),
+                    ),
+                    const SizedBox(height: 20),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      // Exit
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.popUntil(context, (route) => route.isFirst);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red[600],
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 16,
+                      runSpacing: 12,
+                      children: [
+                        // Exit
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.popUntil(
+                                context, (route) => route.isFirst);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red[600],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
                           ),
+                          child: const Text('Exit Game'),
                         ),
-                        child: const Text('Exit Game'),
-                      ),
 
-                      // Restart
-                      ElevatedButton(
-                        onPressed: () {
-                          final screenSize = MediaQuery.of(context).size;
-                          controller.restartGame(screenSize);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange[600],
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
+                        // Restart
+                        ElevatedButton(
+                          onPressed: () {
+                            final screenSize = MediaQuery.of(context).size;
+                            controller.restartGame(screenSize);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange[600],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
                           ),
+                          child: const Text('Restart Game'),
                         ),
-                        child: const Text('Restart Game'),
-                      ),
 
-                      // Resume
-                      ElevatedButton(
-                        onPressed: () {
-                          controller.resumeGame();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green[600],
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
+                        // Resume
+                        ElevatedButton(
+                          onPressed: () {
+                            controller.resumeGame();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[600],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
                           ),
+                          child: const Text('Resume Game'),
                         ),
-                        child: const Text('Resume Game'),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          )),
+          ),
+        ),
+      ),
     );
   }
 
@@ -277,108 +306,120 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     final authService = AuthService();
     final isGuest = authService.isGuest;
 
+    final size = MediaQuery.of(context).size;
+    final maxW = (size.width * 0.32).clamp(280.0, size.width * 0.9);
+    final maxH = size.height * 0.85;
+
     return Positioned.fill(
       child: Container(
         color: Colors.black54,
         child: Center(
-          child: Container(
-            width: MediaQuery.of(context).size.width * 1 / 4,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: const Color(0xF9DD9A00),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xAD572100), width: 5),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Game Over title
-                const Text(
-                  'Game Over!',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.brown,
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // Divider
-                Container(
-                  height: 2,
-                  width: double.infinity,
-                  color: const Color(0xAD572100),
-                ),
-                const SizedBox(height: 10),
-
-                // Accuracy
-                _buildStatRow(
-                  'Accuracy:',
-                  '${(controller.gameState.accuracy * 100).toStringAsFixed(1)}%',
-                  Icons.my_location,
-                ),
-
-                // Secondary score
-                _buildStatRow(
-                  '${_getSecondaryScoreLabel()}:',
-                  '${controller.getSecondaryScore()}',
-                  _getSecondaryScoreIcon(),
-                ),
-
-                // Points and difficulty for non-guest
-                if (!isGuest) ...[
-                  _buildStatRow(
-                    'Points:',
-                    '${controller.gameState.score} pts',
-                    Icons.stars,
-                  ),
-
-                  // Show if they leveled up
-                  if (controller.difficultyChanged)
-                    _buildDifficultyChangeWidget(),
-                ],
-
-                // Guest login reminder
-                if (isGuest) _buildGuestMessage(),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxW, maxHeight: maxH),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xF9DD9A00),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xAD572100), width: 5),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Exit
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.popUntil(context, (route) => route.isFirst);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[600],
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
+                    // Game Over title
+                    const Text(
+                      'Game Over!',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.brown,
                       ),
-                      child: const Text('Back to Menu'),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Divider
+                    Container(
+                      height: 2,
+                      width: double.infinity,
+                      color: const Color(0xAD572100),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Accuracy
+                    _buildStatRow(
+                      'Accuracy:',
+                      '${(controller.gameState.accuracy * 100).toStringAsFixed(1)}%',
+                      Icons.my_location,
                     ),
 
-                    // Play again
-                    ElevatedButton(
-                      onPressed: () {
-                        final screenSize = MediaQuery.of(context).size;
-                        controller.restartGame(screenSize);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[600],
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
+                    // Secondary score
+                    _buildStatRow(
+                      '${_getSecondaryScoreLabel()}:',
+                      '${controller.getSecondaryScore()}',
+                      _getSecondaryScoreIcon(),
+                    ),
+
+                    // Points and difficulty for non-guest
+                    if (!isGuest) ...[
+                      _buildStatRow(
+                        'Points:',
+                        '${controller.gameState.score} pts',
+                        Icons.stars,
                       ),
-                      child: const Text('Play Again'),
+
+                      // Show if they leveled up
+                      if (controller.difficultyChanged)
+                        _buildDifficultyChangeWidget(),
+                    ],
+
+                    // Guest login reminder
+                    if (isGuest) _buildGuestMessage(),
+
+                    const SizedBox(height: 8),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 16,
+                      runSpacing: 12,
+                      children: [
+                        // Exit
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.popUntil(
+                                context, (route) => route.isFirst);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red[600],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                          ),
+                          child: const Text('Back to Menu'),
+                        ),
+
+                        // Play again
+                        ElevatedButton(
+                          onPressed: () {
+                            final screenSize = MediaQuery.of(context).size;
+                            controller.restartGame(screenSize);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[600],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                          ),
+                          child: const Text('Play Again'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
