@@ -10,7 +10,7 @@ class _MovingWavesPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.4)
+      ..color = Colors.white.withValues(alpha: 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
@@ -39,7 +39,7 @@ class _MovingWavesPainter extends CustomPainter {
 
   void _drawSprayEffect(Canvas canvas, Size size, double speed) {
     final sprayPaint = Paint()
-      ..color = Colors.white.withOpacity(0.6)
+      ..color = Colors.white.withValues(alpha: 0.6)
       ..style = PaintingStyle.fill;
 
     for (int i = 0; i < (speed * 3).round(); i++) {

@@ -149,7 +149,7 @@ class BadgePill extends StatelessWidget {
       'Expert' => Colors.lightGreenAccent,
       'Intermediate' => Colors.yellowAccent,
       'Beginner' => Colors.orangeAccent,
-      _ => Theme.of(context).disabledColor.withOpacity(.25),
+      _ => Theme.of(context).disabledColor.withValues(alpha: .25),
     };
 
     return Container(
