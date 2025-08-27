@@ -1,6 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:math' as math;
 
+import './auth_service.dart';
+
 class GameService {
   final _supabase = Supabase.instance.client;
 
@@ -37,6 +39,11 @@ class GameService {
     required String difficulty,
   }) async {
     try {
+      final authService = AuthService();
+      if (authService.isGuest) {
+        print('Guest account - not saving score');
+        return;
+      }
       final user = _supabase.auth.currentUser;
       if (user == null) return;
 

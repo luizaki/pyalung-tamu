@@ -21,6 +21,11 @@ abstract class BaseGameController<T extends BaseGameState>
   int get gameDuration => 60;
   int get countdownStart => 3;
 
+  // Difficulty management
+  String? _previousDifficulty;
+  String? _currentDifficulty;
+  bool _difficultyChanged = false;
+
   BaseGameController(this._gameState);
 
   // ================== INITIALIZATION ==================
@@ -162,6 +167,16 @@ abstract class BaseGameController<T extends BaseGameState>
   // ================= FINISHING =================
 
   Future<void> saveGameResults() async {
+    // Store current difficulty before saving
+    _previousDifficulty = getCurrentDifficulty();
+
+    print('saveGameResults called');
+    print('   gameType: ${getGameType()}');
+    print('   accuracy: ${(gameState.accuracy * 100).round()}');
+    print('   secondaryScore: ${getSecondaryScore()}');
+    print('   score: ${gameState.score}');
+    print('   difficulty: ${getCurrentDifficulty()}');
+
     await _gameService.saveGameScore(
       gameType: getGameType(),
       accuracy: (gameState.accuracy * 100).round(),
@@ -169,6 +184,20 @@ abstract class BaseGameController<T extends BaseGameState>
       score: gameState.score,
       difficulty: getCurrentDifficulty(),
     );
+
+    await _checkDifficultyChange();
+
+    print('saveGameResults completed');
+  }
+
+  Future<void> _checkDifficultyChange() async {
+    // Get updated difficulty from database
+    final newDifficulty = await _gameService.getUserDifficulty(getGameType());
+    if (newDifficulty != _previousDifficulty) {
+      _difficultyChanged = true;
+      _currentDifficulty = newDifficulty;
+      notifyListeners();
+    }
   }
 
   // ============== ABSTRACT METHODS ==============
@@ -203,6 +232,10 @@ abstract class BaseGameController<T extends BaseGameState>
       _gameState.status == GameStatus.ended;
   bool get isGamePaused => _gameState.status == GameStatus.paused;
   bool get isGameFinished => isGameOver;
+
+  bool get difficultyChanged => _difficultyChanged;
+  String? get previousDifficulty => _previousDifficulty;
+  String? get newDifficulty => _currentDifficulty;
 
   String get formattedTime {
     final minutes = _gameState.timeLeft ~/ 60;
