@@ -8,6 +8,12 @@ class GameService {
 
   Future<String> getUserDifficulty(String gameType) async {
     try {
+      final authService = AuthService();
+
+      if (authService.isGuest) {
+        print('🚫 Guest account - not saving score');
+        return 'beginner';
+      }
       final user = _supabase.auth.currentUser;
       if (user == null) return 'beginner';
 
