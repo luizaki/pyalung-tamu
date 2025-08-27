@@ -1,11 +1,13 @@
 class TypedWord {
   final String word;
+  final String translation;
   String typedText;
   bool isCompleted;
   bool hasError;
 
   TypedWord({
     required this.word,
+    this.translation = '',
     this.typedText = '',
     this.isCompleted = false,
     this.hasError = false,

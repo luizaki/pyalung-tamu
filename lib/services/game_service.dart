@@ -199,17 +199,21 @@ class GameService {
 
   // =========== QUESTIONS FETCHING ===============
 
-  Future<List<String>> getWordsByDifficulty(
+  Future<List<WordData>> getWordsByDifficulty(
       {required String difficulty}) async {
     try {
       // First, get total count of words for this difficulty
       final response = await _supabase
           .from('words')
-          .select('word_id, base_form')
+          .select('base_form, english_trans')
           .eq('word_difficulty', difficulty);
 
-      final words =
-          response.map<String>((row) => row['base_form'] as String).toList();
+      final words = response
+          .map<WordData>((row) => WordData(
+                baseForm: row['base_form'] as String,
+                englishTrans: row['english_trans'] as String,
+              ))
+          .toList();
 
       print('Fetched ${words.length} words for difficulty $difficulty');
 
@@ -219,4 +223,12 @@ class GameService {
       rethrow;
     }
   }
+}
+
+// ============== HELPER CLASSES ==============
+class WordData {
+  final String baseForm;
+  final String englishTrans;
+
+  WordData({required this.baseForm, required this.englishTrans});
 }

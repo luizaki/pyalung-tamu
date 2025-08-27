@@ -9,9 +9,11 @@ import '../models/boat.dart';
 import '../models/word.dart';
 import '../models/word_bank.dart';
 
+import '../../../services/game_service.dart';
+
 class BangkaGameController extends BaseGameController<BangkaGameState> {
   // Game data
-  List<String> _upcomingWords = [];
+  List<WordData> _upcomingWords = [];
 
   // Game configs
   static const boatUpdateInterval = 8;
@@ -129,7 +131,8 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
   void _generateFirstWord() async {
     if (_upcomingWords.isNotEmpty) {
       final word = _upcomingWords.removeAt(0);
-      gameState.currentWord = TypedWord(word: word);
+      gameState.currentWord =
+          TypedWord(word: word.baseForm, translation: word.englishTrans);
 
       // Refill queue if running low
       if (_upcomingWords.length < 5) {
@@ -144,7 +147,8 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
   void _generateNextWord() async {
     if (_upcomingWords.isNotEmpty && isGameActive) {
       final word = _upcomingWords.removeAt(0);
-      gameState.currentWord = TypedWord(word: word);
+      gameState.currentWord =
+          TypedWord(word: word.baseForm, translation: word.englishTrans);
 
       // Keep queue filled
       if (_upcomingWords.length < 5) {
@@ -283,7 +287,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
 
   double get boatPosition => gameState.boat.position;
 
-  List<String> get upcomingWords => _upcomingWords;
+  List<WordData> get upcomingWords => _upcomingWords;
 
   // ================== DISPOSAL ==================
 

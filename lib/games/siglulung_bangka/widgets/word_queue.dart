@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/word.dart';
 
+import '../../../services/game_service.dart';
+
 class WordQueueDisplay extends StatelessWidget {
   final TypedWord? currentWord;
-  final List<String> upcomingWords;
+  final List<WordData> upcomingWords;
   final double screenWidth;
 
   const WordQueueDisplay({
@@ -50,15 +52,39 @@ class WordQueueDisplay extends StatelessWidget {
   }
 
   Widget _buildCurrentWord() {
-    return RichText(
-      text: TextSpan(
-        style: const TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'monospace',
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Main word
+        RichText(
+          text: TextSpan(
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'monospace',
+            ),
+            children: _buildCurrentWordSpans(),
+          ),
         ),
-        children: _buildCurrentWordSpans(),
-      ),
+
+        if (currentWord!.translation.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: SizedBox(
+              width: 170,
+              child: Text(
+                currentWord!.translation,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xAD572100),
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -72,7 +98,7 @@ class WordQueueDisplay extends StatelessWidget {
       return Container(
         margin: const EdgeInsets.only(right: 20),
         child: Text(
-          word,
+          word.baseForm,
           style: TextStyle(
             fontSize:
                 index == 0 ? 24 : 20, // First upcoming word slightly larger

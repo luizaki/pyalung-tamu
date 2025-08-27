@@ -2,8 +2,10 @@ import '../../shared/models/base_game_state.dart';
 import 'word.dart';
 import 'boat.dart';
 
+import '../../../services/game_service.dart';
+
 class BangkaGameState extends BaseGameState {
-  List<String> wordBank;
+  List<WordData> wordBank;
   TypedWord? currentWord;
   List<TypedWord> completedWords;
   Boat boat;
@@ -22,7 +24,7 @@ class BangkaGameState extends BaseGameState {
     super.status,
     super.isCountingDown,
     super.countdownValue,
-    List<String>? wordBank,
+    List<WordData>? wordBank,
     this.currentWord,
     List<TypedWord>? completedWords,
     Boat? boat,
@@ -31,7 +33,8 @@ class BangkaGameState extends BaseGameState {
     this.totalWords = 0,
     this.currentWPM = 0.0,
     this.gameStartTime,
-  })  : wordBank = wordBank ?? [],
+  })  : wordBank =
+            wordBank ?? [WordData(baseForm: 'none', englishTrans: 'none')],
         completedWords = completedWords ?? [],
         boat = boat ?? Boat();
 

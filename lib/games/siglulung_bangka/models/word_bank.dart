@@ -3,7 +3,7 @@ import '../../../services/game_service.dart';
 class WordBank {
   static final GameService _gameService = GameService();
 
-  static Future<List<String>> getWords({
+  static Future<List<WordData>> getWords({
     String? difficulty,
   }) async {
     try {
@@ -19,18 +19,20 @@ class WordBank {
       return words;
     } catch (e) {
       print('Error fetching words: $e');
-      return [''];
+      return [
+        WordData(baseForm: 'Error', englishTrans: 'Error fetching words')
+      ];
     }
   }
 
-  static Future<List<String>> getRandomWords(
+  static Future<List<WordData>> getRandomWords(
       String difficulty, int count) async {
     final words = await getWords(difficulty: difficulty);
     words.shuffle();
     return words.take(count).toList();
   }
 
-  static Future<String> getRandomWord(String difficulty) async {
+  static Future<WordData> getRandomWord(String difficulty) async {
     final words = await getWords(difficulty: difficulty);
     words.shuffle();
     return words.first;
