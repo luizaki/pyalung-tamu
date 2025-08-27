@@ -5,7 +5,7 @@ class AudioController {
   static bool _enabled = true;
   static bool _loaded = false;
 
-  static const String _assetPath = 'audio/atin_cu_pung_singsing_.mp3';
+  static const String _assetPath = 'audio/atin_cu_pung_singsing.mp3';
 
   static Future<void> init({bool enabled = true}) async {
     _enabled = enabled;

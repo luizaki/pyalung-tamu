@@ -27,13 +27,13 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Scaffold(
       body: MainScreen(
-        contentWidthFactor: 0.55,
+        contentWidthFactor: 0.75,
         children: [
           Center(
             child: StrokeText(
               text: 'Settings',
               textStyle: TextStyle(
-                fontSize: 50 * scale,
+                fontSize: 60 * scale,
                 fontWeight: FontWeight.w900,
                 color: const Color(0xFFFCF7D0),
               ),
@@ -102,13 +102,13 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18 * scale),
         child: Row(
           children: [
-            Icon(icon, color: Colors.brown, size: 34 * scale),
+            Icon(icon, color: Colors.brown, size: 38 * scale),
             const SizedBox(width: 18),
             Expanded(
               child: StrokeText(
                 text: label,
                 textStyle: TextStyle(
-                  fontSize: 34 * scale,
+                  fontSize: 40 * scale,
                   fontWeight: FontWeight.w800,
                   color: const Color(0xFFFCF7D0),
                 ),

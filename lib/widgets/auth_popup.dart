@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'dart:async';
 
 enum AuthMode { welcome, login, register }
 
@@ -22,37 +23,101 @@ class _AuthPopupState extends State<AuthPopup> {
   final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  Timer? _usernameDebounce;
+  Timer? _passwordDebounce;
+  Timer? _confirmDebounce;
+  String? _usernameError;
+  String? _passwordError;
+  String? _confirmError;
+
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _usernameController.dispose();
     _confirmPasswordController.dispose();
+    _usernameDebounce?.cancel();
+    _passwordDebounce?.cancel();
+    _confirmDebounce?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.4,
-        constraints: const BoxConstraints(maxWidth: 400),
-        decoration: BoxDecoration(
-          color: const Color(0xF9DD9A00),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xAD572100), width: 10),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xAD572100).withValues(alpha: 0.2),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
+    final mq = MediaQuery.of(context);
+    final size = mq.size;
+    final kb = mq.viewInsets.bottom;
+
+    final dialogWidth = (size.width * 0.42).clamp(320.0, 520.0);
+
+    final lift = kb.clamp(0.0, size.height * 0.45);
+
+    return MediaQuery.removeViewInsets(
+      context: context,
+      removeBottom: true,
+      child: Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: (size.width * 0.06).clamp(12.0, 48.0),
+          vertical: 24,
+        ),
+        child: Stack(
+          children: [
+            AnimatedPadding(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              padding: EdgeInsets.only(bottom: lift),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: dialogWidth,
+                    maxHeight: size.height * 0.92,
+                  ),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => FocusScope.of(context).unfocus(),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xF9DD9A00),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: const Color(0xAD572100), width: 8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xAD572100).withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 20),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return SingleChildScrollView(
+                                physics: const BouncingScrollPhysics(),
+                                keyboardDismissBehavior:
+                                    ScrollViewKeyboardDismissBehavior.onDrag,
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: constraints.maxHeight * 0.0,
+                                  ),
+                                  child: _buildCurrentView(),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: _buildCurrentView(),
         ),
       ),
     );
@@ -143,7 +208,7 @@ class _AuthPopupState extends State<AuthPopup> {
                   textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(width: 48), // Balance the back button
+              const SizedBox(width: 48),
             ],
           ),
 
@@ -159,6 +224,9 @@ class _AuthPopupState extends State<AuthPopup> {
               prefixIcon: Icon(Icons.email),
             ),
             validator: AuthService.validateEmail,
+            scrollPadding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 120,
+            ),
           ),
 
           const SizedBox(height: 16),
@@ -167,12 +235,26 @@ class _AuthPopupState extends State<AuthPopup> {
           TextFormField(
             controller: _passwordController,
             obscureText: true,
-            decoration: const InputDecoration(
+            onChanged: (v) {
+              _passwordDebounce?.cancel();
+              _passwordDebounce = Timer(const Duration(milliseconds: 500), () {
+                setState(() {
+                  _passwordError = AuthService.validatePassword(v);
+                });
+              });
+            },
+            decoration: InputDecoration(
               labelText: 'Password',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.lock),
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.lock),
+              helperText: 'At least 6 characters',
+              helperStyle: TextStyle(color: Colors.grey[700]),
+              errorText: _passwordError,
             ),
             validator: AuthService.validatePassword,
+            scrollPadding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 120,
+            ),
           ),
 
           const SizedBox(height: 24),
@@ -244,12 +326,26 @@ class _AuthPopupState extends State<AuthPopup> {
           // Username field
           TextFormField(
             controller: _usernameController,
-            decoration: const InputDecoration(
+            onChanged: (v) {
+              _usernameDebounce?.cancel();
+              _usernameDebounce = Timer(const Duration(milliseconds: 500), () {
+                setState(() {
+                  _usernameError = AuthService.validateUsername(v);
+                });
+              });
+            },
+            decoration: InputDecoration(
               labelText: 'Username',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.person),
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.person),
+              helperText: '3-20 chars • a-z A-Z 0-9 _ only',
+              helperStyle: TextStyle(color: Colors.grey[700]),
+              errorText: _usernameError,
             ),
             validator: AuthService.validateUsername,
+            scrollPadding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 120,
+            ),
           ),
 
           const SizedBox(height: 16),
@@ -258,12 +354,16 @@ class _AuthPopupState extends State<AuthPopup> {
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: const InputDecoration(
               labelText: 'Email',
               border: OutlineInputBorder(),
               prefixIcon: Icon(Icons.email),
             ),
             validator: AuthService.validateEmail,
+            scrollPadding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 120,
+            ),
           ),
 
           const SizedBox(height: 16),
@@ -272,12 +372,28 @@ class _AuthPopupState extends State<AuthPopup> {
           TextFormField(
             controller: _passwordController,
             obscureText: true,
-            decoration: const InputDecoration(
+            onChanged: (v) {
+              _passwordDebounce?.cancel();
+              _passwordDebounce = Timer(const Duration(milliseconds: 500), () {
+                setState(() {
+                  _passwordError = AuthService.validatePassword(v);
+                  final ce = _liveConfirmError(_confirmPasswordController.text);
+                  _confirmError = ce;
+                });
+              });
+            },
+            decoration: InputDecoration(
               labelText: 'Password',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.lock),
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.lock),
+              helperText: 'At least 6 characters',
+              helperStyle: TextStyle(color: Colors.grey[700]),
+              errorText: _passwordError,
             ),
             validator: AuthService.validatePassword,
+            scrollPadding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 120,
+            ),
           ),
 
           const SizedBox(height: 16),
@@ -286,14 +402,28 @@ class _AuthPopupState extends State<AuthPopup> {
           TextFormField(
             controller: _confirmPasswordController,
             obscureText: true,
-            decoration: const InputDecoration(
+            onChanged: (v) {
+              _confirmDebounce?.cancel();
+              _confirmDebounce = Timer(const Duration(milliseconds: 500), () {
+                setState(() {
+                  _confirmError = _liveConfirmError(v);
+                });
+              });
+            },
+            decoration: InputDecoration(
               labelText: 'Confirm Password',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.lock_outline),
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.lock_outline),
+              helperText: 'At least 6 characters',
+              helperStyle: TextStyle(color: Colors.grey[700]),
+              errorText: _confirmError,
             ),
             validator: (value) => AuthService.validatePasswordConfirmation(
               _passwordController.text,
               value,
+            ),
+            scrollPadding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 120,
             ),
           ),
 
@@ -333,36 +463,36 @@ class _AuthPopupState extends State<AuthPopup> {
     );
   }
 
+  // ================== REUSABLE CARD BUILDER ==================
   Widget _buildCard({required String text, required VoidCallback? onTap}) {
     return SizedBox(
-        width: double.infinity,
-        child: Card(
-          color: const Color(0xFFF4BE0A),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(8),
-            highlightColor: const Color(0xFFCA8505),
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(
-                text,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16),
-              ),
+      width: double.infinity,
+      child: Card(
+        color: const Color(0xFFF4BE0A),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          highlightColor: const Color(0xFFCA8505),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16),
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   // ================== HANDLERS ==================
 
   Future<void> _handleGuestLogin() async {
     setState(() => _isLoading = true);
-
     await _authService.loginAsGuest();
-
     if (mounted) {
-      Navigator.of(context).pop(true); // Return true to indicate success
+      Navigator.of(context).pop(true);
     }
   }
 
@@ -386,7 +516,6 @@ class _AuthPopupState extends State<AuthPopup> {
             backgroundColor: Colors.green,
           ),
         );
-
         Navigator.of(context).pop(true);
       }
     } else {
@@ -442,5 +571,12 @@ class _AuthPopupState extends State<AuthPopup> {
         );
       }
     }
+  }
+
+  String? _liveConfirmError(String v) {
+    final base = AuthService.validatePassword(v);
+    if (base != null) return base;
+    if (_passwordController.text != v) return 'Passwords do not match';
+    return null;
   }
 }
