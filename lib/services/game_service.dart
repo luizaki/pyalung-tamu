@@ -37,6 +37,44 @@ class GameService {
     }
   }
 
+  Future<int> getUserTotalScore() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) return 0;
+
+      // Check if user is guest through AuthService
+      final authService = AuthService();
+      if (authService.isGuest) return 0;
+
+      final userRecord = await _supabase
+          .from('users')
+          .select('user_id')
+          .eq('auth_id', user.id)
+          .single();
+
+      final userId = userRecord['user_id'];
+
+      // Get total score from user_game_progress table
+      final progressData = await _supabase
+          .from('user_game_progress')
+          .select('total_score')
+          .eq('user_id', userId);
+
+      // Sum all total_score values across all games
+      int totalScore = 0;
+      for (var progress in progressData) {
+        totalScore += (progress['total_score'] as int? ?? 0);
+      }
+
+      print('Total score for this user: $totalScore');
+
+      return totalScore;
+    } catch (e) {
+      print('Error getting user total score: $e');
+      return 0;
+    }
+  }
+
   Future<void> saveGameScore({
     required String gameType,
     required int accuracy,
@@ -124,8 +162,6 @@ class GameService {
         .eq('user_id', userId)
         .eq('game_type', gameType);
   }
-
-  // Update the _calculateNewDifficulty method in GameService
 
   String _calculateNewDifficulty(String gameType, String currentDifficulty,
       int secondaryScore, double avgAccuracy) {

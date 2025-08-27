@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import './services/auth_service.dart';
+import './services/game_service.dart';
 
 import './views/home.dart';
 import './views/leaderboard.dart';
@@ -19,7 +20,11 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   int _currentIndex = 0;
+
   final AuthService _authService = AuthService();
+  final GameService _gameService = GameService();
+  int _totalScore = 0;
+
   bool _isInitialized = false;
 
   final List<Widget> _pages = const [
@@ -37,6 +42,7 @@ class _AppState extends State<App> {
 
   Future<void> _initializeAuth() async {
     await _authService.initialize();
+    await _loadTotalScore();
 
     setState(() => _isInitialized = true);
 
@@ -44,6 +50,21 @@ class _AppState extends State<App> {
     if (_authService.currentPlayer == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showAuthPopup();
+      });
+    }
+  }
+
+  Future<void> _loadTotalScore() async {
+    if (_authService.currentPlayer != null && !_authService.isGuest) {
+      final score = await _gameService.getUserTotalScore();
+      if (mounted) {
+        setState(() {
+          _totalScore = score;
+        });
+      }
+    } else {
+      setState(() {
+        _totalScore = 0;
       });
     }
   }
@@ -56,11 +77,13 @@ class _AppState extends State<App> {
     );
 
     if (result == true) {
+      await _loadTotalScore();
       setState(() {});
     }
   }
 
-  void _onUserStateChanged() {
+  void _onUserStateChanged() async {
+    await _loadTotalScore();
     setState(() {});
 
     // If no player after state change, show auth popup
@@ -69,6 +92,10 @@ class _AppState extends State<App> {
         _showAuthPopup();
       });
     }
+  }
+
+  void refreshTotalScore() {
+    _loadTotalScore();
   }
 
   @override
@@ -106,7 +133,7 @@ class _AppState extends State<App> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 10,
                 offset: const Offset(0, -2),
               ),
@@ -114,7 +141,7 @@ class _AppState extends State<App> {
           ),
         ),
 
-// Nav items
+        // Nav items
         Positioned(
           left: 16,
           right: 16,
@@ -126,11 +153,20 @@ class _AppState extends State<App> {
               _buildNavItem(1, 'assets/icons/leaderboard.png', 'Leaderboard'),
               _buildNavItem(2, 'assets/icons/progress.png', 'Progress'),
               _buildNavItem(3, 'assets/icons/settings.png', 'Settings'),
+              // Temporarily add this to your app.dart build method for testing:
+
+              FloatingActionButton(
+                onPressed: () {
+                  print('🧪 Manual refresh test');
+                  refreshTotalScore();
+                },
+                child: Icon(Icons.refresh),
+              ),
             ],
           ),
         ),
 
-// Profile
+        // Profile
         if (player != null)
           Positioned(
             left: 18,
@@ -164,9 +200,7 @@ class _AppState extends State<App> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        player.isGuest
-                            ? 'Guest'
-                            : 'Score: ${player.totalScore ?? 0}',
+                        player.isGuest ? 'Guest' : 'Score: $_totalScore',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 8,
@@ -195,7 +229,7 @@ class _AppState extends State<App> {
         ),
         decoration: isSelected
             ? BoxDecoration(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               )
             : null,
