@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stroke_text/stroke_text.dart';
 import '../../../features/progress_feature.dart';
 
 class MitutuglungProgressScreen extends StatelessWidget {
@@ -8,23 +9,35 @@ class MitutuglungProgressScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final ctrl = ProgressController()
       ..setMitutuglung(const MitutuglungStats(perfectPairs: 9, timeSecs: 70));
-
     final mit = ctrl.mit;
+
+    final scale = MediaQuery.of(context).size.width / 1280;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text(
-              'MITUTUGLUNG',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            Flexible(
+              child: StrokeText(
+                text: 'MITUTUGLUNG',
+                textStyle: TextStyle(
+                  fontSize: 24 * scale,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFFFCF7D0),
+                ),
+                strokeColor: Colors.black,
+                strokeWidth: 2 * scale,
+                textAlign: TextAlign.left,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            const Spacer(),
+            SizedBox(width: 12 * scale),
             BadgePill(mit.badge.label),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12 * scale),
         GameProgressCard(
           title: "Mitutuglung",
           p: mit,
