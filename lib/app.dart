@@ -23,7 +23,6 @@ class _AppState extends State<App> {
 
   final AuthService _authService = AuthService();
   final GameService _gameService = GameService();
-  int _totalScore = 0;
 
   bool _isInitialized = false;
 
@@ -42,29 +41,12 @@ class _AppState extends State<App> {
 
   Future<void> _initializeAuth() async {
     await _authService.initialize();
-    await _loadTotalScore();
-
     setState(() => _isInitialized = true);
 
     // Show auth popup if user is not logged in
     if (_authService.currentPlayer == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showAuthPopup();
-      });
-    }
-  }
-
-  Future<void> _loadTotalScore() async {
-    if (_authService.currentPlayer != null && !_authService.isGuest) {
-      final score = await _gameService.getUserTotalScore();
-      if (mounted) {
-        setState(() {
-          _totalScore = score;
-        });
-      }
-    } else {
-      setState(() {
-        _totalScore = 0;
       });
     }
   }
@@ -77,13 +59,11 @@ class _AppState extends State<App> {
     );
 
     if (result == true) {
-      await _loadTotalScore();
       setState(() {});
     }
   }
 
   void _onUserStateChanged() async {
-    await _loadTotalScore();
     setState(() {});
 
     // If no player after state change, show auth popup
@@ -92,10 +72,6 @@ class _AppState extends State<App> {
         _showAuthPopup();
       });
     }
-  }
-
-  void refreshTotalScore() {
-    _loadTotalScore();
   }
 
   @override
@@ -153,15 +129,6 @@ class _AppState extends State<App> {
               _buildNavItem(1, 'assets/icons/leaderboard.png', 'Leaderboard'),
               _buildNavItem(2, 'assets/icons/progress.png', 'Progress'),
               _buildNavItem(3, 'assets/icons/settings.png', 'Settings'),
-              // Temporarily add this to your app.dart build method for testing:
-
-              FloatingActionButton(
-                onPressed: () {
-                  print('🧪 Manual refresh test');
-                  refreshTotalScore();
-                },
-                child: Icon(Icons.refresh),
-              ),
             ],
           ),
         ),
@@ -192,22 +159,7 @@ class _AppState extends State<App> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: const Color(0xF9DD9A00),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        player.isGuest ? 'Guest' : 'Score: $_totalScore',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    _buildScoreWidget(player),
                   ],
                 ),
               ],
@@ -253,6 +205,49 @@ class _AppState extends State<App> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildScoreWidget(player) {
+    if (player.isGuest) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+        decoration: BoxDecoration(
+          color: const Color(0xF9DD9A00),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: const Text(
+          'Guest',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 8,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    return FutureBuilder<int>(
+      future: _gameService.getUserTotalScore(),
+      builder: (context, snapshot) {
+        final score = snapshot.data ?? 0;
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+          decoration: BoxDecoration(
+            color: const Color(0xF9DD9A00),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            'Score: $score',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 8,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      },
     );
   }
 }
