@@ -52,7 +52,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
   // ================== IMPLEMENTED INITS ==================
 
   @override
-  void initializeGameData() async {
+  Future<void> initializeGameData() async {
     gameState.wordBank =
         await WordBank.getWords(difficulty: getCurrentDifficulty());
     _loadUserDifficulty();
@@ -65,7 +65,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
   }
 
   @override
-  void initializeGameSpecifics(Size screenSize) {
+  Future<void> initializeGameSpecifics(Size screenSize) async {
     _resetGameSpecifics();
     _generateFirstWord();
   }

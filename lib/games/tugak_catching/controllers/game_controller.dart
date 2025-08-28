@@ -48,7 +48,7 @@ class TugakGameController extends BaseGameController<TugakGameState> {
   // ================== IMPLEMENTED INITS ==================
 
   @override
-  void initializeGameData() {
+  Future<void> initializeGameData() async {
     _questions = QuestionBank.getQuestions();
     _loadUserDifficulty();
   }
@@ -59,7 +59,7 @@ class TugakGameController extends BaseGameController<TugakGameState> {
   }
 
   @override
-  void initializeGameSpecifics(Size screenSize) {
+  Future<void> initializeGameSpecifics(Size screenSize) async {
     _generateLilypadPositions(screenSize);
     _spawnInitialFrogs();
   }

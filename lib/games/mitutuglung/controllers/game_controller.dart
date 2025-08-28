@@ -52,7 +52,7 @@ class MitutuglungGameController
   // ================== IMPLEMENTED INITS ==================
 
   @override
-  void initializeGameData() async {
+  Future<void> initializeGameData() async {
     _cardPairs = await CardBank.getRandomPairs(PAIRS_COUNT);
 
     print('Initialized Mitutuglung game data with ${_cardPairs.length} pairs.');
@@ -65,7 +65,7 @@ class MitutuglungGameController
   }
 
   @override
-  void initializeGameSpecifics(Size screenSize) {
+  Future<void> initializeGameSpecifics(Size screenSize) async {
     gameState.revealedCards.clear();
     gameState.pairsFound = 0;
     gameState.isProcessingMove = false;
