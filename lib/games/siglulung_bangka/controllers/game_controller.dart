@@ -205,7 +205,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
 
     if (key == 'Backspace') {
       _handleBackspace(currentWord);
-    } else if (key == ' ' || key == 'Enter') {
+    } else if (key == 'Enter') {
       _handleWordSubmission(currentWord);
     } else if (key.length == 1 &&
         key.codeUnitAt(0) >= 32 &&
