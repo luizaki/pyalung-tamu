@@ -34,11 +34,23 @@ class _AppState extends State<App> {
     SettingsPage(),
   ];
 
+  late final AudioController _audioController;
+
   @override
   void initState() {
     super.initState();
-    _initializeAuth();
+
+    _audioController = AudioController();
     AudioController.init(enabled: true);
+
+    _initializeAuth();
+  }
+
+  @override
+  void dispose() {
+    //end bgm when app is closed
+    AudioController.dispose();
+    super.dispose();
   }
 
   Future<void> _initializeAuth() async {
@@ -48,7 +60,9 @@ class _AppState extends State<App> {
     // Show auth popup if user is not logged in
     if (_authService.currentPlayer == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showAuthPopup();
+        if (mounted) {
+          _showAuthPopup();
+        }
       });
     }
   }
@@ -68,7 +82,6 @@ class _AppState extends State<App> {
   void _onUserStateChanged() async {
     setState(() {});
 
-    // If no player after state change, show auth popup
     if (_authService.currentPlayer == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showAuthPopup();

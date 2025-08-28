@@ -23,17 +23,15 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final scale = MediaQuery.of(context).size.width / 1280;
-
     return Scaffold(
       body: MainScreen(
-        contentWidthFactor: 0.55,
+        contentWidthFactor: 0.70,
         children: [
           Center(
             child: StrokeText(
               text: 'Settings',
               textStyle: TextStyle(
-                fontSize: 50 * scale,
+                fontSize: 64,
                 fontWeight: FontWeight.w900,
                 color: const Color(0xFFFCF7D0),
               ),
@@ -42,38 +40,47 @@ class _SettingsPageState extends State<SettingsPage> {
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           _buildSettingCard(
             icon: Icons.volume_up,
             label: 'Sound Effects',
-            scale: scale,
-            trailing: Switch(
-              value: _sfxEnabled,
-              onChanged: (v) => setState(() => _sfxEnabled = v),
+            trailing: Transform.scale(
+              scale: 1.6,
+              child: Switch(
+                value: _sfxEnabled,
+                onChanged: (v) => setState(() => _sfxEnabled = v),
+              ),
             ),
           ),
           _buildSettingCard(
             icon: Icons.music_note,
             label: 'Background Music',
-            scale: scale,
-            trailing: Switch(
-              value: _musicEnabled,
-              onChanged: (v) async {
-                setState(() => _musicEnabled = v);
-                try {
-                  await AudioController.setEnabled(v);
-                } catch (e) {
-                  setState(() => _musicEnabled = !v);
-                }
-              },
+            trailing: Transform.scale(
+              scale: 1.6,
+              child: Switch(
+                value: _musicEnabled,
+                onChanged: (v) async {
+                  setState(() => _musicEnabled = v);
+                  try {
+                    await AudioController.setEnabled(v);
+                  } catch (e) {
+                    setState(() => _musicEnabled = !v);
+                  }
+                },
+              ),
             ),
           ),
           _buildSettingCard(
             icon: Icons.language,
             label: 'Language',
-            scale: scale,
             trailing: DropdownButton<String>(
               value: _language,
+              isDense: false,
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
               underline: const SizedBox.shrink(),
               items: const [
                 DropdownMenuItem(value: 'English', child: Text('English')),
@@ -91,26 +98,25 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildSettingCard({
     required IconData icon,
     required String label,
-    required double scale,
     required Widget trailing,
   }) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 12),
+      margin: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
       color: const Color(0xFFF4BE0A),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18 * scale),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
         child: Row(
           children: [
-            Icon(icon, color: Colors.brown, size: 34 * scale),
-            const SizedBox(width: 18),
+            Icon(icon, color: Colors.brown, size: 56),
+            const SizedBox(width: 20),
             Expanded(
               child: StrokeText(
                 text: label,
-                textStyle: TextStyle(
-                  fontSize: 34 * scale,
+                textStyle: const TextStyle(
+                  fontSize: 36,
                   fontWeight: FontWeight.w800,
-                  color: const Color(0xFFFCF7D0),
+                  color: Color(0xFFFCF7D0),
                 ),
                 strokeColor: Colors.black,
                 strokeWidth: 3.5,

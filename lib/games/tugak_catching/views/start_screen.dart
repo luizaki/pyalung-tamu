@@ -16,7 +16,7 @@ class TugakStartScreen extends StatelessWidget {
       color4: const Color(0xFF70BAF7),
       gameTitle: 'Tugak Catching',
       instructions:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+          'Tap the jumping frogs and answer the fill-in-the-blank Kapampangan questions with the correct tense form to win!',
       gameScreen: TugakGameScreen(),
     );
   }

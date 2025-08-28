@@ -34,11 +34,19 @@ class _AvatarSelectorState extends State<AvatarSelector> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final dialogWidth = (size.width * 0.6).clamp(320.0, 500.0);
+    final dialogMaxHeight = size.height * 0.85;
+    final crossCount = dialogWidth >= 420 ? 3 : 2;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.6,
-        constraints: const BoxConstraints(maxWidth: 500),
+        width: dialogWidth,
+        constraints: BoxConstraints(
+          maxWidth: 500,
+          maxHeight: dialogMaxHeight,
+        ),
         decoration: BoxDecoration(
           color: const Color(0xF9DD9A00),
           borderRadius: BorderRadius.circular(16),
@@ -60,41 +68,45 @@ class _AvatarSelectorState extends State<AvatarSelector> {
               const SizedBox(height: 20),
 
               // Avatar grid
-              GridView.builder(
-                shrinkWrap: true,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                ),
-                itemCount: _avatars.length,
-                itemBuilder: (context, index) {
-                  final avatar = _avatars[index];
-                  final isSelected = avatar == _selectedAvatar;
+              Expanded(
+                child: GridView.builder(
+                  padding: EdgeInsets.zero,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossCount,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 1,
+                  ),
+                  itemCount: _avatars.length,
+                  itemBuilder: (context, index) {
+                    final avatar = _avatars[index];
+                    final isSelected = avatar == _selectedAvatar;
 
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedAvatar = avatar),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: isSelected ? Colors.blue : Colors.brown,
-                          width: isSelected ? 3 : 1,
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedAvatar = avatar),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: isSelected ? Colors.blue : Colors.brown,
+                            width: isSelected ? 3 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          color: isSelected
+                              ? const Color(0xAD572100)
+                              : Colors.transparent,
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                        color: isSelected
-                            ? const Color(0xAD572100)
-                            : Colors.transparent,
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(11),
-                        child: Image.asset(
-                          'assets/avatar/$avatar',
-                          fit: BoxFit.cover,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(11),
+                          child: Image.asset(
+                            'assets/avatar/$avatar',
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
 
               const SizedBox(height: 20),

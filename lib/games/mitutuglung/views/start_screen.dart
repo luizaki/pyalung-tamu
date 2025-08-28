@@ -17,7 +17,7 @@ class MitutuglungStartScreen extends StatelessWidget {
       color4: Color(0xFFFFD859),
       gameTitle: 'Mitutuglung',
       instructions:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+          'Match the Kapampangan words with the images by flipping the cards. Find all pairs to win!',
       gameScreen: MitutuglungGameScreen(),
     );
   }
