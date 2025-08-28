@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/question.dart';
 
@@ -21,6 +22,10 @@ class QuestionDialogState extends State<QuestionDialog>
     with TickerProviderStateMixin {
   late AnimationController _timerController;
 
+  int? _selectedIndex;
+  bool? _selectedCorrect;
+  bool _locked = false;
+
   @override
   void initState() {
     super.initState();
@@ -43,21 +48,37 @@ class QuestionDialogState extends State<QuestionDialog>
     super.dispose();
   }
 
+  void _handleTap(int i, String choice) {
+    if (_locked) return;
+    final bool isCorrect = choice == widget.question.correctAnswer;
+    setState(() {
+      _selectedIndex = i;
+      _selectedCorrect = isCorrect;
+      _locked = true;
+    });
+    Future.delayed(const Duration(milliseconds: 450), () {
+      widget.onAnswer(i);
+      if (mounted) Navigator.of(context).pop();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final maxW = (size.width * 0.90).clamp(300.0, 680.0);
-    final maxH = size.height * 0.80;
+    final mq = MediaQuery.of(context);
+    final size = mq.size;
+
+    final double maxH = (size.height * 0.70).clamp(360.0, 560.0);
+    final double maxW = math.min(size.width * 0.96, maxH * 1.35);
 
     final choices = widget.question.shuffledChoices;
 
     return Dialog(
       backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: maxW, maxHeight: maxH),
           child: Container(
-            margin: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: const Color(0xF9DD9A00),
               borderRadius: BorderRadius.circular(16),
@@ -75,7 +96,6 @@ class QuestionDialogState extends State<QuestionDialog>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Timer bar
                   AnimatedBuilder(
                     animation: _timerController,
                     builder: (_, __) => SizedBox(
@@ -91,67 +111,108 @@ class QuestionDialogState extends State<QuestionDialog>
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 20),
-
-                  // Question text
-                  Text(
-                    widget.question.question,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.brown,
+                  const SizedBox(height: 16),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                        maxHeight: (maxH * 0.28).clamp(60.0, 150.0)),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.center,
+                      child: Text(
+                        widget.question.question,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.brown,
+                        ),
+                      ),
                     ),
-                    textAlign: TextAlign.center,
                   ),
-
-                  const SizedBox(height: 20),
-
-                  Expanded(
+                  const SizedBox(height: 16),
+                  Flexible(
                     child: LayoutBuilder(
-                      builder: (context, constraints) {
+                      builder: (context, c) {
                         const gap = 12.0;
                         final n = choices.length;
-                        final totalGaps = gap * (n - 1);
-                        final perButtonH =
-                            ((constraints.maxHeight - totalGaps) / n)
-                                .clamp(44.0, 72.0);
+                        const double minH = 44.0;
+                        const double maxBtnH = 68.0;
 
-                        return Column(
-                          children: List.generate(n, (i) {
-                            final choice = choices[i];
-                            return SizedBox(
-                              height: perButtonH,
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  widget.onAnswer(i);
-                                  Navigator.of(context).pop();
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFF4BE0A),
-                                  foregroundColor: Colors.brown,
-                                  padding: EdgeInsets.zero,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(24),
+                        final totalGap = gap * (n - 1);
+                        final rawPer = (c.maxHeight - totalGap) / n;
+                        final perButtonH =
+                            rawPer.clamp(minH, maxBtnH).floorToDouble();
+
+                        final need = n * perButtonH + totalGap;
+                        final canFit = need <= c.maxHeight + 0.5;
+
+                        Widget buildList(ScrollPhysics physics) {
+                          return ListView.separated(
+                            physics: physics,
+                            padding: EdgeInsets.zero,
+                            itemCount: n,
+                            itemBuilder: (context, i) {
+                              final choice = choices[i];
+
+                              final bool isSelected = _selectedIndex == i;
+                              final bool showResult =
+                                  isSelected && _selectedCorrect != null;
+                              final Color resultColor =
+                                  (_selectedCorrect ?? false)
+                                      ? Colors.green.shade700
+                                      : Colors.red.shade600;
+
+                              final BorderSide side = showResult
+                                  ? BorderSide(color: resultColor, width: 3)
+                                  : const BorderSide(
+                                      color: Colors.transparent, width: 2);
+
+                              final Color textColor =
+                                  showResult ? resultColor : Colors.brown;
+
+                              return SizedBox(
+                                height: perButtonH,
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: _locked
+                                      ? null
+                                      : () => _handleTap(i, choice),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFF4BE0A),
+                                    foregroundColor: textColor,
+                                    padding: EdgeInsets.zero,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(24),
+                                      side: side,
+                                    ),
                                   ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12),
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      choice,
-                                      style: const TextStyle(fontSize: 18),
-                                      textAlign: TextAlign.center,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12),
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        choice,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          color: textColor,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ).withGapBelow(i < n - 1 ? gap : 0);
-                          }),
-                        );
+                              );
+                            },
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: gap),
+                          );
+                        }
+
+                        return canFit
+                            ? buildList(const NeverScrollableScrollPhysics())
+                            : buildList(const ClampingScrollPhysics());
                       },
                     ),
                   ),
@@ -163,12 +224,4 @@ class QuestionDialogState extends State<QuestionDialog>
       ),
     );
   }
-}
-
-extension _Gap on Widget {
-  Widget withGapBelow(double gap) => gap > 0
-      ? Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [this, SizedBox(height: gap)])
-      : this;
 }
