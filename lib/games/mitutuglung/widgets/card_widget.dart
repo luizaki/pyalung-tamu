@@ -119,17 +119,42 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
             child: Padding(
               padding: EdgeInsets.all(innerPad),
               child: widget.card.isWord
-                  ? _WordLabel(
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Main Kapampangan word
+                    _WordLabel(
                       text: widget.card.content,
                       baseFontSize: (widget.height * 0.145).clamp(11.0, 18.0),
-                    )
-                  : FittedBox(
-                      fit: BoxFit.contain,
-                      child: Image.network(
-                        widget.card.content,
-                        filterQuality: FilterQuality.none,
-                      ),
                     ),
+
+                    // English trans
+                    if (widget.card.englishTrans.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '(${widget.card.englishTrans})',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 80,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.brown,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                )
+              : FittedBox(
+                  fit: BoxFit.contain,
+                  child: Image.network(
+                    widget.card.content,
+                    filterQuality: FilterQuality.none,
+                  ),
+                ),
+
             ),
           ),
         ],
@@ -204,7 +229,6 @@ class _WordLabel extends StatelessWidget {
 
       return Center(
         child: FittedBox(
-          // 🔑 ensures text never overflows
           fit: BoxFit.scaleDown,
           child: Text(
             text,

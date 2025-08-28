@@ -71,6 +71,7 @@ class QuestionDialogState extends State<QuestionDialog>
     final double maxW = math.min(size.width * 0.96, maxH * 1.35);
 
     final choices = widget.question.shuffledChoices;
+    final engChoices = widget.question.shuffledEngChoices;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -112,9 +113,11 @@ class QuestionDialogState extends State<QuestionDialog>
                     ),
                   ),
                   const SizedBox(height: 16),
+
+                  //Question
                   ConstrainedBox(
                     constraints: BoxConstraints(
-                        maxHeight: (maxH * 0.28).clamp(60.0, 150.0)),
+                        maxHeight: (maxH * 0.22).clamp(60.0, 150.0)),
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.center,
@@ -129,7 +132,25 @@ class QuestionDialogState extends State<QuestionDialog>
                       ),
                     ),
                   ),
+
+                  // Translation (if exists)
+                  if (widget.question.englishTrans.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.question.englishTrans,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xAD572100),
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+
                   const SizedBox(height: 16),
+
+                  //Answer choices
                   Flexible(
                     child: LayoutBuilder(
                       builder: (context, c) {
@@ -153,6 +174,7 @@ class QuestionDialogState extends State<QuestionDialog>
                             itemCount: n,
                             itemBuilder: (context, i) {
                               final choice = choices[i];
+                              final engChoice = engChoices[i];
 
                               final bool isSelected = _selectedIndex == i;
                               final bool showResult =
@@ -188,11 +210,11 @@ class QuestionDialogState extends State<QuestionDialog>
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 12),
+                                        horizontal: 12, vertical: 4),
                                     child: FittedBox(
                                       fit: BoxFit.scaleDown,
                                       child: Text(
-                                        choice,
+                                        '$choice ($engChoice)',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                           fontSize: 18,

@@ -16,6 +16,8 @@ abstract class BaseGameScreenState<T extends BaseGameController,
   List<Color> get backgroundColors =>
       [Colors.lightBlue[200]!, Colors.blue[400]!];
 
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -23,9 +25,13 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     controller = createController();
     setupController();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final screenSize = MediaQuery.of(context).size;
-      controller.initializeGame(screenSize);
+
+      setState(() => _isLoading = true);
+      await controller.initializeGame(screenSize);
+      setState(() => _isLoading = false);
+
       controller.startCountdown();
     });
 

@@ -2,9 +2,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:math' as math;
 
 import './auth_service.dart';
+import '../features/progress_feature.dart';
 
 class GameService {
   final _supabase = Supabase.instance.client;
+
+  // =========== SCORES AND DIFFICULTY ===============
 
   Future<String> getUserDifficulty(String gameType) async {
     try {
@@ -193,5 +196,168 @@ class GameService {
       // 30-69% accuracy: retain current difficulty
       return currentDifficulty;
     }
+  }
+
+  // =========== QUESTIONS FETCHING ===============
+
+  Future<List<WordData>> getWordsByDifficulty(
+      {required String difficulty}) async {
+    try {
+      // First, get total count of words for this difficulty
+      final response = await _supabase
+          .from('words')
+          .select('base_form, english_trans')
+          .eq('word_difficulty', difficulty);
+
+      final words = response
+          .map<WordData>((row) => WordData(
+                baseForm: row['base_form'] as String,
+                englishTrans: row['english_trans'] as String,
+              ))
+          .toList();
+
+      print('Fetched ${words.length} words for difficulty $difficulty');
+
+      return words;
+    } catch (e) {
+      print('Error fetching random words: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<MitutuglungCardData>> getMitutuglungQuestions(
+      {required String difficulty}) async {
+    try {
+      print(' GameService: Fetching Mitutuglung questions...');
+      print('   Difficulty: $difficulty');
+
+      final response = await _supabase
+          .from('mitutuglung_pairs')
+          .select(
+              'id, kapampangan_word, english_trans, difficulty_level, image_storage_link')
+          .eq('difficulty_level', difficulty);
+
+      //   print('   Raw response: $response');
+
+      final pairs = response
+          .map<MitutuglungCardData>((row) => MitutuglungCardData(
+                id: row['id'].toString(),
+                kapampanganWord: row['kapampangan_word'] as String,
+                englishTrans: row['english_trans'] as String,
+                imagePath: row['image_storage_link'] as String,
+              ))
+          .toList();
+
+      print('   Fetched ${pairs.length} questions for difficulty $difficulty');
+
+      return pairs;
+    } catch (e) {
+      print('Error fetching Mitutuglung questions: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<TugakQuestionData>> getTugakQuestions(
+      {required String difficulty}) async {
+    try {
+      print(' GameService: Fetching Tugak Catching questions...');
+      print('   Difficulty: $difficulty');
+
+      final response = await _supabase
+          .from('sentence_with_tenses')
+          .select()
+          .eq('word_difficulty', difficulty);
+
+      final questions = response
+          .map<TugakQuestionData>((row) => TugakQuestionData(
+                textWithBlank: row['text_with_blank'] as String,
+                correctTense: row['correct_tense'] as String,
+                sentenceEng: row['sentence_eng'] as String? ?? '',
+                pastTense: row['past'] as String,
+                presentTense: row['present'] as String,
+                futureTense: row['future'] as String,
+                engPast: row['eng_past'] as String? ?? '',
+                engPresent: row['eng_present'] as String? ?? '',
+                engFuture: row['eng_future'] as String? ?? '',
+              ))
+          .toList();
+
+      print(
+          '   Fetched ${questions.length} questions for difficulty $difficulty');
+
+      return questions;
+    } catch (e) {
+      print('Error fetching Tugak Catching questions: $e');
+      rethrow;
+    }
+  }
+}
+
+// ============== HELPER CLASSES ==============
+
+class MitutuglungCardData {
+  final String id;
+  final String kapampanganWord;
+  final String englishTrans;
+  final String imagePath;
+
+  MitutuglungCardData({
+    required this.id,
+    required this.kapampanganWord,
+    required this.englishTrans,
+    required this.imagePath,
+  });
+}
+
+class WordData {
+  final String baseForm;
+  final String englishTrans;
+
+  WordData({required this.baseForm, required this.englishTrans});
+}
+
+class TugakQuestionData {
+  final String textWithBlank;
+  final String correctTense;
+  final String sentenceEng;
+  final String pastTense;
+  final String presentTense;
+  final String futureTense;
+  final String engPast;
+  final String engPresent;
+  final String engFuture;
+
+  TugakQuestionData({
+    required this.textWithBlank,
+    required this.correctTense,
+    required this.sentenceEng,
+    required this.pastTense,
+    required this.presentTense,
+    required this.futureTense,
+    required this.engPast,
+    required this.engPresent,
+    required this.engFuture,
+  });
+
+  List<String> get allTenseOptions => [pastTense, presentTense, futureTense];
+
+  List<String> getOptions() {
+    final options = [pastTense, presentTense, futureTense];
+
+    if (options.isEmpty) {
+      return ["N/A"];
+    }
+
+    return options;
+  }
+
+  List<String> getEngOptions() {
+    final options = [engPast, engPresent, engFuture];
+
+    if (options.isEmpty) {
+      return ["N/A"];
+    }
+
+    return options;
   }
 }

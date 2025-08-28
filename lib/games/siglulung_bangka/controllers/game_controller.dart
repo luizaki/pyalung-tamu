@@ -9,9 +9,11 @@ import '../models/boat.dart';
 import '../models/word.dart';
 import '../models/word_bank.dart';
 
+import '../../../services/game_service.dart';
+
 class BangkaGameController extends BaseGameController<BangkaGameState> {
   // Game data
-  List<String> _upcomingWords = [];
+  List<WordData> _upcomingWords = [];
 
   // Game configs
   static const boatUpdateInterval = 8;
@@ -50,9 +52,10 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
   // ================== IMPLEMENTED INITS ==================
 
   @override
-  void initializeGameData() {
-    gameState.wordBank = WordBank.getWords();
-    _loadUserDifficulty();
+  Future<void> initializeGameData() async {
+    gameState.wordBank =
+        await WordBank.getWords(difficulty: getCurrentDifficulty());
+    await _loadUserDifficulty();
   }
 
   Future<void> _loadUserDifficulty() async {
@@ -62,9 +65,9 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
   }
 
   @override
-  void initializeGameSpecifics(Size screenSize) {
-    _resetGameSpecifics();
-    _generateFirstWord();
+  Future<void> initializeGameSpecifics(Size screenSize) async {
+    await _resetGameSpecifics();
+    await _generateFirstWord();
   }
 
   @override
@@ -109,7 +112,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
 
   // ================ WORDS MANAGEMENT ================
 
-  void _resetGameSpecifics() {
+  Future<void> _resetGameSpecifics() async {
     gameState.currentWord = null;
     gameState.completedWords.clear();
     gameState.boat = Boat();
@@ -118,35 +121,39 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
     gameState.currentWPM = 0.0;
     gameState.gameStartTime = null;
 
-    _generateWordQueue();
+    await _generateWordQueue();
   }
 
-  void _generateWordQueue() {
-    _upcomingWords = WordBank.getRandomWords(10);
+  Future<void> _generateWordQueue() async {
+    _upcomingWords = await WordBank.getRandomWords(getCurrentDifficulty(), 10);
   }
 
-  void _generateFirstWord() {
+  Future<void> _generateFirstWord() async {
     if (_upcomingWords.isNotEmpty) {
       final word = _upcomingWords.removeAt(0);
-      gameState.currentWord = TypedWord(word: word);
+      gameState.currentWord =
+          TypedWord(word: word.baseForm, translation: word.englishTrans);
 
       // Refill queue if running low
       if (_upcomingWords.length < 5) {
-        _upcomingWords.addAll(WordBank.getRandomWords(5));
+        _upcomingWords
+            .addAll(await WordBank.getRandomWords(getCurrentDifficulty(), 5));
       }
 
       notifyListeners();
     }
   }
 
-  void _generateNextWord() {
+  void _generateNextWord() async {
     if (_upcomingWords.isNotEmpty && isGameActive) {
       final word = _upcomingWords.removeAt(0);
-      gameState.currentWord = TypedWord(word: word);
+      gameState.currentWord =
+          TypedWord(word: word.baseForm, translation: word.englishTrans);
 
       // Keep queue filled
       if (_upcomingWords.length < 5) {
-        _upcomingWords.addAll(WordBank.getRandomWords(5));
+        _upcomingWords
+            .addAll(await WordBank.getRandomWords(getCurrentDifficulty(), 5));
       }
 
       notifyListeners();
@@ -250,8 +257,17 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
     gameState.totalWords++;
 
     if (currentWord.typedText == currentWord.word) {
-      final points = currentWord.word.length * 2;
-      onCorrectAnswer(points: points);
+      const Map<String, double> multipliers = {
+        'beginner': 1.0,
+        'intermediate': 1.5,
+        'advanced': 2.0,
+      };
+
+      int points = (currentWord.word.length.clamp(3, 8)) * 2;
+
+      onCorrectAnswer(
+          points:
+              (points * (multipliers[getCurrentDifficulty()] ?? 1.0)).round());
     } else {
       gameState.boat.hit();
     }
@@ -280,7 +296,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
 
   double get boatPosition => gameState.boat.position;
 
-  List<String> get upcomingWords => _upcomingWords;
+  List<WordData> get upcomingWords => _upcomingWords;
 
   // ================== DISPOSAL ==================
 

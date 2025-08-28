@@ -1,85 +1,39 @@
+import '../../../services/game_service.dart';
+
 class WordBank {
-  static List<String> getWords() {
-    return [
-      'quick',
-      'brown',
-      'fox',
-      'jumps',
-      'over',
-      'the',
-      'lazy',
-      'dog',
-      'name',
-      'sorry',
-      'place',
-      'really',
-      'not',
-      'much',
-      'direction',
-      'perfect',
-      'subject',
-      'agree',
-      'are',
-      'gullible',
-      'trait',
-      'scene',
-      'first',
-      'fall',
-      'love',
-      'in',
-      'with',
-      'how',
-      'inspire',
-      'them',
-      'manipulate',
-      'confident',
-      'power',
-      'there',
-      'use',
-      'new',
-      'process',
-      'yes',
-      'standard',
-      'step',
-      'guide',
-      'table',
-      'none',
-      'coffee',
-      'pretend',
-      'never',
-      'mind',
-      'get',
-      'build',
-      'small',
-      'extreme',
-      'thing',
-      'hot',
-      'frog',
-      'water',
-      'boil',
-      'target',
-      'event',
-      'party',
-      'poetry',
-      'pencil',
-      'business',
-      'card',
-      'time',
-      'independent',
-      'other',
-      'reason',
-      'normal'
-    ];
+  static final GameService _gameService = GameService();
+
+  static Future<List<WordData>> getWords({
+    String? difficulty,
+  }) async {
+    try {
+      print('   Wordbank: Fetching words from database...');
+      print('   Difficulty: $difficulty');
+
+      final words = await _gameService.getWordsByDifficulty(
+        difficulty: difficulty ?? 'beginner',
+      );
+
+      print('   Fetched ${words.length} words');
+
+      return words;
+    } catch (e) {
+      print('Error fetching words: $e');
+      return [
+        WordData(baseForm: 'Error', englishTrans: 'Error fetching words')
+      ];
+    }
   }
 
-  static List<String> getRandomWords(int count) {
-    final words = getWords();
+  static Future<List<WordData>> getRandomWords(
+      String difficulty, int count) async {
+    final words = await getWords(difficulty: difficulty);
     words.shuffle();
     return words.take(count).toList();
   }
 
-  static String getRandomWord() {
-    final words = getWords();
+  static Future<WordData> getRandomWord(String difficulty) async {
+    final words = await getWords(difficulty: difficulty);
     words.shuffle();
     return words.first;
   }

@@ -48,9 +48,10 @@ class TugakGameController extends BaseGameController<TugakGameState> {
   // ================== IMPLEMENTED INITS ==================
 
   @override
-  void initializeGameData() {
-    _questions = QuestionBank.getQuestions();
-    _loadUserDifficulty();
+  Future<void> initializeGameData() async {
+    _questions =
+        await QuestionBank.getQuestions(difficulty: getCurrentDifficulty());
+    await _loadUserDifficulty();
   }
 
   Future<void> _loadUserDifficulty() async {
@@ -59,7 +60,7 @@ class TugakGameController extends BaseGameController<TugakGameState> {
   }
 
   @override
-  void initializeGameSpecifics(Size screenSize) {
+  Future<void> initializeGameSpecifics(Size screenSize) async {
     _generateLilypadPositions(screenSize);
     _spawnInitialFrogs();
   }
@@ -355,7 +356,13 @@ class TugakGameController extends BaseGameController<TugakGameState> {
         isCorrect ? AnswerResult.correct : AnswerResult.incorrect;
 
     if (isCorrect) {
-      onCorrectAnswer(points: 10);
+      const Map<String, int> basePoints = {
+        'beginner': 10,
+        'intermediate': 15,
+        'advanced': 20,
+      };
+
+      onCorrectAnswer(points: basePoints[getCurrentDifficulty()] ?? 10);
     } else {
       onIncorrectAnswer();
     }

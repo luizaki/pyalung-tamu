@@ -5,6 +5,7 @@ enum CardState { hidden, revealed, matched }
 class MitutuglungCard {
   final String id;
   final String content;
+  final String englishTrans;
   final CardType type;
   final String pairId;
 
@@ -13,6 +14,7 @@ class MitutuglungCard {
   MitutuglungCard({
     required this.id,
     required this.content,
+    this.englishTrans = '',
     required this.type,
     required this.pairId,
     this.state = CardState.hidden,

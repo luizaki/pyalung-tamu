@@ -17,7 +17,7 @@ class MitutuglungGameController
 
   // Game configs
   static const int PAIRS_COUNT = 6;
-  static const int PREVIEW_DURATION = 5;
+  static const int PREVIEW_DURATION = 10;
   static const int MISMATCH_DELAY = 1;
 
   // Timers
@@ -28,9 +28,6 @@ class MitutuglungGameController
   int _previewDuration = PREVIEW_DURATION;
 
   MitutuglungGameController() : super(MitutuglungGameState());
-
-  @override
-  int get gameDuration => 90;
 
   // ================== SETUPS ==================
 
@@ -52,9 +49,12 @@ class MitutuglungGameController
   // ================== IMPLEMENTED INITS ==================
 
   @override
-  void initializeGameData() {
-    _cardPairs = CardBank.getRandomPairs(PAIRS_COUNT);
-    _loadUserDifficulty();
+  Future<void> initializeGameData() async {
+    _cardPairs =
+        await CardBank.getRandomPairs(PAIRS_COUNT, getCurrentDifficulty());
+
+    print('Initialized Mitutuglung game data with ${_cardPairs.length} pairs.');
+    await _loadUserDifficulty();
   }
 
   Future<void> _loadUserDifficulty() async {
@@ -63,7 +63,7 @@ class MitutuglungGameController
   }
 
   @override
-  void initializeGameSpecifics(Size screenSize) {
+  Future<void> initializeGameSpecifics(Size screenSize) async {
     gameState.revealedCards.clear();
     gameState.pairsFound = 0;
     gameState.isProcessingMove = false;
@@ -194,8 +194,13 @@ class MitutuglungGameController
     gameState.revealedCards.clear();
     gameState.isProcessingMove = false;
 
-    // TODO: fix scoring based on accuracy?
-    onCorrectAnswer(points: 20);
+    const Map<String, int> basePoints = {
+      'beginner': 10,
+      'intermediate': 15,
+      'advanced': 20,
+    };
+
+    onCorrectAnswer(points: basePoints[getCurrentDifficulty()] ?? 10);
 
     notifyListeners();
 

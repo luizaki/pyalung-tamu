@@ -30,10 +30,10 @@ abstract class BaseGameController<T extends BaseGameState>
 
   // ================== INITIALIZATION ==================
 
-  void initializeGame(Size screenSize) {
-    initializeGameData();
+  Future<void> initializeGame(Size screenSize) async {
+    await initializeGameData();
     resetGameState();
-    initializeGameSpecifics(screenSize);
+    await initializeGameSpecifics(screenSize);
     notifyListeners();
   }
 
@@ -96,9 +96,9 @@ abstract class BaseGameController<T extends BaseGameState>
     completeGame();
   }
 
-  void restartGame(Size screenSize) {
+  void restartGame(Size screenSize) async {
     _stopAllTimers();
-    initializeGame(screenSize);
+    await initializeGame(screenSize);
     startCountdown();
   }
 
@@ -202,9 +202,9 @@ abstract class BaseGameController<T extends BaseGameState>
 
   // ============== ABSTRACT METHODS ==============
 
-  void initializeGameData();
+  Future<void> initializeGameData();
 
-  void initializeGameSpecifics(Size screenSize);
+  Future<void> initializeGameSpecifics(Size screenSize);
 
   void resetGameState();
 
