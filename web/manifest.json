@@ -1,32 +1,32 @@
 {
-    "name": "pyalung_tamu",
-    "short_name": "pyalung_tamu",
+    "name": "Pyalung Tamu",
+    "short_name": "Pyalung Tamu",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "A game to rediscover Kapampangan culture and language.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
         {
-            "src": "icons/Icon-192.png",
+            "src": "icons/logo.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "icons/Icon-512.png",
+            "src": "icons/logo.png",
             "sizes": "512x512",
             "type": "image/png"
         },
         {
-            "src": "icons/Icon-maskable-192.png",
+            "src": "icons/logo.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable"
         },
         {
-            "src": "icons/Icon-maskable-512.png",
+            "src": "icons/logo.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
