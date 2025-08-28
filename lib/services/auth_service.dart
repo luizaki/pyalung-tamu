@@ -173,9 +173,17 @@ class AuthService {
         data: {'username': username},
       );
 
+      final alreadyRegistered = response.user != null &&
+          ((response.user!.identities?.isEmpty ?? true));
+
+      if (alreadyRegistered) {
+        _logWarning('Email already registered: $email');
+        return AuthResult.error(
+            'An account with this email already exists. Please try logging in.');
+      }
+
       if (response.user != null) {
         if (response.session == null) {
-          // Email confirmation required - user will get verification email
           _log('Email verification required for: $email');
           return AuthResult.success(
             'Please check your email and click the verification link to complete registration.',
@@ -241,8 +249,6 @@ class AuthService {
         _log('Loaded user profile: ${_currentPlayer?.username}');
       } else {
         _logError('No user profile found for auth user ${authUser.id}');
-        // User exists in auth but not in users table - this shouldn't happen
-        // but we can handle it gracefully
         _currentPlayer = null;
       }
     } catch (e) {

@@ -13,6 +13,8 @@ Future<void> main() async {
     DeviceOrientation.landscapeRight,
   ]);
 
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
   if (kDebugMode) {
     // TODO: ugly fix on connecting in debug mode
     await dotenv.load();

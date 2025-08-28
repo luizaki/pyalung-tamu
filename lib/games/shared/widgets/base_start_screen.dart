@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:stroke_text/stroke_text.dart';
 
+const Size _screenSize = Size(1280, 720);
+
 class StartScreen extends StatelessWidget {
   final Color color1;
   final Color color2;
@@ -28,10 +30,37 @@ class StartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final scaleW = size.width / _screenSize.width;
+    final scaleH = size.height / _screenSize.height;
+    final scale = (scaleW + scaleH) / 2;
+
+    final circleDim = 200.0 * scale;
+    final circleBorder = 10.0 * scale;
+    final backBtnSize = 55.0 * scale;
+    final backBtnBorder = 2.0 * scale;
+    final backIconSize = 30.0 * scale;
+    final backTop = 35.0 * scale;
+    final backLeft = 30.0 * scale;
+
+    final titleSize = 64.0 * scale;
+    final titleStroke = 6.0 * scale;
+    final instrSize = 32.0 * scale;
+    final instrStroke = 4.0 * scale;
+
+    final outerBorder = 5.0 * scale;
+    final cardRadius = 16.0 * scale;
+    final innerRadius = 8.0 * scale;
+    final cardMargin = 32.0 * scale;
+    final playPadding = 12.0 * scale;
+    final playFont = 24.0 * scale;
+
+    final playWidth = (320.0 * scale).clamp(180.0, size.width * 0.6);
+
     return Scaffold(
-        body: Stack(
-      children: [
-        Container(
+      body: Stack(
+        children: [
+          Container(
             width: double.infinity,
             height: double.infinity,
             decoration: backgroundImage != null
@@ -43,140 +72,153 @@ class StartScreen extends StatelessWidget {
                   )
                 : BoxDecoration(
                     gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      color1,
-                      color1,
-                      color2,
-                      color2,
-                      color3,
-                      color3,
-                      color4,
-                      color4
-                    ],
-                    stops: const [0.0, 0.25, 0.25, 0.5, 0.5, 0.75, 0.75, 1.0],
-                  ))),
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        color1,
+                        color1,
+                        color2,
+                        color2,
+                        color3,
+                        color3,
+                        color4,
+                        color4
+                      ],
+                      stops: const [0.0, 0.25, 0.25, 0.5, 0.5, 0.75, 0.75, 1.0],
+                    ),
+                  ),
+          ),
 
-        // Back button
-        Positioned(
-            top: 35,
-            left: 30,
+          // Back button
+          Positioned(
+            top: backTop,
+            left: backLeft,
             child: Container(
-              width: 55,
-              height: 55,
+              width: backBtnSize,
+              height: backBtnSize,
               decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFF2BB495),
-                  border: Border.all(
-                    color: const Color(0xFF443229),
-                    width: 2,
-                  )),
+                shape: BoxShape.circle,
+                color: const Color(0xFF2BB495),
+                border: Border.all(
+                  color: const Color(0xFF443229),
+                  width: backBtnBorder,
+                ),
+              ),
               child: IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.arrow_back,
-                  color: Color(0xFFF4BE0A),
-                  size: 30,
+                  color: const Color(0xFFF4BE0A),
+                  size: backIconSize,
                 ),
                 onPressed: () => Navigator.pop(context),
               ),
-            )),
+            ),
+          ),
 
-        // Main
-        Center(
+          // Main
+          Center(
             child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFFF9DD9A),
-                  border: Border.all(color: const Color(0xFFAD5721), width: 10),
-                ),
-                child: gameIcon != null
-                    ? ClipOval(
-                        child: Image.asset(
-                          gameIcon!,
-                          fit: BoxFit.cover,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10 * scale),
+                  width: circleDim,
+                  height: circleDim,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFF9DD9A),
+                    border: Border.all(
+                      color: const Color(0xFFAD5721),
+                      width: circleBorder,
+                    ),
+                  ),
+                  child: gameIcon != null
+                      ? ClipOval(
+                          child: Image.asset(
+                            gameIcon!,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Icon(
+                          Icons.games,
+                          size: 100 * scale,
+                          color: Colors.brown,
                         ),
-                      )
-                    : const Icon(
-                        Icons.games,
-                        size: 100,
-                        color: Colors.brown,
-                      )),
+                ),
 
-            const SizedBox(height: 20),
+                SizedBox(height: 20 * scale),
 
-            // Title
-            StrokeText(
-              text: gameTitle,
-              textAlign: TextAlign.center,
-              textStyle: const TextStyle(
-                fontSize: 64,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFF4BE0A),
-              ),
-              strokeColor: Colors.black,
-              strokeWidth: 6,
-            ),
+                // Title
+                StrokeText(
+                  text: gameTitle,
+                  textAlign: TextAlign.center,
+                  textStyle: TextStyle(
+                    fontSize: titleSize,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFFF4BE0A),
+                  ),
+                  strokeColor: Colors.black,
+                  strokeWidth: titleStroke,
+                ),
 
-            const SizedBox(height: 10),
+                SizedBox(height: 10 * scale),
 
-            // Instructions
-            StrokeText(
-              text: 'How to Play: $instructions',
-              textAlign: TextAlign.center,
-              textStyle: const TextStyle(
-                fontSize: 24,
-                color: Color(0xFFFFFEDE),
-              ),
-              strokeColor: Colors.black,
-              strokeWidth: 4,
-            ),
+                // Instructions
+                StrokeText(
+                  text: 'How to Play: $instructions',
+                  textAlign: TextAlign.center,
+                  textStyle: TextStyle(
+                    fontSize: instrSize,
+                    color: const Color(0xFFFFFEDE),
+                  ),
+                  strokeColor: Colors.black,
+                  strokeWidth: instrStroke,
+                ),
 
-            const SizedBox(height: 20),
+                SizedBox(height: 20 * scale),
 
-            // Play button
-            SizedBox(
-              width: MediaQuery.of(context).size.width / 4,
-              child: Container(
-                margin: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: const Color(0xF9DD9A00),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: const Color(0xAD572100),
-                    width: 5,
+                // Play button
+                SizedBox(
+                  width: playWidth,
+                  child: Container(
+                    margin: EdgeInsets.all(cardMargin),
+                    decoration: BoxDecoration(
+                      color: const Color(0xF9DD9A00),
+                      borderRadius: BorderRadius.circular(cardRadius),
+                      border: Border.all(
+                        color: const Color(0xAD572100),
+                        width: outerBorder,
+                      ),
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => gameScreen),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(innerRadius),
+                      highlightColor: const Color(0xFFCA8505),
+                      child: Padding(
+                        padding: EdgeInsets.all(playPadding),
+                        child: Text(
+                          'Play',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: playFont,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFFF9DD9A),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                child: InkWell(
-                  onTap: () => {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => gameScreen),
-                    )
-                  },
-                  borderRadius: BorderRadius.circular(8),
-                  highlightColor: const Color(0xFFCA8505),
-                  child: const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Text('Play',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFF9DD9A),
-                        )),
-                  ),
-                ),
-              ),
+              ],
             ),
-          ],
-        )),
-      ],
-    ));
+          ),
+        ],
+      ),
+    );
   }
 }

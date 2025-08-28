@@ -77,7 +77,7 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final contentWidth = constraints.maxWidth * 0.60;
+              final contentWidth = constraints.maxWidth * 0.70;
               return Row(
                 children: [
                   const Spacer(),
@@ -93,9 +93,9 @@ class _HomePageState extends State<HomePage> {
                           child: StrokeText(
                             text: title,
                             textStyle: const TextStyle(
-                              fontSize: 30,
+                              fontSize: 40,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFFFCF7D0),
+                              color: const Color(0xFFFCF7D0),
                             ),
                             strokeColor: Colors.black,
                             strokeWidth: 3,

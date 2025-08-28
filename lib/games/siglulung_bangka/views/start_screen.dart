@@ -17,7 +17,7 @@ class BangkaStartScreen extends StatelessWidget {
       color4: Color(0xFF2312C0),
       gameTitle: 'Siglulung Bangka',
       instructions:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+          'Type the Kapampangan words correctly to make the boat go faster! Type as many as you can before time runs out.',
       gameScreen: BangkaGameScreen(),
     );
   }
