@@ -76,6 +76,18 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
           ),
+          const SizedBox(height: 8),
+          const Padding(
+            padding: EdgeInsets.only(bottom: 4),
+            child: Text(
+              'Created by FARM. Lee, Sanchez, Santos, Baquiano.',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
         ],
       ),
     );

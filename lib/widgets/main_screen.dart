@@ -51,7 +51,8 @@ class MainScreen extends StatelessWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xAD572100).withOpacity(0.2),
+                            color:
+                                const Color(0xAD572100).withValues(alpha: 0.2),
                             blurRadius: 5,
                             offset: const Offset(0, 2),
                           ),
