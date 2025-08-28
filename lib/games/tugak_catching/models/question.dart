@@ -1,8 +1,8 @@
-// NOTE: THIS IS FOR DUMMY / TEST PURPOSES ONLY.
-// TODO: Remove/revise this file when the database is actually implemented.
+import '../../../services/game_service.dart';
 
 class Question {
   final String question;
+  final String englishTrans;
   final List<String> choices;
   final String correctAnswer;
 
@@ -11,8 +11,9 @@ class Question {
 
   Question({
     required this.question,
-    required this.choices,
+    this.englishTrans = '',
     required this.correctAnswer,
+    required this.choices,
   }) {
     _initialShuffle();
   }
@@ -29,33 +30,33 @@ class Question {
 }
 
 class QuestionBank {
-  static List<Question> getQuestions() {
-    return [
-      Question(
-        question: 'Maria _____ a lesson plan for her class yesterday.',
-        choices: ['prepares', 'prepared', 'will prepare'],
-        correctAnswer: 'prepared',
-      ),
-      Question(
-        question: 'The students _____ their homework every day.',
-        choices: ['do', 'does', 'did'],
-        correctAnswer: 'do',
-      ),
-      Question(
-        question: 'He _____ to the library last week.',
-        choices: ['goes', 'went', 'going'],
-        correctAnswer: 'went',
-      ),
-      Question(
-        question: 'Carlos _____ his friends at the park tomorrow.',
-        choices: ['meets', 'met', 'will meet'],
-        correctAnswer: 'will meet',
-      ),
-      Question(
-        question: 'They _____ a movie last night.',
-        choices: ['watch', 'watches', 'watched'],
-        correctAnswer: 'watched',
-      )
-    ];
+  static final GameService _gameService = GameService();
+
+  static Future<List<Question>> getQuestions({
+    String? difficulty,
+  }) async {
+    try {
+      final tugakData = await _gameService.getTugakQuestions(
+          difficulty: difficulty ?? 'beginner');
+
+      print('   Fetched ${tugakData.length} questions');
+
+      // Convert TugakQuestionData to Question
+      final questions = tugakData
+          .map((data) => Question(
+                question: data.textWithBlank,
+                englishTrans: data.sentenceEng,
+                correctAnswer: data.correctTense,
+                choices: data.getOptions(),
+              ))
+          .toList();
+
+      return questions;
+    } catch (e) {
+      print(' Error fetching questions: $e');
+      return [
+        Question(question: '', correctAnswer: '', choices: [''])
+      ];
+    }
   }
 }

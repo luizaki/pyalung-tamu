@@ -53,7 +53,7 @@ class MitutuglungGameController
     _cardPairs = await CardBank.getRandomPairs(PAIRS_COUNT);
 
     print('Initialized Mitutuglung game data with ${_cardPairs.length} pairs.');
-    _loadUserDifficulty();
+    await _loadUserDifficulty();
   }
 
   Future<void> _loadUserDifficulty() async {

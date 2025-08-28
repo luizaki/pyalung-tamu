@@ -103,6 +103,21 @@ class QuestionDialogState extends State<QuestionDialog>
                 textAlign: TextAlign.center,
               ),
 
+              // Translation (if exists)
+              if (widget.question.englishTrans.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  widget.question.englishTrans,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xAD572100),
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+
               const SizedBox(height: 20),
 
               // Answer choices

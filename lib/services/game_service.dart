@@ -255,6 +255,38 @@ class GameService {
       rethrow;
     }
   }
+
+  Future<List<TugakQuestionData>> getTugakQuestions(
+      {required String difficulty}) async {
+    try {
+      print(' GameService: Fetching Tugak Catching questions...');
+      print('   Difficulty: $difficulty');
+
+      final response = await _supabase
+          .from('sentence_with_tenses')
+          .select()
+          .eq('word_difficulty', difficulty);
+
+      final questions = response
+          .map<TugakQuestionData>((row) => TugakQuestionData(
+                textWithBlank: row['text_with_blank'] as String,
+                correctTense: row['correct_tense'] as String,
+                sentenceEng: row['sentence_eng'] as String? ?? '',
+                pastTense: row['past'] as String,
+                presentTense: row['present'] as String,
+                futureTense: row['future'] as String,
+              ))
+          .toList();
+
+      print(
+          '   Fetched ${questions.length} questions for difficulty $difficulty');
+
+      return questions;
+    } catch (e) {
+      print('Error fetching Tugak Catching questions: $e');
+      rethrow;
+    }
+  }
 }
 
 // ============== HELPER CLASSES ==============
@@ -278,4 +310,34 @@ class WordData {
   final String englishTrans;
 
   WordData({required this.baseForm, required this.englishTrans});
+}
+
+class TugakQuestionData {
+  final String textWithBlank;
+  final String correctTense;
+  final String sentenceEng;
+  final String pastTense;
+  final String presentTense;
+  final String futureTense;
+
+  TugakQuestionData({
+    required this.textWithBlank,
+    required this.correctTense,
+    required this.sentenceEng,
+    required this.pastTense,
+    required this.presentTense,
+    required this.futureTense,
+  });
+
+  List<String> get allTenseOptions => [pastTense, presentTense, futureTense];
+
+  List<String> getOptions() {
+    final options = [pastTense, presentTense, futureTense];
+
+    if (options.isEmpty) {
+      return ["N/A"];
+    }
+
+    return options;
+  }
 }
