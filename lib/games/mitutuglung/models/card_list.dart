@@ -34,8 +34,9 @@ class CardBank {
     }
   }
 
-  static Future<List<CardPair>> getRandomPairs(int amount) async {
-    final allPairs = await getCardPairs();
+  static Future<List<CardPair>> getRandomPairs(
+      int amount, String? difficulty) async {
+    final allPairs = await getCardPairs(difficulty: difficulty);
     allPairs.shuffle();
     return allPairs.take(amount).toList();
   }

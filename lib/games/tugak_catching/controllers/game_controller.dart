@@ -49,7 +49,8 @@ class TugakGameController extends BaseGameController<TugakGameState> {
 
   @override
   Future<void> initializeGameData() async {
-    _questions = await QuestionBank.getQuestions();
+    _questions =
+        await QuestionBank.getQuestions(difficulty: getCurrentDifficulty());
     await _loadUserDifficulty();
   }
 

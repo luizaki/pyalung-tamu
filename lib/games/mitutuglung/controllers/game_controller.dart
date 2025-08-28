@@ -50,7 +50,8 @@ class MitutuglungGameController
 
   @override
   Future<void> initializeGameData() async {
-    _cardPairs = await CardBank.getRandomPairs(PAIRS_COUNT);
+    _cardPairs =
+        await CardBank.getRandomPairs(PAIRS_COUNT, getCurrentDifficulty());
 
     print('Initialized Mitutuglung game data with ${_cardPairs.length} pairs.');
     await _loadUserDifficulty();
@@ -193,7 +194,6 @@ class MitutuglungGameController
     gameState.revealedCards.clear();
     gameState.isProcessingMove = false;
 
-    // TODO: fix scoring based on accuracy?
     onCorrectAnswer(points: 20);
 
     notifyListeners();
