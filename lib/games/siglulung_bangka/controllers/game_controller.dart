@@ -257,8 +257,17 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
     gameState.totalWords++;
 
     if (currentWord.typedText == currentWord.word) {
-      final points = currentWord.word.length * 2;
-      onCorrectAnswer(points: points);
+      const Map<String, double> multipliers = {
+        'beginner': 1.0,
+        'intermediate': 1.5,
+        'advanced': 2.0,
+      };
+
+      int points = (currentWord.word.length.clamp(3, 8)) * 2;
+
+      onCorrectAnswer(
+          points:
+              (points * (multipliers[getCurrentDifficulty()] ?? 1.0)).round());
     } else {
       gameState.boat.hit();
     }

@@ -356,7 +356,13 @@ class TugakGameController extends BaseGameController<TugakGameState> {
         isCorrect ? AnswerResult.correct : AnswerResult.incorrect;
 
     if (isCorrect) {
-      onCorrectAnswer(points: 10);
+      const Map<String, int> basePoints = {
+        'beginner': 10,
+        'intermediate': 15,
+        'advanced': 20,
+      };
+
+      onCorrectAnswer(points: basePoints[getCurrentDifficulty()] ?? 10);
     } else {
       onIncorrectAnswer();
     }

@@ -194,7 +194,13 @@ class MitutuglungGameController
     gameState.revealedCards.clear();
     gameState.isProcessingMove = false;
 
-    onCorrectAnswer(points: 20);
+    const Map<String, int> basePoints = {
+      'beginner': 10,
+      'intermediate': 15,
+      'advanced': 20,
+    };
+
+    onCorrectAnswer(points: basePoints[getCurrentDifficulty()] ?? 10);
 
     notifyListeners();
 
