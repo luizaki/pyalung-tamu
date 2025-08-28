@@ -23,8 +23,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final scale = MediaQuery.of(context).size.width / 1280;
-
     return Scaffold(
       body: MainScreen(
         contentWidthFactor: 0.70,

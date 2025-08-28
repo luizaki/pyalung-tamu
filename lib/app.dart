@@ -60,7 +60,9 @@ class _AppState extends State<App> {
     // Show auth popup if user is not logged in
     if (_authService.currentPlayer == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showAuthPopup();
+        if (mounted) {
+          _showAuthPopup();
+        }
       });
     }
   }
