@@ -96,9 +96,9 @@ abstract class BaseGameController<T extends BaseGameState>
     completeGame();
   }
 
-  void restartGame(Size screenSize) {
+  void restartGame(Size screenSize) async {
     _stopAllTimers();
-    initializeGame(screenSize);
+    await initializeGame(screenSize);
     startCountdown();
   }
 
