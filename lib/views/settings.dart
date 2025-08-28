@@ -4,21 +4,36 @@ import '../widgets/main_screen.dart';
 import '../audio/audio_controller.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  final AudioController audioController;
+
+  const SettingsPage({super.key, required this.audioController});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _musicEnabled = true;
-  bool _sfxEnabled = true;
-  String _language = 'English';
+  late bool _musicEnabled;
 
   @override
   void initState() {
     super.initState();
-    _musicEnabled = AudioController.enabled;
+
+    _musicEnabled = widget.audioController.enabled;
+
+    widget.audioController.addListener(_onAudioChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.audioController.removeListener(_onAudioChanged);
+    super.dispose();
+  }
+
+  void _onAudioChanged() {
+    if (mounted) {
+      setState(() => _musicEnabled = widget.audioController.enabled);
+    }
   }
 
   @override
@@ -27,13 +42,13 @@ class _SettingsPageState extends State<SettingsPage> {
       body: MainScreen(
         contentWidthFactor: 0.70,
         children: [
-          Center(
+          const Center(
             child: StrokeText(
               text: 'Settings',
               textStyle: TextStyle(
                 fontSize: 64,
                 fontWeight: FontWeight.w900,
-                color: const Color(0xFFFCF7D0),
+                color: Color(0xFFFCF7D0),
               ),
               strokeColor: Colors.black,
               strokeWidth: 4,
@@ -42,52 +57,23 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: 32),
           _buildSettingCard(
-            icon: Icons.volume_up,
-            label: 'Sound Effects',
-            trailing: Transform.scale(
-              scale: 1.6,
-              child: Switch(
-                value: _sfxEnabled,
-                onChanged: (v) => setState(() => _sfxEnabled = v),
-              ),
-            ),
-          ),
-          _buildSettingCard(
             icon: Icons.music_note,
             label: 'Background Music',
-            trailing: Transform.scale(
-              scale: 1.6,
-              child: Switch(
-                value: _musicEnabled,
-                onChanged: (v) async {
-                  setState(() => _musicEnabled = v);
-                  try {
-                    await AudioController.setEnabled(v);
-                  } catch (e) {
-                    setState(() => _musicEnabled = !v);
-                  }
-                },
-              ),
-            ),
-          ),
-          _buildSettingCard(
-            icon: Icons.language,
-            label: 'Language',
-            trailing: DropdownButton<String>(
-              value: _language,
-              isDense: false,
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-              underline: const SizedBox.shrink(),
-              items: const [
-                DropdownMenuItem(value: 'English', child: Text('English')),
-                DropdownMenuItem(
-                    value: 'Kapampangan', child: Text('Kapampangan')),
-              ],
-              onChanged: (v) => setState(() => _language = v ?? 'English'),
+            trailing: AnimatedBuilder(
+              animation: widget.audioController,
+              builder: (context, _) {
+                return Transform.scale(
+                  scale: 1.6,
+                  child: Switch(
+                    value: widget.audioController.enabled,
+                    onChanged: (v) {
+                      widget.audioController.setEnabled(v);
+                    },
+                    activeThumbColor: Colors.brown,
+                    activeTrackColor: const Color(0xFF2BB495),
+                  ),
+                );
+              },
             ),
           ),
         ],

@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:audioplayers/audioplayers.dart';
 
-class AudioController with WidgetsBindingObserver {
+class AudioController with WidgetsBindingObserver, ChangeNotifier {
   static final AudioController _instance = AudioController._internal();
   factory AudioController() => _instance;
 
@@ -15,7 +15,7 @@ class AudioController with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
   }
 
-  static Future<void> init({bool enabled = true}) async {
+  Future<void> init({bool enabled = true}) async {
     _enabled = enabled;
     await _player.setReleaseMode(ReleaseMode.loop);
     await _player.setVolume(0.4);
@@ -25,11 +25,12 @@ class AudioController with WidgetsBindingObserver {
     if (_enabled) {
       await _player.resume();
     }
+    notifyListeners();
   }
 
-  static bool get enabled => _enabled;
+  bool get enabled => _enabled;
 
-  static Future<void> setEnabled(bool enabled) async {
+  Future<void> setEnabled(bool enabled) async {
     _enabled = enabled;
 
     if (!_loaded) {
@@ -49,6 +50,8 @@ class AudioController with WidgetsBindingObserver {
         await _player.pause();
       }
     }
+
+    notifyListeners();
   }
 
   @override
@@ -62,9 +65,10 @@ class AudioController with WidgetsBindingObserver {
     }
   }
 
-  static Future<void> dispose() async {
-    WidgetsBinding.instance.removeObserver(_instance);
+  @override
+  Future<void> dispose() async {
+    WidgetsBinding.instance.removeObserver(this);
     await _player.dispose();
-    _loaded = false;
+    super.dispose();
   }
 }
