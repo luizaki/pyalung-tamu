@@ -121,17 +121,41 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
               child: widget.card.isWord
-                  ? FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        widget.card.content,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 200,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.brown,
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Main Kapampangan word
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            widget.card.content,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 200,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.brown,
+                            ),
+                          ),
                         ),
-                      ),
+
+                        // English trans
+                        if (widget.card.englishTrans.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '(${widget.card.englishTrans})',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 80,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.brown,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     )
                   : FittedBox(
                       fit: BoxFit.contain,
