@@ -223,9 +223,56 @@ class GameService {
       rethrow;
     }
   }
+
+  Future<List<MitutuglungCardData>> getMitutuglungQuestions(
+      {required String difficulty}) async {
+    try {
+      print(' GameService: Fetching Mitutuglung questions...');
+      print('   Difficulty: $difficulty');
+
+      final response = await _supabase
+          .from('mitutuglung_pairs')
+          .select(
+              'id, kapampangan_word, english_trans, difficulty_level, image_storage_link')
+          .eq('difficulty_level', difficulty);
+
+      //   print('   Raw response: $response');
+
+      final pairs = response
+          .map<MitutuglungCardData>((row) => MitutuglungCardData(
+                id: row['id'].toString(),
+                kapampanganWord: row['kapampangan_word'] as String,
+                englishTrans: row['english_trans'] as String,
+                imagePath: row['image_storage_link'] as String,
+              ))
+          .toList();
+
+      print('   Fetched ${pairs.length} questions for difficulty $difficulty');
+
+      return pairs;
+    } catch (e) {
+      print('Error fetching Mitutuglung questions: $e');
+      rethrow;
+    }
+  }
 }
 
 // ============== HELPER CLASSES ==============
+
+class MitutuglungCardData {
+  final String id;
+  final String kapampanganWord;
+  final String englishTrans;
+  final String imagePath;
+
+  MitutuglungCardData({
+    required this.id,
+    required this.kapampanganWord,
+    required this.englishTrans,
+    required this.imagePath,
+  });
+}
+
 class WordData {
   final String baseForm;
   final String englishTrans;

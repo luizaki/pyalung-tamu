@@ -17,7 +17,7 @@ class MitutuglungGameController
 
   // Game configs
   static const int PAIRS_COUNT = 6;
-  static const int PREVIEW_DURATION = 5;
+  static const int PREVIEW_DURATION = 10;
   static const int MISMATCH_DELAY = 1;
 
   // Timers
@@ -52,8 +52,10 @@ class MitutuglungGameController
   // ================== IMPLEMENTED INITS ==================
 
   @override
-  void initializeGameData() {
-    _cardPairs = CardBank.getRandomPairs(PAIRS_COUNT);
+  void initializeGameData() async {
+    _cardPairs = await CardBank.getRandomPairs(PAIRS_COUNT);
+
+    print('Initialized Mitutuglung game data with ${_cardPairs.length} pairs.');
     _loadUserDifficulty();
   }
 
