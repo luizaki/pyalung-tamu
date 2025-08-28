@@ -21,12 +21,10 @@ class CardWidget extends StatefulWidget {
 }
 
 class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
-  //sprites
   static const String _backCard = 'assets/mitutuglung/back_card.PNG';
   static const String _frontCard = 'assets/mitutuglung/front_card.PNG';
   static const String _flipCard = 'assets/mitutuglung/flip_card.PNG';
 
-  // Handle flip anim
   late AnimationController _flipController;
   late Animation<double> _flipAnimation;
 
@@ -35,19 +33,14 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
     _flipController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-
-    _flipAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
+    _flipAnimation = CurvedAnimation(
       parent: _flipController,
       curve: Curves.easeInOut,
-    ));
+    );
 
     _wasRevealed = widget.card.isRevealed || widget.card.isMatched;
     if (_wasRevealed) {
@@ -58,16 +51,14 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
   @override
   void didUpdateWidget(CardWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    final isCurrentlyRevealed = widget.card.isRevealed || widget.card.isMatched;
-
-    if (isCurrentlyRevealed != _wasRevealed) {
-      if (isCurrentlyRevealed) {
+    final isNowRevealed = widget.card.isRevealed || widget.card.isMatched;
+    if (isNowRevealed != _wasRevealed) {
+      if (isNowRevealed) {
         _flipController.forward();
       } else {
         _flipController.reverse();
       }
-      _wasRevealed = isCurrentlyRevealed;
+      _wasRevealed = isNowRevealed;
     }
   }
 
@@ -84,32 +75,30 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
       child: AnimatedBuilder(
         animation: _flipAnimation,
         builder: (context, _) {
-          final v = _flipAnimation.value;
-
           return Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.identity()
-                ..setEntry(3, 2, 0.001)
-                ..rotateY(math.pi * _flipAnimation.value),
-              child: Container(
-                width: widget.width,
-                height: widget.height,
-                margin: const EdgeInsets.all(4),
-                child: _buildCardContent(v),
-              ));
+            alignment: Alignment.center,
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.001)
+              ..rotateY(math.pi * _flipAnimation.value),
+            child: SizedBox(
+              width: widget.width,
+              height: widget.height,
+              child: _buildCardContent(_flipAnimation.value),
+            ),
+          );
         },
       ),
     );
   }
 
   Widget _buildCardContent(double value) {
-    // build card depending on face
     if (value > 0.40 && value < 0.60) {
       return _buildSprite(_flipCard);
     }
     if (value <= 0.50) {
       return _buildSprite(_frontCard);
     }
+
     return Transform(
       alignment: Alignment.center,
       transform: Matrix4.identity()..rotateY(math.pi),
@@ -121,17 +110,9 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
               child: widget.card.isWord
-                  ? FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        widget.card.content,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 200,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.brown,
-                        ),
-                      ),
+                  ? _WordLabel(
+                      text: widget.card.content,
+                      baseFontSize: (widget.height * 0.16).clamp(10.0, 20.0),
                     )
                   : FittedBox(
                       fit: BoxFit.contain,
@@ -156,5 +137,80 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
         filterQuality: FilterQuality.none,
       ),
     );
+  }
+}
+
+class _WordLabel extends StatelessWidget {
+  final String text;
+  final double baseFontSize;
+
+  const _WordLabel({
+    required this.text,
+    required this.baseFontSize,
+  });
+
+  double _measureWordWidth(String word, double fontSize) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: word,
+        style: TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.w900,
+          height: 1.05,
+        ),
+      ),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout(minWidth: 0, maxWidth: double.infinity);
+    return tp.size.width;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, c) {
+      final maxWidth = c.maxWidth;
+      final words =
+          text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+
+      if (words.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      final longestWord = words.reduce(
+        (a, b) => (a.length >= b.length) ? a : b,
+      );
+
+      const double minFont = 12.0;
+      final double tryFont = baseFontSize;
+
+      //long words might not fit at the base font size
+      final wAtBase = _measureWordWidth(longestWord, tryFont);
+
+      //if it doesn't fit, the font is scaled down
+      double finalFontSize = tryFont;
+      if (wAtBase > maxWidth && wAtBase > 0) {
+        final scale = maxWidth / wAtBase;
+        finalFontSize = (tryFont * scale).clamp(minFont, tryFont);
+      }
+
+      return Center(
+        child: SizedBox(
+          width: double.infinity,
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            softWrap: true,
+            maxLines: 3,
+            overflow: TextOverflow.clip,
+            style: TextStyle(
+              fontSize: finalFontSize,
+              fontWeight: FontWeight.w900,
+              color: Colors.brown,
+              height: 1.05,
+            ),
+          ),
+        ),
+      );
+    });
   }
 }
