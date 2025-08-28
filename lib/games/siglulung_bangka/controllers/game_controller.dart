@@ -55,7 +55,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
   Future<void> initializeGameData() async {
     gameState.wordBank =
         await WordBank.getWords(difficulty: getCurrentDifficulty());
-    _loadUserDifficulty();
+    await _loadUserDifficulty();
   }
 
   Future<void> _loadUserDifficulty() async {
@@ -66,8 +66,8 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
 
   @override
   Future<void> initializeGameSpecifics(Size screenSize) async {
-    _resetGameSpecifics();
-    _generateFirstWord();
+    await _resetGameSpecifics();
+    await _generateFirstWord();
   }
 
   @override
@@ -112,7 +112,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
 
   // ================ WORDS MANAGEMENT ================
 
-  void _resetGameSpecifics() async {
+  Future<void> _resetGameSpecifics() async {
     gameState.currentWord = null;
     gameState.completedWords.clear();
     gameState.boat = Boat();
@@ -128,7 +128,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
     _upcomingWords = await WordBank.getRandomWords(getCurrentDifficulty(), 10);
   }
 
-  void _generateFirstWord() async {
+  Future<void> _generateFirstWord() async {
     if (_upcomingWords.isNotEmpty) {
       final word = _upcomingWords.removeAt(0);
       gameState.currentWord =

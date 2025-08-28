@@ -17,7 +17,6 @@ abstract class BaseGameScreenState<T extends BaseGameController,
       [Colors.lightBlue[200]!, Colors.blue[400]!];
 
   bool _isLoading = true;
-  final String _loadingMessage = 'Loading game...';
 
   @override
   void initState() {
@@ -28,7 +27,11 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final screenSize = MediaQuery.of(context).size;
+
+      setState(() => _isLoading = true);
       await controller.initializeGame(screenSize);
+      setState(() => _isLoading = false);
+
       controller.startCountdown();
     });
 
