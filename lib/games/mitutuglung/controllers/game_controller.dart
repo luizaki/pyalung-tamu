@@ -29,9 +29,6 @@ class MitutuglungGameController
 
   MitutuglungGameController() : super(MitutuglungGameState());
 
-  @override
-  int get gameDuration => 90;
-
   // ================== SETUPS ==================
 
   @override
