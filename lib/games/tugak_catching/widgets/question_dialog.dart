@@ -124,6 +124,9 @@ class QuestionDialogState extends State<QuestionDialog>
               ...widget.question.shuffledChoices.asMap().entries.map((entry) {
                 int index = entry.key;
                 String choice = entry.value;
+                String engChoice = widget.question.shuffledEngChoices[index];
+
+                print(widget.question.shuffledEngChoices);
 
                 return Container(
                   width: double.infinity,
@@ -142,7 +145,7 @@ class QuestionDialogState extends State<QuestionDialog>
                       padding: const EdgeInsets.symmetric(vertical: 15),
                     ),
                     child: Text(
-                      choice,
+                      '$choice ($engChoice)',
                       style: const TextStyle(fontSize: 16),
                     ),
                   ),

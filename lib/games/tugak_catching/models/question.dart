@@ -4,9 +4,11 @@ class Question {
   final String question;
   final String englishTrans;
   final List<String> choices;
+  final List<String> engChoices;
   final String correctAnswer;
 
   late List<String> shuffledChoices;
+  late List<String> shuffledEngChoices;
   late int correctIndex;
 
   Question({
@@ -14,13 +16,23 @@ class Question {
     this.englishTrans = '',
     required this.correctAnswer,
     required this.choices,
+    required this.engChoices,
   }) {
     _initialShuffle();
   }
 
   // an internal shuffle method to immediately initialize shuffling
   void _initialShuffle() {
-    shuffledChoices = List.from(choices)..shuffle();
+    final paired = List.generate(
+      choices.length,
+      (i) => MapEntry(choices[i], engChoices[i]),
+    );
+
+    paired.shuffle();
+
+    shuffledChoices = paired.map((e) => e.key).toList();
+    shuffledEngChoices = paired.map((e) => e.value).toList();
+
     correctIndex = shuffledChoices.indexOf(correctAnswer);
   }
 
@@ -48,6 +60,7 @@ class QuestionBank {
                 englishTrans: data.sentenceEng,
                 correctAnswer: data.correctTense,
                 choices: data.getOptions(),
+                engChoices: data.getEngOptions(),
               ))
           .toList();
 
@@ -55,7 +68,8 @@ class QuestionBank {
     } catch (e) {
       print(' Error fetching questions: $e');
       return [
-        Question(question: '', correctAnswer: '', choices: [''])
+        Question(
+            question: '', correctAnswer: '', choices: [''], engChoices: [''])
       ];
     }
   }

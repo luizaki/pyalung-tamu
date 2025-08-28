@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:math' as math;
 
 import './auth_service.dart';
+import '../features/progress_feature.dart';
 
 class GameService {
   final _supabase = Supabase.instance.client;
@@ -275,6 +276,9 @@ class GameService {
                 pastTense: row['past'] as String,
                 presentTense: row['present'] as String,
                 futureTense: row['future'] as String,
+                engPast: row['eng_past'] as String? ?? '',
+                engPresent: row['eng_present'] as String? ?? '',
+                engFuture: row['eng_future'] as String? ?? '',
               ))
           .toList();
 
@@ -319,6 +323,9 @@ class TugakQuestionData {
   final String pastTense;
   final String presentTense;
   final String futureTense;
+  final String engPast;
+  final String engPresent;
+  final String engFuture;
 
   TugakQuestionData({
     required this.textWithBlank,
@@ -327,12 +334,25 @@ class TugakQuestionData {
     required this.pastTense,
     required this.presentTense,
     required this.futureTense,
+    required this.engPast,
+    required this.engPresent,
+    required this.engFuture,
   });
 
   List<String> get allTenseOptions => [pastTense, presentTense, futureTense];
 
   List<String> getOptions() {
     final options = [pastTense, presentTense, futureTense];
+
+    if (options.isEmpty) {
+      return ["N/A"];
+    }
+
+    return options;
+  }
+
+  List<String> getEngOptions() {
+    final options = [engPast, engPresent, engFuture];
 
     if (options.isEmpty) {
       return ["N/A"];
