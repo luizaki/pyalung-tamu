@@ -29,6 +29,7 @@ class _AuthPopupState extends State<AuthPopup> {
   String? _usernameError;
   String? _passwordError;
   String? _confirmError;
+  String? _emailError;
 
   @override
   void dispose() {
@@ -215,18 +216,31 @@ class _AuthPopupState extends State<AuthPopup> {
           const SizedBox(height: 20),
 
           // Email field
-          TextFormField(
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              labelText: 'Email',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.email),
-            ),
-            validator: AuthService.validateEmail,
-            scrollPadding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom + 120,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email),
+                ),
+                validator: AuthService.validateEmail,
+                scrollPadding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 120,
+                ),
+              ),
+              if (_emailError != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  _emailError!,
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ],
+            ],
           ),
 
           const SizedBox(height: 16),
@@ -235,6 +249,7 @@ class _AuthPopupState extends State<AuthPopup> {
           TextFormField(
             controller: _passwordController,
             obscureText: true,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             onChanged: (v) {
               _passwordDebounce?.cancel();
               _passwordDebounce = Timer(const Duration(milliseconds: 500), () {
@@ -499,7 +514,10 @@ class _AuthPopupState extends State<AuthPopup> {
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _emailError = null;
+    });
 
     final result = await _authService.loginWithEmail(
       _emailController.text.trim(),
@@ -520,12 +538,19 @@ class _AuthPopupState extends State<AuthPopup> {
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result.message),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (result.message.contains('Invalid email') ||
+            result.message.contains('does not exist')) {
+          setState(() {
+            _emailError = 'This email does not exist in our records';
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }

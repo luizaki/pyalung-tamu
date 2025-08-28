@@ -41,123 +41,149 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
     final cols = rows == 0 ? 0 : cardsGrid.first.length;
 
     return Positioned.fill(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          if (rows == 0 || cols == 0) return const SizedBox.shrink();
+      child: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (rows == 0 || cols == 0) return const SizedBox.shrink();
 
-          final size = MediaQuery.of(context).size;
-          final safe = MediaQuery.of(context).padding;
+            final size = MediaQuery.of(context).size;
+            final dpr = MediaQuery.of(context).devicePixelRatio;
 
-          final topPad = (size.height * 0.05).clamp(16.0, 96.0);
-          final bottomPad = (size.height * 0.04).clamp(12.0, 80.0);
-          final sidePad = (size.width * 0.025).clamp(8.0, 28.0);
+            double snapDown(double v) => (v * dpr - 0.5).floor() / dpr;
 
-          final availW = (constraints.maxWidth - sidePad * 2)
-              .clamp(120.0, constraints.maxWidth);
-          final availH = (constraints.maxHeight - topPad - bottomPad)
-              .clamp(120.0, constraints.maxHeight);
+            final topPad = snapDown((size.height * 0.05).clamp(16.0, 96.0));
+            final bottomPad = snapDown((size.height * 0.04).clamp(12.0, 80.0));
+            final sidePad = snapDown((size.width * 0.025).clamp(8.0, 28.0));
 
-          const double kTableCoverageW = 0.98;
-          const double kTableCoverageH = 0.92;
+            final availW = snapDown(
+              (constraints.maxWidth - sidePad * 2)
+                  .clamp(120.0, constraints.maxWidth),
+            );
+            final availH = snapDown(
+              (constraints.maxHeight - topPad - bottomPad)
+                  .clamp(120.0, constraints.maxHeight),
+            );
 
-          const double kGridCoverageW = 0.92;
-          const double kGridCoverageH = 0.84;
+            const double kTableCoverageW = 0.98;
+            const double kTableCoverageH = 0.92;
 
-          const double kGap = 12.0;
-          const double kMinCell = 100.0;
-          const double kMaxCell = 240.0;
-          const double kEps = 1.0;
+            const double kGridCoverageW = 0.92;
+            const double kGridCoverageH = 0.84;
 
-          //table target
-          final tableBoxW = availW * kTableCoverageW;
-          final tableBoxH = availH * kTableCoverageH;
+            const double kGap = 12.0;
+            const double kMinCell = 60.0; // smaller min to avoid overflow
+            const double kMaxCell = 240.0;
+            const double kEps = 1.0;
 
-          //grid target
-          final gridBoxW = availW * kGridCoverageW;
-          final gridBoxH = availH * kGridCoverageH;
+            final tableBoxW = snapDown(availW * kTableCoverageW);
+            final tableBoxH = snapDown(availH * kTableCoverageH);
 
-          //cell size
-          final cellByW = (gridBoxW - kGap * (cols - 1)) / cols;
-          final cellByH = (gridBoxH - kGap * (rows - 1)) / rows;
-          final baseCell = (cellByW < cellByH ? cellByW : cellByH) - kEps;
-          final cell = baseCell.clamp(kMinCell, kMaxCell).floorToDouble();
-          // actual grid size
-          final gridW = cell * cols + kGap * (cols - 1);
-          final gridH = cell * rows + kGap * (rows - 1);
+            final micro = 1.0 / dpr;
 
-          return Padding(
-            padding: EdgeInsets.only(
-              top: topPad + safe.top,
-              bottom: bottomPad + safe.bottom,
-              left: sidePad,
-              right: sidePad,
-            ),
-            child: Center(
-              child: ConstrainedBox(
-                constraints:
-                    BoxConstraints(maxWidth: availW, maxHeight: availH),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // table png size
-                    SizedBox(
-                      width: tableBoxW,
-                      height: tableBoxH,
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: Image.asset(
-                          'assets/mitutuglung/Table.PNG',
-                          fit: BoxFit.contain,
-                          errorBuilder: (ctx, err, st) => Container(
-                            width: tableBoxW,
-                            height: tableBoxH,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF2B2B2B).withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: const Color(0xAD572100), width: 4),
+            final gridBoxW = snapDown(availW * kGridCoverageW) - micro;
+            final gridBoxH = snapDown(availH * kGridCoverageH) - micro;
+
+            final cellByW = (gridBoxW - kGap * (cols - 1)) / cols;
+            final cellByH = (gridBoxH - kGap * (rows - 1)) / rows;
+            final baseCell = (cellByW < cellByH ? cellByW : cellByH) - kEps;
+
+            double cell = snapDown(baseCell.clamp(kMinCell, kMaxCell));
+            double gridW = snapDown(cell * cols + kGap * (cols - 1));
+            double gridH = snapDown(cell * rows + kGap * (rows - 1));
+
+            if (gridW > gridBoxW || gridH > gridBoxH) {
+              final fixW = (gridBoxW - kGap * (cols - 1)) / cols;
+              final fixH = (gridBoxH - kGap * (rows - 1)) / rows;
+              final corrected = (fixW < fixH ? fixW : fixH) - kEps;
+              cell = snapDown(corrected.clamp(kMinCell, kMaxCell));
+              gridW = snapDown(cell * cols + kGap * (cols - 1));
+              gridH = snapDown(cell * rows + kGap * (rows - 1));
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                top: topPad,
+                bottom: bottomPad,
+                left: sidePad,
+                right: sidePad,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints:
+                      BoxConstraints(maxWidth: availW, maxHeight: availH),
+                  child: ClipRect(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Table PNG
+                        SizedBox(
+                          width: tableBoxW,
+                          height: tableBoxH,
+                          child: FittedBox(
+                            fit: BoxFit.contain,
+                            child: Image.asset(
+                              'assets/mitutuglung/Table.PNG',
+                              fit: BoxFit.contain,
+                              errorBuilder: (ctx, err, st) => Container(
+                                width: tableBoxW,
+                                height: tableBoxH,
+                                decoration: BoxDecoration(
+                                  color:
+                                      const Color(0xFF2B2B2B).withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: const Color(0xAD572100),
+                                    width: 4,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
 
-                    // Card grid
-                    SizedBox(
-                      width: gridW,
-                      height: gridH,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(rows, (r) {
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(cols, (c) {
-                              final card = cardsGrid[r][c];
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  right: c == cols - 1 ? 0 : kGap,
-                                  bottom: r == rows - 1 ? 0 : kGap,
-                                ),
-                                child: SizedBox(
-                                  width: cell,
-                                  height: cell,
-                                  child: CardWidget(
-                                    card: card,
-                                    onTap: () => controller.onCardTapped(card),
-                                  ),
-                                ),
-                              );
-                            }),
-                          );
-                        }),
-                      ),
+                        // Card grid
+                        SizedBox(
+                          width: gridW,
+                          height: gridH,
+                          child: FittedBox(
+                            // 🔑 keep grid inside safe area
+                            fit: BoxFit.contain,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(rows, (r) {
+                                return Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(cols, (c) {
+                                    final card = cardsGrid[r][c];
+                                    return Padding(
+                                      padding: EdgeInsets.only(
+                                        right: c == cols - 1 ? 0 : kGap,
+                                        bottom: r == rows - 1 ? 0 : kGap,
+                                      ),
+                                      child: SizedBox(
+                                        width: cell,
+                                        height: cell,
+                                        child: CardWidget(
+                                          card: card,
+                                          onTap: () =>
+                                              controller.onCardTapped(card),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                );
+                              }),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

@@ -70,6 +70,15 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final dpr = MediaQuery.of(context).devicePixelRatio;
+    double snapDown(double v) => (v * dpr - 0.5).floor() / dpr;
+
+    final w = snapDown(widget.width);
+    final h = snapDown(widget.height);
+
+    final edge = math.min(w, h);
+    final innerPad = (edge * 0.18).clamp(10.0, 24.0);
+
     return GestureDetector(
       onTap: widget.onTap,
       child: AnimatedBuilder(
@@ -81,9 +90,9 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
               ..setEntry(3, 2, 0.001)
               ..rotateY(math.pi * _flipAnimation.value),
             child: SizedBox(
-              width: widget.width,
-              height: widget.height,
-              child: _buildCardContent(_flipAnimation.value),
+              width: w,
+              height: h,
+              child: _buildCardContent(_flipAnimation.value, innerPad),
             ),
           );
         },
@@ -91,7 +100,7 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildCardContent(double value) {
+  Widget _buildCardContent(double value, double innerPad) {
     if (value > 0.40 && value < 0.60) {
       return _buildSprite(_flipCard);
     }
@@ -108,11 +117,11 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
           _buildSprite(_backCard),
           Positioned.fill(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+              padding: EdgeInsets.all(innerPad),
               child: widget.card.isWord
                   ? _WordLabel(
                       text: widget.card.content,
-                      baseFontSize: (widget.height * 0.16).clamp(10.0, 20.0),
+                      baseFontSize: (widget.height * 0.145).clamp(11.0, 18.0),
                     )
                   : FittedBox(
                       fit: BoxFit.contain,
@@ -149,17 +158,17 @@ class _WordLabel extends StatelessWidget {
     required this.baseFontSize,
   });
 
-  double _measureWordWidth(String word, double fontSize) {
+  double _measureWidth(String text, double fontSize) {
     final tp = TextPainter(
       text: TextSpan(
-        text: word,
+        text: text,
         style: TextStyle(
           fontSize: fontSize,
           fontWeight: FontWeight.w900,
-          height: 1.05,
+          height: 1.1,
         ),
       ),
-      maxLines: 1,
+      maxLines: 3,
       textDirection: TextDirection.ltr,
     )..layout(minWidth: 0, maxWidth: double.infinity);
     return tp.size.width;
@@ -167,46 +176,47 @@ class _WordLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, c) {
-      final maxWidth = c.maxWidth;
+    return LayoutBuilder(builder: (context, cons) {
+      final maxWidth = cons.maxWidth;
+      const double minFont = 12.0;
+
+      double finalFontSize = baseFontSize;
+
       final words =
           text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+      if (words.isNotEmpty) {
+        final longestWord = words.reduce(
+          (a, b) => (a.length >= b.length) ? a : b,
+        );
 
-      if (words.isEmpty) {
-        return const SizedBox.shrink();
+        final wLongest = _measureWidth(longestWord, baseFontSize);
+        if (wLongest > maxWidth) {
+          final scale = maxWidth / wLongest;
+          finalFontSize = (baseFontSize * scale).clamp(minFont, baseFontSize);
+        }
       }
 
-      final longestWord = words.reduce(
-        (a, b) => (a.length >= b.length) ? a : b,
-      );
-
-      const double minFont = 12.0;
-      final double tryFont = baseFontSize;
-
-      //long words might not fit at the base font size
-      final wAtBase = _measureWordWidth(longestWord, tryFont);
-
-      //if it doesn't fit, the font is scaled down
-      double finalFontSize = tryFont;
-      if (wAtBase > maxWidth && wAtBase > 0) {
-        final scale = maxWidth / wAtBase;
-        finalFontSize = (tryFont * scale).clamp(minFont, tryFont);
+      final totalWidth = _measureWidth(text, finalFontSize);
+      if (totalWidth > maxWidth) {
+        final scale = maxWidth / totalWidth;
+        finalFontSize = (finalFontSize * scale).clamp(minFont, finalFontSize);
       }
 
       return Center(
-        child: SizedBox(
-          width: double.infinity,
+        child: FittedBox(
+          // 🔑 ensures text never overflows
+          fit: BoxFit.scaleDown,
           child: Text(
             text,
             textAlign: TextAlign.center,
             softWrap: true,
             maxLines: 3,
-            overflow: TextOverflow.clip,
+            overflow: TextOverflow.visible,
             style: TextStyle(
               fontSize: finalFontSize,
               fontWeight: FontWeight.w900,
               color: Colors.brown,
-              height: 1.05,
+              height: 1.1,
             ),
           ),
         ),
