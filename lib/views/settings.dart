@@ -69,7 +69,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     onChanged: (v) {
                       widget.audioController.setEnabled(v);
                     },
-                    activeThumbColor: Colors.brown,
+                    //activeThumbColor: Colors.brown,
                     activeTrackColor: const Color(0xFF2BB495),
                   ),
                 );
@@ -83,7 +83,7 @@ class _SettingsPageState extends State<SettingsPage> {
               'Created by FARM. Lee, Sanchez, Santos, Baquiano.',
               style: TextStyle(
                 color: Colors.white70,
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
