@@ -15,20 +15,37 @@ extension LevelX on Level {
 
 // ================== STATS ==================
 class SiglulungStats {
-  final double wpm, accuracy;
-  const SiglulungStats({required this.wpm, required this.accuracy});
+  final double wpm, latestWpm;
+  final double accuracy, latestAccuracy;
+
+  const SiglulungStats({
+    required this.wpm,
+    required this.accuracy,
+    required this.latestWpm,
+    required this.latestAccuracy,
+  });
 }
 
 class TugakStats {
-  final int fluency;
-  final double accuracy;
-  const TugakStats({required this.fluency, required this.accuracy});
+  final int fluency, latestFluency;
+  final double accuracy, latestAccuracy;
+  const TugakStats({
+    required this.fluency,
+    required this.accuracy,
+    required this.latestFluency,
+    required this.latestAccuracy,
+  });
 }
 
 class MitutuglungStats {
-  final int perfectPairs;
-  final double accuracy;
-  const MitutuglungStats({required this.perfectPairs, required this.accuracy});
+  final int perfectPairs, latestPerfectPairs;
+  final double accuracy, latestAccuracy;
+  const MitutuglungStats({
+    required this.perfectPairs,
+    required this.accuracy,
+    required this.latestPerfectPairs,
+    required this.latestAccuracy,
+  });
 }
 
 // ================== PROGRESS ==================
@@ -136,12 +153,18 @@ class ProgressController {
   void setTugak(TugakStats? s) => _tug = s;
   void setMitutuglung(MitutuglungStats? s) => _mit = s;
 
-  GameProgress get sig =>
-      evalSiglulung(_sig ?? const SiglulungStats(wpm: 0, accuracy: 0));
-  GameProgress get tug =>
-      evalTugak(_tug ?? const TugakStats(fluency: 0, accuracy: 0));
-  GameProgress get mit => evalMitutuglung(
-      _mit ?? const MitutuglungStats(perfectPairs: 0, accuracy: 0));
+  GameProgress get sig => evalSiglulung(_sig ??
+      const SiglulungStats(
+          wpm: 0, accuracy: 0, latestWpm: 0, latestAccuracy: 0));
+  GameProgress get tug => evalTugak(_tug ??
+      const TugakStats(
+          fluency: 0, accuracy: 0, latestFluency: 0, latestAccuracy: 0));
+  GameProgress get mit => evalMitutuglung(_mit ??
+      const MitutuglungStats(
+          perfectPairs: 0,
+          accuracy: 0,
+          latestPerfectPairs: 0,
+          latestAccuracy: 0));
 
   Level get macro => evalMacro(sig, tug, mit);
 }
@@ -438,7 +461,7 @@ extension ProgressControllerXP on ProgressController {
   String nextSigAcc() {
     final v = _sig?.accuracy ?? 0;
     for (final t in Thresholds.sigAccuracy) {
-      if (v < t) return "Reach ${t.toInt()} %";
+      if (v < t) return "Reach ${t.toInt()}%";
     }
     return "Maxed";
   }
@@ -455,7 +478,7 @@ extension ProgressControllerXP on ProgressController {
   String nextTugAcc() {
     final v = _tug?.accuracy ?? 0;
     for (final t in Thresholds.tugAccuracy) {
-      if (v < t) return "Reach ${t.toInt()} %";
+      if (v < t) return "Reach ${t.toInt()}%";
     }
     return "Maxed";
   }
@@ -472,7 +495,7 @@ extension ProgressControllerXP on ProgressController {
   String nextMitAcc() {
     final v = _mit?.accuracy ?? 0;
     for (final t in Thresholds.mitAccuracy) {
-      if (v < t) return "Reach ${t.toInt()} %";
+      if (v < t) return "Reach ${t.toInt()}%";
     }
     return "Maxed";
   }

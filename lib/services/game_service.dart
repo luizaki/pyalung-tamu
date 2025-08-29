@@ -188,74 +188,91 @@ class GameService {
 
   // ============= FETCH STATS =============
 
+  Future<List<dynamic>> _fetchStatData(String id, String difficulty) async {
+    try {
+      final userRecord = await _supabase
+          .from('users')
+          .select('user_id')
+          .eq('auth_id', id)
+          .single();
+
+      final progressData = await _supabase
+          .from('user_game_progress')
+          .select('best_secondary_score, average_accuracy')
+          .eq('user_id', userRecord['user_id'])
+          .eq('game_type', difficulty)
+          .maybeSingle();
+
+      final latestScore = await _supabase
+          .from('scores')
+          .select('secondary_score, accuracy')
+          .eq('user_id', userRecord['user_id'])
+          .eq('game_type', difficulty)
+          .order('date_played', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      return [progressData, latestScore];
+    } catch (e) {
+      print('Error in fetching data: $e');
+      rethrow;
+    }
+  }
+
   Future<SiglulungStats> fetchSiglulungStats() async {
     final user = _supabase.auth.currentUser;
-    if (user == null) return const SiglulungStats(wpm: 0, accuracy: 0);
+    if (user == null) {
+      return const SiglulungStats(
+          wpm: 0, accuracy: 0, latestWpm: 0, latestAccuracy: 0);
+    }
 
-    final userRecord = await _supabase
-        .from('users')
-        .select('user_id')
-        .eq('auth_id', user.id)
-        .single();
-
-    final data = await _supabase
-        .from('user_game_progress')
-        .select('best_secondary_score, average_accuracy')
-        .eq('user_id', userRecord['user_id'])
-        .eq('game_type', 'siglulung_bangka')
-        .maybeSingle();
+    final [progressData, latestScore] =
+        await _fetchStatData(user.id, 'siglulung_bangka');
 
     return SiglulungStats(
-      wpm: (data?['best_secondary_score'] as num?)?.toDouble() ?? 0,
-      accuracy: (data?['average_accuracy'] as num?)?.toDouble() ?? 0,
+      wpm: (progressData?['best_secondary_score'] as num?)?.toDouble() ?? 0,
+      accuracy: (progressData?['average_accuracy'] as num?)?.toDouble() ?? 0,
+      latestWpm: (latestScore?['secondary_score'] as num?)?.toDouble() ?? 0,
+      latestAccuracy: (latestScore?['accuracy'] as num?)?.toDouble() ?? 0,
     );
   }
 
   Future<TugakStats> fetchTugakStats() async {
     final user = _supabase.auth.currentUser;
-    if (user == null) return const TugakStats(fluency: 0, accuracy: 0);
+    if (user == null) {
+      return const TugakStats(
+          fluency: 0, accuracy: 0, latestFluency: 0, latestAccuracy: 0);
+    }
 
-    final userRecord = await _supabase
-        .from('users')
-        .select('user_id')
-        .eq('auth_id', user.id)
-        .single();
-
-    final data = await _supabase
-        .from('user_game_progress')
-        .select('best_secondary_score, average_accuracy')
-        .eq('user_id', userRecord['user_id'])
-        .eq('game_type', 'tugak_catching')
-        .maybeSingle();
+    final [progressData, latestScore] =
+        await _fetchStatData(user.id, 'tugak_catching');
 
     return TugakStats(
-      fluency: data?['best_secondary_score'] as int? ?? 0,
-      accuracy: (data?['average_accuracy'] as num?)?.toDouble() ?? 0,
+      fluency: progressData?['best_secondary_score'] as int? ?? 0,
+      accuracy: (progressData?['average_accuracy'] as num?)?.toDouble() ?? 0,
+      latestFluency: latestScore?['secondary_score'] as int? ?? 0,
+      latestAccuracy: (latestScore?['accuracy'] as num?)?.toDouble() ?? 0,
     );
   }
 
   Future<MitutuglungStats> fetchMitutuglungStats() async {
     final user = _supabase.auth.currentUser;
     if (user == null) {
-      return const MitutuglungStats(perfectPairs: 0, accuracy: 0);
+      return const MitutuglungStats(
+          perfectPairs: 0,
+          accuracy: 0,
+          latestPerfectPairs: 0,
+          latestAccuracy: 0);
     }
 
-    final userRecord = await _supabase
-        .from('users')
-        .select('user_id')
-        .eq('auth_id', user.id)
-        .single();
-
-    final data = await _supabase
-        .from('user_game_progress')
-        .select('best_secondary_score, average_accuracy')
-        .eq('user_id', userRecord['user_id'])
-        .eq('game_type', 'mitutuglung')
-        .maybeSingle();
+    final [progressData, latestScore] =
+        await _fetchStatData(user.id, 'mitutuglung');
 
     return MitutuglungStats(
-      perfectPairs: data?['best_secondary_score'] as int? ?? 0,
-      accuracy: (data?['average_accuracy'] as num?)?.toDouble() ?? 0,
+      perfectPairs: progressData?['best_secondary_score'] as int? ?? 0,
+      accuracy: (progressData?['average_accuracy'] as num?)?.toDouble() ?? 0,
+      latestPerfectPairs: latestScore?['secondary_score'] as int? ?? 0,
+      latestAccuracy: (latestScore?['accuracy'] as num?)?.toDouble() ?? 0,
     );
   }
 

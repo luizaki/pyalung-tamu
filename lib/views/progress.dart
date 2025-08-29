@@ -203,14 +203,14 @@ class OverallProgressScreen extends StatelessWidget {
             MacroProgressTable(
               c: ctrl,
               high: [
-                "${sig.wpm.toStringAsFixed(0)}",
+                (sig.wpm.toStringAsFixed(0)),
                 "${tug.fluency}",
                 "${mit.perfectPairs}"
               ],
               last: [
-                "${sig.accuracy.toStringAsFixed(0)} %",
-                "${tug.accuracy.toStringAsFixed(0)} %",
-                "${mit.accuracy.toStringAsFixed(0)} %"
+                (sig.latestWpm.toStringAsFixed(0)),
+                "${tug.latestFluency}",
+                "${mit.latestPerfectPairs}"
               ],
             ),
           ],
@@ -255,7 +255,8 @@ class TugakProgressScreen extends StatelessWidget {
                     strokeWidth: 2,
                   ),
                 ),
-                Flexible(child: BadgePill(ctrl.tug.badge.label)),
+                const SizedBox(width: 12),
+                BadgePill(ctrl.tug.badge.label),
               ],
             ),
             GameProgressCard(
@@ -264,7 +265,7 @@ class TugakProgressScreen extends StatelessWidget {
               rowLabels: const ['Fluency', 'Accuracy'],
               high: [
                 "${tug.fluency} frogs",
-                "${tug.accuracy.toStringAsFixed(0)} %"
+                "${tug.accuracy.toStringAsFixed(0)}%"
               ],
               xp: [ctrl.nextTugFluency(), ctrl.nextTugAcc()],
             ),
@@ -298,10 +299,10 @@ class MitutuglungProgressScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Expanded(
+                const Expanded(
                   child: StrokeText(
                     text: 'MITUTUGLUNG',
-                    textStyle: const TextStyle(
+                    textStyle: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFFFCF7D0),
@@ -310,7 +311,8 @@ class MitutuglungProgressScreen extends StatelessWidget {
                     strokeWidth: 2,
                   ),
                 ),
-                Flexible(child: BadgePill(ctrl.mit.badge.label)),
+                const SizedBox(width: 12),
+                BadgePill(ctrl.mit.badge.label),
               ],
             ),
             GameProgressCard(
@@ -319,7 +321,7 @@ class MitutuglungProgressScreen extends StatelessWidget {
               rowLabels: const ['Perfect Matches', 'Accuracy'],
               high: [
                 "${mit.perfectPairs} pairs",
-                "${mit.accuracy.toStringAsFixed(0)} %"
+                "${mit.accuracy.toStringAsFixed(0)}%"
               ],
               xp: [ctrl.nextMitPairs(), ctrl.nextMitAcc()],
             ),
@@ -353,10 +355,10 @@ class SiglulungProgressScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Expanded(
+                const Expanded(
                   child: StrokeText(
                     text: 'SIGLULUNG BANGKA',
-                    textStyle: const TextStyle(
+                    textStyle: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFFFCF7D0),
@@ -365,7 +367,8 @@ class SiglulungProgressScreen extends StatelessWidget {
                     strokeWidth: 2,
                   ),
                 ),
-                Flexible(child: BadgePill(ctrl.sig.badge.label)),
+                const SizedBox(width: 12),
+                BadgePill(ctrl.sig.badge.label),
               ],
             ),
             GameProgressCard(
@@ -374,7 +377,7 @@ class SiglulungProgressScreen extends StatelessWidget {
               rowLabels: const ['Speed', 'Accuracy'],
               high: [
                 "${sig.wpm.toStringAsFixed(0)} WPM",
-                "${sig.accuracy.toStringAsFixed(0)} %"
+                "${sig.accuracy.toStringAsFixed(0)}%"
               ],
               xp: [ctrl.nextSigWpm(), ctrl.nextSigAcc()],
             ),
