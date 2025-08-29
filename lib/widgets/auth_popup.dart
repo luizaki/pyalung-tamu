@@ -507,7 +507,7 @@ class _AuthPopupState extends State<AuthPopup> {
     setState(() => _isLoading = true);
     await _authService.loginAsGuest();
     if (mounted) {
-      Navigator.of(context).pop(true);
+      Navigator.of(context, rootNavigator: true).pop(true);
     }
   }
 
@@ -534,7 +534,7 @@ class _AuthPopupState extends State<AuthPopup> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.of(context).pop(true);
+        Navigator.of(context, rootNavigator: true).pop(true);
       }
     } else {
       if (mounted) {
@@ -583,7 +583,7 @@ class _AuthPopupState extends State<AuthPopup> {
         if (needsVerification) {
           setState(() => _currentMode = AuthMode.login);
         } else {
-          Navigator.of(context).pop(true);
+          Navigator.of(context, rootNavigator: true).pop(true);
         }
       }
     } else {
