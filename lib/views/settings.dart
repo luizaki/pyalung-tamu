@@ -69,7 +69,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     onChanged: (v) {
                       widget.audioController.setEnabled(v);
                     },
-                    activeThumbColor: Colors.brown,
+                    //activeThumbColor: Colors.brown,
                     activeTrackColor: const Color(0xFF2BB495),
                   ),
                 );
