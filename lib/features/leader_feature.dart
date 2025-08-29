@@ -184,6 +184,21 @@ class GameLeaderboardTable extends StatelessWidget {
       vertical: (w * 0.006).clamp(4.0, 10.0),
     );
 
+    String scoreLabel;
+    switch (gameTitle) {
+      case "Tugak Catching":
+        scoreLabel = "FROGS";
+        break;
+      case "Siglulung Bangka":
+        scoreLabel = "WPM";
+        break;
+      case "Mitutuglung":
+        scoreLabel = "ACCURACY";
+        break;
+      default:
+        scoreLabel = "SCORE";
+    }
+
     return Card(
       color: const Color(0xF9DD9A00),
       elevation: 0,
@@ -204,7 +219,7 @@ class GameLeaderboardTable extends StatelessWidget {
           verticalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.2),
         ),
         children: [
-          //header row
+          // Header row
           TableRow(children: [
             Padding(
               padding: cellPad,
@@ -222,25 +237,25 @@ class GameLeaderboardTable extends StatelessWidget {
             ),
             Padding(
               padding: cellPad,
-              child: Text("SCORE",
+              child: Text(scoreLabel,
                   textAlign: TextAlign.center,
                   style:
                       TextStyle(fontWeight: FontWeight.w700, fontSize: headFs)),
             ),
-            Padding(
-              padding: cellPad,
-              child: Text("ACCURACY",
-                  textAlign: TextAlign.center,
-                  style:
-                      TextStyle(fontWeight: FontWeight.w700, fontSize: headFs)),
-            ),
+            if (gameTitle != "Mitutuglung")
+              Padding(
+                padding: cellPad,
+                child: Text("ACCURACY",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: headFs)),
+              ),
           ]),
-          //data rows
+          // Data rows
           for (var e in entries)
             TableRow(
               decoration: e.playerName == currentUserName
-                  ? const BoxDecoration(
-                      color: Color(0xFFFFF59D)) //highlight current user
+                  ? const BoxDecoration(color: Color(0xFFFFF59D))
                   : null,
               children: [
                 Padding(
@@ -251,22 +266,29 @@ class GameLeaderboardTable extends StatelessWidget {
                 ),
                 Padding(
                   padding: cellPad,
-                  child: _PlayerCell(
-                    playerName: e.playerName,
+                  child: Text(
+                    e.playerName,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: cellFs),
                   ),
                 ),
                 Padding(
                   padding: cellPad,
-                  child: Text("${e.score}",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: cellFs)),
+                  child: Text(
+                    gameTitle == "Mitutuglung"
+                        ? "${e.accuracy.toStringAsFixed(1)}%"
+                        : "${e.secondaryScore}",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: cellFs),
+                  ),
                 ),
-                Padding(
-                  padding: cellPad,
-                  child: Text("${e.accuracy.toStringAsFixed(1)}%",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: cellFs)),
-                ),
+                if (gameTitle != "Mitutuglung")
+                  Padding(
+                    padding: cellPad,
+                    child: Text("${e.accuracy.toStringAsFixed(1)}%",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: cellFs)),
+                  ),
               ],
             ),
         ],
@@ -290,14 +312,6 @@ class _PlayerCell extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        CircleAvatar(
-          radius: 14,
-          backgroundColor: Colors.grey[400],
-          child: Text(
-            playerName.isNotEmpty ? playerName[0].toUpperCase() : '?',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
         const SizedBox(width: 6),
         Flexible(
           child: Text(
