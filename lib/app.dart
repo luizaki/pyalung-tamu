@@ -5,7 +5,7 @@ import './services/game_service.dart';
 
 import './views/home.dart';
 import './views/leaderboard.dart';
-import 'views/progress/progress.dart';
+import 'views/progress.dart';
 import './views/settings.dart';
 
 import './widgets/auth_popup.dart';

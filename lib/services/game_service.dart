@@ -2,7 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:math' as math;
 
 import './auth_service.dart';
-import '../features/progress_feature.dart';
+import '/features/progress_feature.dart';
 
 class GameService {
   final _supabase = Supabase.instance.client;
@@ -56,13 +56,11 @@ class GameService {
 
       final userId = userRecord['user_id'];
 
-      // Get total score from user_game_progress table
       final progressData = await _supabase
           .from('user_game_progress')
           .select('total_score')
           .eq('user_id', userId);
 
-      // Sum all total_score values across all games
       int totalScore = 0;
       for (var progress in progressData as List) {
         totalScore += (progress['total_score'] as int? ?? 0);
@@ -124,7 +122,6 @@ class GameService {
     int accuracy,
     int secondaryScore,
   ) async {
-    // Get current progress
     final currentProgress = await _supabase
         .from('user_game_progress')
         .select('*')
@@ -141,7 +138,6 @@ class GameService {
                 accuracy) /
             newGamesPlayed;
 
-    // Difficulty progression
     String newDifficulty = _calculateNewDifficulty(
       gameType,
       currentProgress['current_difficulty'] ?? 'beginner',
@@ -168,7 +164,6 @@ class GameService {
   String _calculateNewDifficulty(String gameType, String currentDifficulty,
       int secondaryScore, double avgAccuracy) {
     if (avgAccuracy < 30) {
-      // Go down one difficulty
       switch (currentDifficulty) {
         case 'advanced':
           return 'intermediate';
@@ -178,7 +173,6 @@ class GameService {
           return 'beginner';
       }
     } else if (avgAccuracy >= 70) {
-      // Go up one difficulty
       switch (currentDifficulty) {
         case 'beginner':
           return 'intermediate';
@@ -188,9 +182,81 @@ class GameService {
           return 'advanced';
       }
     } else {
-      // 30-69% accuracy: retain current difficulty
       return currentDifficulty;
     }
+  }
+
+  // ============= FETCH STATS =============
+
+  Future<SiglulungStats> fetchSiglulungStats() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return const SiglulungStats(wpm: 0, accuracy: 0);
+
+    final userRecord = await _supabase
+        .from('users')
+        .select('user_id')
+        .eq('auth_id', user.id)
+        .single();
+
+    final data = await _supabase
+        .from('user_game_progress')
+        .select('best_secondary_score, average_accuracy')
+        .eq('user_id', userRecord['user_id'])
+        .eq('game_type', 'siglulung_bangka')
+        .maybeSingle();
+
+    return SiglulungStats(
+      wpm: (data?['best_secondary_score'] as num?)?.toDouble() ?? 0,
+      accuracy: (data?['average_accuracy'] as num?)?.toDouble() ?? 0,
+    );
+  }
+
+  Future<TugakStats> fetchTugakStats() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return const TugakStats(fluency: 0, accuracy: 0);
+
+    final userRecord = await _supabase
+        .from('users')
+        .select('user_id')
+        .eq('auth_id', user.id)
+        .single();
+
+    final data = await _supabase
+        .from('user_game_progress')
+        .select('best_secondary_score, average_accuracy')
+        .eq('user_id', userRecord['user_id'])
+        .eq('game_type', 'tugak_catching')
+        .maybeSingle();
+
+    return TugakStats(
+      fluency: data?['best_secondary_score'] as int? ?? 0,
+      accuracy: (data?['average_accuracy'] as num?)?.toDouble() ?? 0,
+    );
+  }
+
+  Future<MitutuglungStats> fetchMitutuglungStats() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) {
+      return const MitutuglungStats(perfectPairs: 0, accuracy: 0);
+    }
+
+    final userRecord = await _supabase
+        .from('users')
+        .select('user_id')
+        .eq('auth_id', user.id)
+        .single();
+
+    final data = await _supabase
+        .from('user_game_progress')
+        .select('best_secondary_score, average_accuracy')
+        .eq('user_id', userRecord['user_id'])
+        .eq('game_type', 'mitutuglung')
+        .maybeSingle();
+
+    return MitutuglungStats(
+      perfectPairs: data?['best_secondary_score'] as int? ?? 0,
+      accuracy: (data?['average_accuracy'] as num?)?.toDouble() ?? 0,
+    );
   }
 
   // =========== QUESTIONS FETCHING ===============
@@ -279,7 +345,6 @@ class GameService {
 
       final data = (response as List).cast<Map<String, dynamic>>();
 
-      // Aggregate by user_id
       final Map<int, Map<String, dynamic>> aggregated = {};
 
       for (final record in data) {
@@ -305,13 +370,11 @@ class GameService {
         aggregated[userId]!['games_played'] += gamesPlayed;
 
         if (gamesPlayed > 0) {
-          // only count accuracy if user has games
           aggregated[userId]!['accuracySum'] += avgAcc;
           aggregated[userId]!['accuracyCount'] += 1;
         }
       }
 
-      // Leaderboard list
       final leaderboard = aggregated.entries.map((e) {
         final d = e.value;
         final avgAccuracy = (d['accuracyCount'] as int) > 0
@@ -330,7 +393,6 @@ class GameService {
       }).toList()
         ..sort((a, b) => b.score.compareTo(a.score));
 
-      // Assign ranking
       for (int i = 0; i < leaderboard.length; i++) {
         leaderboard[i] = LeaderboardEntry(
           rank: i + 1,
@@ -457,15 +519,9 @@ class TugakQuestionData {
 
   List<String> get allTenseOptions => [pastTense, presentTense, futureTense];
 
-  List<String> getOptions() {
-    final options = [pastTense, presentTense, futureTense];
-    return options.isEmpty ? ["N/A"] : options;
-  }
+  List<String> getOptions() => [pastTense, presentTense, futureTense];
 
-  List<String> getEngOptions() {
-    final options = [engPast, engPresent, engFuture];
-    return options.isEmpty ? ["N/A"] : options;
-  }
+  List<String> getEngOptions() => [engPast, engPresent, engFuture];
 }
 
 class LeaderboardEntry {

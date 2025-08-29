@@ -131,14 +131,14 @@ class _LeaderboardPageState extends State<LeaderboardPage>
                               width: tabWShort,
                               child: const Tab(text: 'Overall')),
                           SizedBox(
+                              width: tabWLong,
+                              child: const Tab(text: 'Siglulung')),
+                          SizedBox(
                               width: tabWShort,
                               child: const Tab(text: 'Tugak')),
                           SizedBox(
                               width: tabWLong,
                               child: const Tab(text: 'Mitutuglung')),
-                          SizedBox(
-                              width: tabWLong,
-                              child: const Tab(text: 'Siglulung')),
                         ],
                       ),
                     ),
@@ -175,6 +175,19 @@ class _LeaderboardPageState extends State<LeaderboardPage>
                             ),
                             _Scrollable(
                               child: FutureBuilder<List<LeaderboardEntry>>(
+                                future: _siglulungFuture,
+                                builder: _buildLeaderboard(
+                                  (entries) => GameLeaderboardTable(
+                                    gameTitle: "Siglulung Bangka",
+                                    entries: entries,
+                                    currentUserName:
+                                        _currentUserName ?? 'Guest',
+                                  ),
+                                ),
+                              ),
+                            ),
+                            _Scrollable(
+                              child: FutureBuilder<List<LeaderboardEntry>>(
                                 future: _tugakFuture,
                                 builder: _buildLeaderboard(
                                   (entries) => GameLeaderboardTable(
@@ -192,19 +205,6 @@ class _LeaderboardPageState extends State<LeaderboardPage>
                                 builder: _buildLeaderboard(
                                   (entries) => GameLeaderboardTable(
                                     gameTitle: "Mitutuglung",
-                                    entries: entries,
-                                    currentUserName:
-                                        _currentUserName ?? 'Guest',
-                                  ),
-                                ),
-                              ),
-                            ),
-                            _Scrollable(
-                              child: FutureBuilder<List<LeaderboardEntry>>(
-                                future: _siglulungFuture,
-                                builder: _buildLeaderboard(
-                                  (entries) => GameLeaderboardTable(
-                                    gameTitle: "Siglulung Bangka",
                                     entries: entries,
                                     currentUserName:
                                         _currentUserName ?? 'Guest',

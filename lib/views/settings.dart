@@ -83,7 +83,7 @@ class _SettingsPageState extends State<SettingsPage> {
               'Created by FARM. Lee, Sanchez, Santos, Baquiano.',
               style: TextStyle(
                 color: Colors.white70,
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),

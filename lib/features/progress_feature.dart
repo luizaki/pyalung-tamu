@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
-//levels
+// ================== LEVEL SYSTEM ==================
 enum Level { none, beginner, intermediate, expert }
 
 extension LevelX on Level {
   int get v => index;
   String get label => switch (this) {
-        Level.none => 'None',
+        Level.none => 'Beginner',
         Level.beginner => 'Beginner',
         Level.intermediate => 'Intermediate',
         Level.expert => 'Expert',
       };
 }
 
-//stats
+// ================== STATS ==================
 class SiglulungStats {
   final double wpm, accuracy;
   const SiglulungStats({required this.wpm, required this.accuracy});
@@ -27,10 +27,11 @@ class TugakStats {
 
 class MitutuglungStats {
   final int perfectPairs;
-  final int timeSecs;
-  const MitutuglungStats({required this.perfectPairs, required this.timeSecs});
+  final double accuracy;
+  const MitutuglungStats({required this.perfectPairs, required this.accuracy});
 }
 
+// ================== PROGRESS ==================
 class GameProgress {
   final Level metricA, metricB, badge;
   final double progA, progB;
@@ -38,29 +39,21 @@ class GameProgress {
       this.metricA, this.metricB, this.badge, this.progA, this.progB);
 }
 
-//thresholds
 class Thresholds {
   static const wpm = [30, 50, 70];
   static const sigAccuracy = [85, 92, 97];
 
-  static const fluency = [10, 20, 35];
+  static const fluency = [5, 10, 15];
   static const tugAccuracy = [80, 90, 95];
 
-  static const perfectPairs = [6, 10, 14];
-  static const timeSecs = [120, 75, 45];
+  static const perfectPairs = [1, 4, 6];
+  static const mitAccuracy = [30, 50, 70];
 }
 
 Level _inc(num v, List<num> t) {
   if (v >= t[2]) return Level.expert;
   if (v >= t[1]) return Level.intermediate;
   if (v >= t[0]) return Level.beginner;
-  return Level.none;
-}
-
-Level _dec(num v, List<num> t) {
-  if (v <= t[2]) return Level.expert;
-  if (v <= t[1]) return Level.intermediate;
-  if (v <= t[0]) return Level.beginner;
   return Level.none;
 }
 
@@ -71,39 +64,54 @@ double _pUp(num v, List<num> t) {
   return 1;
 }
 
-double _pDown(num v, List<num> t) {
-  if (v > t[0]) return (t[0] / v).clamp(0, 1).toDouble();
-  if (v > t[1]) return ((v - t[1]) / (t[0] - t[1])).clamp(0, 1).toDouble();
-  if (v > t[2]) return ((v - t[2]) / (t[1] - t[2])).clamp(0, 1).toDouble();
-  return 1;
-}
-
+// ================== EVALUATORS ==================
 GameProgress evalSiglulung(SiglulungStats s) {
   final a = _inc(s.wpm, Thresholds.wpm);
   final b = _inc(s.accuracy, Thresholds.sigAccuracy);
-  final badge = (a.v <= b.v) ? a : b;
-  return GameProgress(a, b, badge, _pUp(s.wpm, Thresholds.wpm),
-      _pUp(s.accuracy, Thresholds.sigAccuracy));
+
+  // 👇 Average levels
+  final avg = ((a.v + b.v) / 2).round();
+  final badge = Level.values[avg];
+
+  return GameProgress(
+    a,
+    b,
+    badge,
+    _pUp(s.wpm, Thresholds.wpm),
+    _pUp(s.accuracy, Thresholds.sigAccuracy),
+  );
 }
 
 GameProgress evalTugak(TugakStats s) {
   final a = _inc(s.fluency, Thresholds.fluency);
   final b = _inc(s.accuracy, Thresholds.tugAccuracy);
-  final badge = (a.v <= b.v) ? a : b;
-  return GameProgress(a, b, badge, _pUp(s.fluency, Thresholds.fluency),
-      _pUp(s.accuracy, Thresholds.tugAccuracy));
+
+  final avg = ((a.v + b.v) / 2).round();
+  final badge = Level.values[avg];
+
+  return GameProgress(
+    a,
+    b,
+    badge,
+    _pUp(s.fluency, Thresholds.fluency),
+    _pUp(s.accuracy, Thresholds.tugAccuracy),
+  );
 }
 
 GameProgress evalMitutuglung(MitutuglungStats s) {
   final a = _inc(s.perfectPairs, Thresholds.perfectPairs);
-  final b = _dec(s.timeSecs, Thresholds.timeSecs);
-  final badge = (a.v <= b.v) ? a : b;
+  final b = _inc(s.accuracy, Thresholds.tugAccuracy);
+
+  final avg = ((a.v + b.v) / 2).round();
+  final badge = Level.values[avg];
+
   return GameProgress(
-      a,
-      b,
-      badge,
-      _pUp(s.perfectPairs, Thresholds.perfectPairs),
-      _pDown(s.timeSecs, Thresholds.timeSecs));
+    a,
+    b,
+    badge,
+    _pUp(s.perfectPairs, Thresholds.perfectPairs),
+    _pUp(s.accuracy, Thresholds.tugAccuracy),
+  );
 }
 
 Level evalMacro(GameProgress g1, GameProgress g2, GameProgress g3) {
@@ -118,26 +126,27 @@ Level evalMacro(GameProgress g1, GameProgress g2, GameProgress g3) {
   return Level.values[i];
 }
 
-//controller
+// ================== CONTROLLER ==================
 class ProgressController {
   SiglulungStats? _sig;
   TugakStats? _tug;
   MitutuglungStats? _mit;
 
-  void setSiglulung(SiglulungStats s) => _sig = s;
-  void setTugak(TugakStats s) => _tug = s;
-  void setMitutuglung(MitutuglungStats s) => _mit = s;
+  void setSiglulung(SiglulungStats? s) => _sig = s;
+  void setTugak(TugakStats? s) => _tug = s;
+  void setMitutuglung(MitutuglungStats? s) => _mit = s;
 
   GameProgress get sig =>
       evalSiglulung(_sig ?? const SiglulungStats(wpm: 0, accuracy: 0));
   GameProgress get tug =>
       evalTugak(_tug ?? const TugakStats(fluency: 0, accuracy: 0));
   GameProgress get mit => evalMitutuglung(
-      _mit ?? const MitutuglungStats(perfectPairs: 0, timeSecs: 9999));
+      _mit ?? const MitutuglungStats(perfectPairs: 0, accuracy: 0));
 
   Level get macro => evalMacro(sig, tug, mit);
 }
 
+// ================== UI WIDGETS ==================
 class BadgePill extends StatelessWidget {
   final String text;
   const BadgePill(this.text, {super.key});
@@ -145,43 +154,36 @@ class BadgePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
-    final color = switch (text) {
+    final normalized = text[0].toUpperCase() + text.substring(1).toLowerCase();
+
+    final color = switch (normalized) {
       'Expert' => Colors.lightGreenAccent,
       'Intermediate' => Colors.yellowAccent,
       'Beginner' => Colors.orangeAccent,
-      _ => Theme.of(context).disabledColor.withValues(alpha: .25),
+      _ => Theme.of(context).disabledColor.withAlpha(80),
     };
+
     final padH = (w * 0.008).clamp(8.0, 16.0);
     final padV = (w * 0.004).clamp(4.0, 10.0);
     final fs = (w * 0.014).clamp(10.0, 18.0);
 
     return Container(
+      constraints: const BoxConstraints(maxWidth: 120),
       padding: EdgeInsets.symmetric(horizontal: padH, vertical: padV),
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: Colors.black54, width: 1.2),
       ),
-      child: Text(text,
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: fs)),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          normalized,
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: fs),
+        ),
+      ),
     );
   }
-}
-
-class ProgressRow extends TableRow {
-  ProgressRow({
-    required String col1,
-    required String col2,
-    required String col3,
-    required String col4,
-    EdgeInsets padding = const EdgeInsets.all(12),
-    TextStyle? style,
-  }) : super(children: [
-          Padding(padding: padding, child: Text(col1, style: style)),
-          Padding(padding: padding, child: Text(col2, style: style)),
-          Padding(padding: padding, child: Text(col3, style: style)),
-          Padding(padding: padding, child: Text(col4, style: style)),
-        ]);
 }
 
 class GameProgressCard extends StatelessWidget {
@@ -359,117 +361,119 @@ class MacroProgressTable extends StatelessWidget {
           0: FlexColumnWidth(1.2),
           1: FlexColumnWidth(2),
           2: FlexColumnWidth(1.5),
-          3: FlexColumnWidth(1.5),
+          3: FlexColumnWidth(1.8),
         },
         border: const TableBorder(
           horizontalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.2),
           verticalInside: BorderSide(color: Color(0xFF5A3A00), width: 1.2),
         ),
         children: [
+          // header
           TableRow(children: [
-            Padding(
-              padding: cellPad,
-              child: Text("LEVEL",
-                  textAlign: TextAlign.center,
-                  style:
-                      TextStyle(fontWeight: FontWeight.w700, fontSize: headFs)),
-            ),
-            Padding(
-              padding: cellPad,
-              child: Text("GAME",
-                  textAlign: TextAlign.center,
-                  style:
-                      TextStyle(fontWeight: FontWeight.w700, fontSize: headFs)),
-            ),
-            Padding(
-              padding: cellPad,
-              child: Text("HIGH SCORE",
-                  textAlign: TextAlign.center,
-                  style:
-                      TextStyle(fontWeight: FontWeight.w700, fontSize: headFs)),
-            ),
-            Padding(
-              padding: cellPad,
-              child: Text("LAST SCORE",
-                  textAlign: TextAlign.center,
-                  style:
-                      TextStyle(fontWeight: FontWeight.w700, fontSize: headFs)),
-            ),
+            _headerCell("LEVEL", headFs, cellPad),
+            _headerCell("GAME", headFs, cellPad),
+            _headerCell("HIGH SCORE", headFs, cellPad),
+            _headerCell("LAST SCORE", headFs, cellPad),
           ]),
+          // Siglulung row
           TableRow(children: [
             Padding(
               padding: cellPad,
-              child: Text(sig.badge.label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: cellFs)),
+              child: Center(child: BadgePill(sig.badge.label)),
             ),
-            Padding(
-              padding: cellPad,
-              child: const Text("Siglulung", textAlign: TextAlign.center),
-            ),
-            Padding(
-              padding: cellPad,
-              child: Text(high[0],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: cellFs)),
-            ),
-            Padding(
-              padding: cellPad,
-              child: Text(last[0],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: cellFs)),
-            ),
+            _plainCell("Siglulung Bangka", cellFs, cellPad),
+            _plainCell("${high[0]} WPM", cellFs, cellPad),
+            _plainCell("${last[0]} WPM", cellFs, cellPad),
           ]),
+          // Tugak row
           TableRow(children: [
             Padding(
               padding: cellPad,
-              child: Text(tug.badge.label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: cellFs)),
+              child: Center(child: BadgePill(tug.badge.label)),
             ),
-            Padding(
-              padding: cellPad,
-              child: const Text("Tugak Catching", textAlign: TextAlign.center),
-            ),
-            Padding(
-              padding: cellPad,
-              child: Text(high[1],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: cellFs)),
-            ),
-            Padding(
-              padding: cellPad,
-              child: Text(last[1],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: cellFs)),
-            ),
+            _plainCell("Tugak Catching", cellFs, cellPad),
+            _plainCell("${high[1]} frogs", cellFs, cellPad),
+            _plainCell("${last[1]} frogs", cellFs, cellPad),
           ]),
+          // Mitutuglung row
           TableRow(children: [
             Padding(
               padding: cellPad,
-              child: Text(mit.badge.label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: cellFs)),
+              child: Center(child: BadgePill(mit.badge.label)),
             ),
-            Padding(
-              padding: cellPad,
-              child: const Text("Mitutuglung", textAlign: TextAlign.center),
-            ),
-            Padding(
-              padding: cellPad,
-              child: Text(high[2],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: cellFs)),
-            ),
-            Padding(
-              padding: cellPad,
-              child: Text(last[2],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: cellFs)),
-            ),
+            _plainCell("Mitutuglung", cellFs, cellPad),
+            _plainCell("${high[2]} pairs", cellFs, cellPad),
+            _plainCell("${last[2]} pairs", cellFs, cellPad),
           ]),
         ],
       ),
     );
+  }
+
+  Widget _headerCell(String text, double fs, EdgeInsets pad) => Padding(
+        padding: pad,
+        child: Text(text,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: fs)),
+      );
+
+  Widget _plainCell(String text, double fs, EdgeInsets pad) => Padding(
+        padding: pad,
+        child: Text(text,
+            textAlign: TextAlign.center, style: TextStyle(fontSize: fs)),
+      );
+}
+
+// ==================== EXTENSIONS ====================
+extension ProgressControllerXP on ProgressController {
+  // Siglulung
+  String nextSigWpm() {
+    final v = _sig?.wpm ?? 0;
+    for (final t in Thresholds.wpm) {
+      if (v < t) return "reach ${t.toInt()} WPM";
+    }
+    return "maxed";
+  }
+
+  String nextSigAcc() {
+    final v = _sig?.accuracy ?? 0;
+    for (final t in Thresholds.sigAccuracy) {
+      if (v < t) return "reach ${t.toInt()} %";
+    }
+    return "maxed";
+  }
+
+  // Tugak
+  String nextTugFluency() {
+    final v = _tug?.fluency ?? 0;
+    for (final t in Thresholds.fluency) {
+      if (v < t) return "${t - v} frogs left";
+    }
+    return "maxed";
+  }
+
+  String nextTugAcc() {
+    final v = _tug?.accuracy ?? 0;
+    for (final t in Thresholds.tugAccuracy) {
+      if (v < t) return "reach ${t.toInt()} %";
+    }
+    return "maxed";
+  }
+
+  // Mitutuglung
+  String nextMitPairs() {
+    final v = _mit?.perfectPairs ?? 0;
+    for (final t in Thresholds.perfectPairs) {
+      if (v < t) return "reach $t pairs";
+    }
+    return "maxed";
+  }
+
+  String nextMitAcc() {
+    final v = _mit?.accuracy ?? 0;
+    for (final t in Thresholds.mitAccuracy) {
+      if (v < t) return "reach ${t.toInt()} %";
+    }
+    return "maxed";
   }
 }
