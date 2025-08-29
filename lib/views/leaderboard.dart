@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:stroke_text/stroke_text.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../services/game_service.dart';
 import '../features/leader_feature.dart';
+import '../services/auth_service.dart';
+
+import '../widgets/main_screen.dart';
 
 class LeaderboardPage extends StatefulWidget {
   const LeaderboardPage({super.key});
@@ -28,6 +33,8 @@ class _LeaderboardPageState extends State<LeaderboardPage>
   late Future<List<LeaderboardEntry>> _siglulungFuture;
   late Future<List<LeaderboardEntry>> _tugakFuture;
   late Future<List<LeaderboardEntry>> _mitutuglungFuture;
+
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -88,6 +95,14 @@ class _LeaderboardPageState extends State<LeaderboardPage>
 
     final tabWShort = (size.width * 0.16).clamp(88.0, 220.0);
     final tabWLong = (size.width * 0.20).clamp(100.0, 260.0);
+
+    if (_authService.isGuest) {
+      return MainScreen(
+        children: [
+          _buildGuestMessage(mq.size.width / 1280),
+        ],
+      );
+    }
 
     return Scaffold(
       body: Stack(
@@ -221,6 +236,37 @@ class _LeaderboardPageState extends State<LeaderboardPage>
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGuestMessage(double scale) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Center(
+            child: StrokeText(
+              text: 'Guest Mode',
+              textStyle: TextStyle(
+                fontSize: 64,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFFFCF7D0),
+              ),
+              strokeColor: Colors.black,
+              strokeWidth: 4,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(height: 12 * scale),
+          Text(
+            'Log in or create an account to view the leaderboard',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16 * scale,
+            ),
+          )
         ],
       ),
     );

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:stroke_text/stroke_text.dart';
+
 import '/features/progress_feature.dart';
 import '/services/game_service.dart';
+import '../services/auth_service.dart';
+
+import '../widgets/main_screen.dart';
 
 class ProgressPage extends StatefulWidget {
   const ProgressPage({super.key});
@@ -20,6 +24,8 @@ class _ProgressPageState extends State<ProgressPage>
     'assets/bg/card_bgSmallFlag.PNG',
     'assets/bg/boat_bgSmallFlag.PNG',
   ];
+
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -41,6 +47,14 @@ class _ProgressPageState extends State<ProgressPage>
 
     final tabWShort = (size.width * 0.16).clamp(88.0, 220.0);
     final tabWLong = (size.width * 0.20).clamp(100.0, 260.0);
+
+    if (_authService.isGuest) {
+      return MainScreen(
+        children: [
+          _buildGuestMessage(mq.size.width / 1280),
+        ],
+      );
+    }
 
     return Scaffold(
       body: Stack(
@@ -125,6 +139,37 @@ class _ProgressPageState extends State<ProgressPage>
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGuestMessage(double scale) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Center(
+            child: StrokeText(
+              text: 'Guest Mode',
+              textStyle: TextStyle(
+                fontSize: 64,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFFFCF7D0),
+              ),
+              strokeColor: Colors.black,
+              strokeWidth: 4,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(height: 12 * scale),
+          Text(
+            'Log in or create an account to view your progress',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16 * scale,
+            ),
+          )
         ],
       ),
     );
