@@ -243,10 +243,10 @@ class TugakProgressScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Expanded(
+                const Expanded(
                   child: StrokeText(
                     text: 'TUGAK CATCHING',
-                    textStyle: const TextStyle(
+                    textStyle: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFFFCF7D0),

@@ -432,15 +432,15 @@ extension ProgressControllerXP on ProgressController {
     for (final t in Thresholds.wpm) {
       if (v < t) return "reach ${t.toInt()} WPM";
     }
-    return "maxed";
+    return "Maxed";
   }
 
   String nextSigAcc() {
     final v = _sig?.accuracy ?? 0;
     for (final t in Thresholds.sigAccuracy) {
-      if (v < t) return "reach ${t.toInt()} %";
+      if (v < t) return "Reach ${t.toInt()} %";
     }
-    return "maxed";
+    return "Maxed";
   }
 
   // Tugak
@@ -449,31 +449,31 @@ extension ProgressControllerXP on ProgressController {
     for (final t in Thresholds.fluency) {
       if (v < t) return "${t - v} frogs left";
     }
-    return "maxed";
+    return "Maxed";
   }
 
   String nextTugAcc() {
     final v = _tug?.accuracy ?? 0;
     for (final t in Thresholds.tugAccuracy) {
-      if (v < t) return "reach ${t.toInt()} %";
+      if (v < t) return "Reach ${t.toInt()} %";
     }
-    return "maxed";
+    return "Maxed";
   }
 
   // Mitutuglung
   String nextMitPairs() {
     final v = _mit?.perfectPairs ?? 0;
     for (final t in Thresholds.perfectPairs) {
-      if (v < t) return "reach $t pairs";
+      if (v < t) return "Reach $t pairs";
     }
-    return "maxed";
+    return "Maxed";
   }
 
   String nextMitAcc() {
     final v = _mit?.accuracy ?? 0;
     for (final t in Thresholds.mitAccuracy) {
-      if (v < t) return "reach ${t.toInt()} %";
+      if (v < t) return "Reach ${t.toInt()} %";
     }
-    return "maxed";
+    return "Maxed";
   }
 }
