@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // ================== LEVEL SYSTEM ==================
-enum Level { none, beginner, intermediate, expert }
+enum Level { none, beginner, intermediate, advanced }
 
 extension LevelX on Level {
   int get v => index;
@@ -9,7 +9,7 @@ extension LevelX on Level {
         Level.none => 'Beginner',
         Level.beginner => 'Beginner',
         Level.intermediate => 'Intermediate',
-        Level.expert => 'Expert',
+        Level.advanced => 'Advanced',
       };
 }
 
@@ -51,7 +51,7 @@ class Thresholds {
 }
 
 Level _inc(num v, List<num> t) {
-  if (v >= t[2]) return Level.expert;
+  if (v >= t[2]) return Level.advanced;
   if (v >= t[1]) return Level.intermediate;
   if (v >= t[0]) return Level.beginner;
   return Level.none;
@@ -157,7 +157,7 @@ class BadgePill extends StatelessWidget {
     final normalized = text[0].toUpperCase() + text.substring(1).toLowerCase();
 
     final color = switch (normalized) {
-      'Expert' => Colors.lightGreenAccent,
+      'Advanced' => Colors.lightGreenAccent,
       'Intermediate' => Colors.yellowAccent,
       'Beginner' => Colors.orangeAccent,
       _ => Theme.of(context).disabledColor.withAlpha(80),
