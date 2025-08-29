@@ -101,7 +101,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
   Widget _buildGameUI() {
     final size = MediaQuery.of(context).size;
     final topPad = (size.height * 0.03).clamp(12.0, 40.0);
-    final boxW = (size.width * 0.16).clamp(180.0, 360.0);
+    final boxW = (size.width * 0.12).clamp(140.0, 280.0);
     final borderW = (boxW * 0.012).clamp(3.0, 6.0);
 
     return Positioned(
@@ -111,7 +111,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
       child: Center(
         child: Container(
           width: boxW,
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
             color: const Color(0xF9DD9A00),
             borderRadius: BorderRadius.circular(16),
@@ -143,7 +143,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     return Text(
       'Score: ${controller.getSecondaryScore()} ${_getSecondaryScoreLabel()}',
       style: const TextStyle(
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: FontWeight.bold,
         color: Colors.brown,
       ),
@@ -167,7 +167,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     return Text(
       controller.formattedTime,
       style: TextStyle(
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: FontWeight.bold,
         color: controller.gameState.timeLeft <= 10 ? Colors.red : Colors.brown,
       ),
