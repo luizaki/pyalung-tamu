@@ -15,26 +15,10 @@ Future<void> main() async {
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-  if (kDebugMode) {
-    // TODO: ugly fix on connecting in debug mode
-    await dotenv.load();
-    await Supabase.initialize(
-      url: dotenv.env['SUPABASE_PROJECT_URL']!,
-      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-    );
-  } else if (kIsWeb) {
-    // Use dart-define for web
-    await Supabase.initialize(
-      url: const String.fromEnvironment('SUPABASE_PROJECT_URL'),
-      anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
-    );
-  } else {
-    // Use dotenv for mobile/desktop (deprecated)
-    await Supabase.initialize(
-      url: const String.fromEnvironment('SUPABASE_PROJECT_URL'),
-      anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
-    );
-  }
+  await Supabase.initialize(
+      url: 'https://ymetwejpcfjfugghjlcw.supabase.co',
+      anonKey:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltZXR3ZWpwY2ZqZnVnZ2hqbGN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1OTg0MDcsImV4cCI6MjA2NDE3NDQwN30.7tQHUBt-hk5G0DN1ex3n_m3l5jiiVxWTfmQ7rJVnNDk');
 
   runApp(const MyApp());
 }
