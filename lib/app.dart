@@ -42,7 +42,7 @@ class _AppState extends State<App> {
   @override
   void dispose() {
     //end bgm when app is closed
-    _audioController.dispose();
+    // _audioController.dispose();
     super.dispose();
   }
 
