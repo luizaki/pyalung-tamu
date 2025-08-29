@@ -17,12 +17,12 @@ class _HomePageState extends State<HomePage> {
       body: MainScreen(
         contentWidthFactor: 0.70,
         children: [
-          StrokeText(
+          const StrokeText(
             text: 'Pyalung Tamu',
-            textStyle: const TextStyle(
+            textStyle: TextStyle(
               fontSize: 48,
               fontWeight: FontWeight.w800,
-              color: const Color(0xFFF4BE0A),
+              color: Color(0xFFF4BE0A),
             ),
             strokeColor: Colors.black,
             strokeWidth: 3,
@@ -95,7 +95,7 @@ class _HomePageState extends State<HomePage> {
                             textStyle: const TextStyle(
                               fontSize: 40,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFFFCF7D0),
+                              color: Color(0xFFFCF7D0),
                             ),
                             strokeColor: Colors.black,
                             strokeWidth: 3,
