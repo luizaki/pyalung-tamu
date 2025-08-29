@@ -179,56 +179,55 @@ class _MovingBackgroundState extends State<MovingBackground>
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF87CEEB),
-              Color(0xFF4682B4),
-            ],
-          ),
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF87CEEB),
+            Color(0xFF4682B4),
+          ],
         ),
-        child: AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) {
-            return Stack(
-              children: [
-                CustomPaint(
-                  size: Size.infinite,
-                  painter: _MovingWavesPainter(
-                    widget.boatSpeed,
-                    animationTime: _animation.value,
-                  ),
+      ),
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return Stack(
+            children: [
+              CustomPaint(
+                size: Size.infinite,
+                painter: _MovingWavesPainter(
+                  widget.boatSpeed,
+                  animationTime: _animation.value,
                 ),
-                _buildObstaclesStack(),
-              ],
-            );
-          },
-        ),
+              ),
+              Stack(
+                children: _buildObstaclesStack(),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildObstaclesStack() {
-    return Stack(
-      children: obstacles
-          .where((o) => !o.isHit)
-          .map(
-            (o) => Positioned(
-              left: o.position.dx,
-              top: o.position.dy,
-              child: Image.asset(
-                o.imageAsset,
-                width: o.size,
-                height: o.size,
-                fit: BoxFit.contain,
-              ),
+  List<Widget> _buildObstaclesStack() {
+    return obstacles
+        .where((o) => !o.isHit)
+        .map(
+          (o) => Transform.translate(
+            offset: o.position,
+            child: Image.asset(
+              o.imageAsset,
+              width: o.size,
+              height: o.size,
+              fit: BoxFit.contain,
             ),
-          )
-          .toList(),
-    );
+          ),
+        )
+        .toList();
   }
 }

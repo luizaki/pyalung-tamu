@@ -98,35 +98,33 @@ class _BoatWidgetState extends State<BoatWidget> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      // Fixed horizontal position, but add slight movement
-      left: widget.screenSize.width * 0.45 + (_getBobOffset() * 2),
-      top: widget.screenSize.height * 0.20 + _getBobOffset(),
-      child: AnimatedBuilder(
-        animation: Listenable.merge([_bobAnimation, _tiltAnimation]),
-        builder: (context, child) {
-          return Transform.rotate(
-            angle: _getTiltAngle(),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Image.asset(
-                  _boatImage,
-                  width: 150,
-                  height: 110,
-                  fit: BoxFit.contain,
-                  color: widget.boat.isHit
-                      ? Colors.red.withValues(alpha: 0.6)
-                      : null,
-                  colorBlendMode:
-                      widget.boat.isHit ? BlendMode.modulate : BlendMode.srcIn,
-                ),
-                // Speed indicator particles when going fast
-                if (widget.boat.speed > 3.0) _buildSpeedParticles(),
-              ],
-            ),
-          );
-        },
+    return Align(
+      alignment: Alignment.topLeft,
+      child: Transform.translate(
+        offset: Offset(
+          widget.screenSize.width * 0.45 + (_getBobOffset() * 2),
+          widget.screenSize.height * 0.20 + _getBobOffset(),
+        ),
+        child: Transform.rotate(
+          angle: _getTiltAngle(),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Image.asset(
+                _boatImage,
+                width: 150,
+                height: 110,
+                fit: BoxFit.contain,
+                color: widget.boat.isHit
+                    ? Colors.red.withValues(alpha: 0.6)
+                    : null,
+                colorBlendMode:
+                    widget.boat.isHit ? BlendMode.modulate : BlendMode.srcIn,
+              ),
+              if (widget.boat.speed > 3.0) _buildSpeedParticles(),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -144,9 +142,8 @@ class _BoatWidgetState extends State<BoatWidget> with TickerProviderStateMixin {
   }
 
   Widget _buildSpeedParticles() {
-    return Positioned(
-      right: -5,
-      top: 15,
+    return Transform.translate(
+      offset: const Offset(-5, 15),
       child: SizedBox(
         width: 20,
         height: 10,

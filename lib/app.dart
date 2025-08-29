@@ -27,13 +27,6 @@ class _AppState extends State<App> {
 
   bool _isInitialized = false;
 
-  final List<Widget> _pages = const [
-    HomePage(),
-    LeaderboardPage(),
-    ProgressPage(),
-    SettingsPage(),
-  ];
-
   late final AudioController _audioController;
 
   @override
@@ -41,7 +34,7 @@ class _AppState extends State<App> {
     super.initState();
 
     _audioController = AudioController();
-    AudioController.init(enabled: true);
+    _audioController.init(enabled: true);
 
     _initializeAuth();
   }
@@ -49,7 +42,7 @@ class _AppState extends State<App> {
   @override
   void dispose() {
     //end bgm when app is closed
-    AudioController.dispose();
+    _audioController.dispose();
     super.dispose();
   }
 
@@ -99,9 +92,16 @@ class _AppState extends State<App> {
       );
     }
 
+    final pages = [
+      const HomePage(),
+      const LeaderboardPage(),
+      const ProgressPage(),
+      SettingsPage(audioController: _audioController),
+    ];
+
     return Scaffold(
       extendBody: true,
-      body: _pages[_currentIndex],
+      body: pages[_currentIndex],
       bottomNavigationBar: _buildBottomNavBar(),
     );
   }
