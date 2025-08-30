@@ -42,7 +42,7 @@ class _AppState extends State<App> {
   @override
   void dispose() {
     //end bgm when app is closed
-    _audioController.dispose();
+    // _audioController.dispose();
     super.dispose();
   }
 
@@ -53,7 +53,7 @@ class _AppState extends State<App> {
     // Show auth popup if user is not logged in
     if (_authService.currentPlayer == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
+        if (mounted && _authService.currentPlayer == null) {
           _showAuthPopup();
         }
       });
@@ -77,7 +77,9 @@ class _AppState extends State<App> {
 
     if (_authService.currentPlayer == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showAuthPopup();
+        if (mounted && _authService.currentPlayer == null) {
+          _showAuthPopup();
+        }
       });
     }
   }

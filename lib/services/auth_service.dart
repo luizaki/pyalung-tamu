@@ -67,6 +67,10 @@ class AuthService {
   }
 
   Future<void> _handleUserSignedIn(User user) async {
+    if (_currentPlayer != null) {
+      _log('User already loaded, skipping duplicate _handleUserSignedIn.');
+      return;
+    }
     _log('User signed in: ${user.email}');
 
     // Check if user profile exists in our users table
@@ -122,12 +126,6 @@ class AuthService {
         }
 
         await _loadUserProfile(response.user!);
-
-        if (_currentPlayer == null) {
-          _logWarning(
-              'No profile found during login, checking if we need to create one...');
-          await _handleUserSignedIn(response.user!);
-        }
 
         await _clearGuestMode();
 
@@ -268,6 +266,21 @@ class AuthService {
         'avatar': 'boy.PNG', // Default avatar
         'total_score': 0,
       });
+
+      // Create new row in user_game_progress
+      final gameTypes = ['siglulung_bangka', 'tugak_catching', 'mitutuglung'];
+
+      for (final type in gameTypes) {
+        await _supabase.from('user_game_progress').insert({
+          'user_id': userId,
+          'game_type': type,
+          'current_difficulty': 'beginner',
+          'total_score': 0,
+          'games_played': 0,
+          'average_accuracy': 0,
+          'best_secondary_score': 0,
+        });
+      }
 
       _log('Created user profile for: $username');
     } catch (e) {

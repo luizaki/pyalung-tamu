@@ -507,7 +507,7 @@ class _AuthPopupState extends State<AuthPopup> {
     setState(() => _isLoading = true);
     await _authService.loginAsGuest();
     if (mounted) {
-      Navigator.of(context).pop(true);
+      Navigator.of(context, rootNavigator: true).pop(true);
     }
   }
 
@@ -517,6 +517,7 @@ class _AuthPopupState extends State<AuthPopup> {
     setState(() {
       _isLoading = true;
       _emailError = null;
+      _passwordError = null;
     });
 
     final result = await _authService.loginWithEmail(
@@ -534,14 +535,15 @@ class _AuthPopupState extends State<AuthPopup> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.of(context).pop(true);
+        Navigator.of(context, rootNavigator: true).pop(true);
       }
     } else {
       if (mounted) {
         if (result.message.contains('Invalid email') ||
             result.message.contains('does not exist')) {
           setState(() {
-            _emailError = 'This email does not exist in our records';
+            _emailError = 'Email or password is incorrect';
+            _passwordError = 'Email or password is incorrect';
           });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -583,7 +585,7 @@ class _AuthPopupState extends State<AuthPopup> {
         if (needsVerification) {
           setState(() => _currentMode = AuthMode.login);
         } else {
-          Navigator.of(context).pop(true);
+          Navigator.of(context, rootNavigator: true).pop(true);
         }
       }
     } else {

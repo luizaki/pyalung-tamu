@@ -4,12 +4,14 @@ import '../models/question.dart';
 
 class QuestionDialog extends StatefulWidget {
   final Question question;
+  final int timeoutSeconds;
   final Function(int) onAnswer;
   final VoidCallback onTimeout;
 
   const QuestionDialog({
     super.key,
     required this.question,
+    required this.timeoutSeconds,
     required this.onAnswer,
     required this.onTimeout,
   });
@@ -26,11 +28,14 @@ class QuestionDialogState extends State<QuestionDialog>
   bool? _selectedCorrect;
   bool _locked = false;
 
+  late int _remainingSeconds;
+
   @override
   void initState() {
     super.initState();
+    _remainingSeconds = widget.timeoutSeconds;
     _timerController = AnimationController(
-      duration: const Duration(seconds: 10),
+      duration: Duration(seconds: _remainingSeconds),
       vsync: this,
     )..forward();
 
@@ -86,7 +91,7 @@ class QuestionDialogState extends State<QuestionDialog>
               border: Border.all(color: const Color(0xAD572100), width: 10),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xAD572100).withOpacity(0.2),
+                  color: const Color(0xAD572100).withValues(alpha: 0.2),
                   blurRadius: 5,
                   offset: const Offset(0, 2),
                 ),

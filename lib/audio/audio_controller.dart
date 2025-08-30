@@ -16,6 +16,8 @@ class AudioController with WidgetsBindingObserver, ChangeNotifier {
   }
 
   Future<void> init({bool enabled = true}) async {
+    if (_loaded) return;
+
     _enabled = enabled;
     await _player.setReleaseMode(ReleaseMode.loop);
     await _player.setVolume(0.4);
@@ -61,7 +63,9 @@ class AudioController with WidgetsBindingObserver, ChangeNotifier {
         state == AppLifecycleState.detached) {
       _player.stop();
     } else if (state == AppLifecycleState.resumed && _enabled) {
-      _player.resume();
+      if (_player.state != PlayerState.playing) {
+        _player.resume();
+      }
     }
   }
 
