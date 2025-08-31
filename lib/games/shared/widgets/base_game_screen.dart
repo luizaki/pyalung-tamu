@@ -143,8 +143,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     return Text(
       'Score: ${controller.getSecondaryScore()} ${_getSecondaryScoreLabel()}',
       style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
+        fontSize: 14,
         color: Colors.brown,
       ),
     );
@@ -167,8 +166,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     return Text(
       controller.formattedTime,
       style: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.bold,
+        fontSize: 12,
         color: controller.gameState.timeLeft <= 10 ? Colors.red : Colors.brown,
       ),
     );
@@ -531,11 +529,11 @@ abstract class BaseGameScreenState<T extends BaseGameController,
           SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Create an account to save your progress and track improvements!',
+              'Create an account/login to save your progress and answer harder questions!',
               style: TextStyle(
                 color: Color(0xFF4A2C17),
                 fontSize: 13,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w300,
               ),
             ),
           ),

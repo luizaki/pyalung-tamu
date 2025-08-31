@@ -251,7 +251,8 @@ class _LeaderboardPageState extends State<LeaderboardPage>
               text: 'Guest Mode',
               textStyle: TextStyle(
                 fontSize: 64,
-                fontWeight: FontWeight.w900,
+                fontFamily: 'Ari-W9500-Display',
+                fontWeight: FontWeight.w500,
                 color: Color(0xFFFCF7D0),
               ),
               strokeColor: Colors.black,

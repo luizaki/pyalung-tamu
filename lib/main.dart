@@ -26,9 +26,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+      theme: ThemeData(fontFamily: 'Ari-W9500-Display'),
+      home: const SplashScreen(),
     );
   }
 }

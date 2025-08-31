@@ -61,8 +61,7 @@ class WordQueueDisplay extends StatelessWidget {
           text: TextSpan(
             style: const TextStyle(
               fontSize: 28,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'monospace',
+              fontFamily: 'Ari-W9500-Display',
             ),
             children: _buildCurrentWordSpans(),
           ),
@@ -78,8 +77,9 @@ class WordQueueDisplay extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 14,
                   color: Color(0xAD572100),
+                  fontFamily: 'Ari-W9500-Regular',
                   fontStyle: FontStyle.italic,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w300,
                 ),
               ),
             ),
@@ -102,8 +102,8 @@ class WordQueueDisplay extends StatelessWidget {
           style: TextStyle(
             fontSize:
                 index == 0 ? 24 : 20, // First upcoming word slightly larger
-            color: index == 0 ? Colors.grey[700] : Colors.grey[500],
-            fontWeight: index == 0 ? FontWeight.w600 : FontWeight.w400,
+            color: index == 0 ? Colors.grey[700] : Colors.grey[600],
+            fontWeight: index == 0 ? FontWeight.w500 : FontWeight.w300,
           ),
         ),
       );
@@ -127,6 +127,7 @@ class WordQueueDisplay extends StatelessWidget {
           backgroundColor: isCorrect
               ? Colors.green.withValues(alpha: 0.2)
               : Colors.red.withValues(alpha: 0.2),
+          fontFamily: 'Ari-W9500-Display',
         ),
       ));
     }
@@ -144,6 +145,7 @@ class WordQueueDisplay extends StatelessWidget {
           decoration: isNext ? TextDecoration.underline : null,
           decorationColor: Colors.blue[800],
           decorationThickness: 3,
+          fontFamily: 'Ari-W9500-Display',
         ),
       ));
     }

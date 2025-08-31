@@ -47,7 +47,8 @@ class _SettingsPageState extends State<SettingsPage> {
               text: 'Settings',
               textStyle: TextStyle(
                 fontSize: 64,
-                fontWeight: FontWeight.w900,
+                fontFamily: 'Ari-W9500-Display',
+                fontWeight: FontWeight.w500,
                 color: Color(0xFFFCF7D0),
               ),
               strokeColor: Colors.black,
@@ -112,8 +113,9 @@ class _SettingsPageState extends State<SettingsPage> {
               child: StrokeText(
                 text: label,
                 textStyle: const TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 30,
+                  fontFamily: 'Ari-W9500-Display',
+                  fontWeight: FontWeight.w200,
                   color: Color(0xFFFCF7D0),
                 ),
                 strokeColor: Colors.black,

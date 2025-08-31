@@ -154,7 +154,8 @@ class _ProgressPageState extends State<ProgressPage>
               text: 'Guest Mode',
               textStyle: TextStyle(
                 fontSize: 64,
-                fontWeight: FontWeight.w900,
+                fontFamily: 'Ari-W9500-Display',
+                fontWeight: FontWeight.w500,
                 color: Color(0xFFFCF7D0),
               ),
               strokeColor: Colors.black,
@@ -233,7 +234,8 @@ class OverallProgressScreen extends StatelessWidget {
                     text: 'OVERALL PROGRESS',
                     textStyle: TextStyle(
                       fontSize: 24 * scale,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: 'Ari-W9500-Display',
                       color: const Color(0xFFFCF7D0),
                     ),
                     strokeColor: Colors.black,
@@ -272,6 +274,7 @@ class TugakProgressScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gameService = GameService();
+    final scale = MediaQuery.of(context).size.width / 1280;
 
     return FutureBuilder<TugakStats>(
       future: gameService.fetchTugakStats(),
@@ -288,13 +291,14 @@ class TugakProgressScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: StrokeText(
                     text: 'TUGAK CATCHING',
                     textStyle: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFFFCF7D0),
+                      fontSize: 22 * scale,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: 'Ari-W9500-Display',
+                      color: const Color(0xFFFCF7D0),
                     ),
                     strokeColor: Colors.black,
                     strokeWidth: 2,
@@ -328,6 +332,7 @@ class MitutuglungProgressScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gameService = GameService();
+    final scale = MediaQuery.of(context).size.width / 1280;
 
     return FutureBuilder<MitutuglungStats>(
       future: gameService.fetchMitutuglungStats(),
@@ -344,13 +349,14 @@ class MitutuglungProgressScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: StrokeText(
                     text: 'MITUTUGLUNG',
                     textStyle: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFFFCF7D0),
+                      fontSize: 22 * scale,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: 'Ari-W9500-Display',
+                      color: const Color(0xFFFCF7D0),
                     ),
                     strokeColor: Colors.black,
                     strokeWidth: 2,
@@ -384,6 +390,7 @@ class SiglulungProgressScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gameService = GameService();
+    final scale = MediaQuery.of(context).size.width / 1280;
 
     return FutureBuilder<SiglulungStats>(
       future: gameService.fetchSiglulungStats(),
@@ -400,13 +407,14 @@ class SiglulungProgressScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: StrokeText(
                     text: 'SIGLULUNG BANGKA',
                     textStyle: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFFFCF7D0),
+                      fontSize: 22 * scale,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: 'Ari-W9500-Display',
+                      color: const Color(0xFFFCF7D0),
                     ),
                     strokeColor: Colors.black,
                     strokeWidth: 2,

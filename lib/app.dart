@@ -169,6 +169,7 @@ class _AppState extends State<App> {
                       player.username ?? 'Player',
                       style: const TextStyle(
                         color: Colors.white,
+                        fontFamily: 'Ari-W9500-Regular',
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
@@ -237,6 +238,7 @@ class _AppState extends State<App> {
           style: TextStyle(
             color: Colors.white,
             fontSize: 8,
+            fontFamily: 'Ari-W9500-Regular',
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -259,6 +261,7 @@ class _AppState extends State<App> {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 8,
+              fontFamily: 'Ari-W9500-Regular',
               fontWeight: FontWeight.bold,
             ),
           ),
