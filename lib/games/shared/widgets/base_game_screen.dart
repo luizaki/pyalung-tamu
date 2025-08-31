@@ -86,7 +86,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                     : 'GO!',
                 key: ValueKey(controller.gameState.countdownValue),
                 style: TextStyle(
-                  fontSize: fs,
+                  fontSize: fs * 0.75,
                   fontWeight: FontWeight.bold,
                   color: Colors.brown,
                 ),
