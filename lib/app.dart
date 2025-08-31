@@ -110,13 +110,14 @@ class _AppState extends State<App> {
 
   Widget _buildBottomNavBar() {
     final player = _authService.currentPlayer;
+    final scale = MediaQuery.of(context).size.width / 1280;
 
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
         Container(
           width: double.infinity,
-          height: 80,
+          height: 80 * scale,
           decoration: BoxDecoration(
             image: const DecorationImage(
               image: AssetImage('assets/button_boxes/navbar.png'),
@@ -126,7 +127,7 @@ class _AppState extends State<App> {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 10,
+                blurRadius: 10 * scale,
                 offset: const Offset(0, -2),
               ),
             ],
@@ -135,16 +136,17 @@ class _AppState extends State<App> {
 
         // Nav items
         Positioned(
-          left: 16,
-          right: 16,
-          bottom: 8,
+          left: 16 * scale,
+          right: 16 * scale,
+          bottom: 8 * scale,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildNavItem(0, 'assets/icons/home.png', 'Home'),
-              _buildNavItem(1, 'assets/icons/leaderboard.png', 'Leaderboard'),
-              _buildNavItem(2, 'assets/icons/progress.png', 'Progress'),
-              _buildNavItem(3, 'assets/icons/settings.png', 'Settings'),
+              _buildNavItem(0, 'assets/icons/home.png', 'Home', scale),
+              _buildNavItem(
+                  1, 'assets/icons/leaderboard.png', 'Leaderboard', scale),
+              _buildNavItem(2, 'assets/icons/progress.png', 'Progress', scale),
+              _buildNavItem(3, 'assets/icons/settings.png', 'Settings', scale),
             ],
           ),
         ),
@@ -152,13 +154,17 @@ class _AppState extends State<App> {
         // Profile
         if (player != null)
           Positioned(
-            left: 18,
-            bottom: 12,
+            left: 16 * scale,
+            bottom: 8 * scale,
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                UserMenu(
-                  player: player,
-                  onUpdate: _onUserStateChanged,
+                Transform.scale(
+                  scale: scale.clamp(0.7, 1.2),
+                  child: UserMenu(
+                    player: player,
+                    onUpdate: _onUserStateChanged,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Column(
@@ -167,16 +173,16 @@ class _AppState extends State<App> {
                   children: [
                     Text(
                       player.username ?? 'Player',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontFamily: 'Ari-W9500-Regular',
                         fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                        fontSize: 12 * scale,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
-                    _buildScoreWidget(player),
+                    SizedBox(height: 2 * scale),
+                    _buildScoreWidget(player, scale),
                   ],
                 ),
               ],
@@ -186,15 +192,15 @@ class _AppState extends State<App> {
     );
   }
 
-  Widget _buildNavItem(int index, String iconPath, String label) {
+  Widget _buildNavItem(int index, String iconPath, String label, double scale) {
     final isSelected = _currentIndex == index;
 
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = index),
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8,
-          horizontal: 12,
+        padding: EdgeInsets.symmetric(
+          vertical: 8 * scale,
+          horizontal: 12 * scale,
         ),
         decoration: isSelected
             ? BoxDecoration(
@@ -207,15 +213,15 @@ class _AppState extends State<App> {
           children: [
             Image.asset(
               iconPath,
-              width: 32,
-              height: 32,
+              width: 32 * scale,
+              height: 32 * scale,
             ),
             const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.white70,
-                fontSize: 10,
+                fontSize: 10 * scale,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -225,19 +231,20 @@ class _AppState extends State<App> {
     );
   }
 
-  Widget _buildScoreWidget(player) {
+  Widget _buildScoreWidget(player, double scale) {
     if (player.isGuest) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+        padding:
+            EdgeInsets.symmetric(horizontal: 4 * scale, vertical: 1 * scale),
         decoration: BoxDecoration(
           color: const Color(0xF9DD9A00),
           borderRadius: BorderRadius.circular(4),
         ),
-        child: const Text(
+        child: Text(
           'Guest',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 8,
+            fontSize: 8 * scale,
             fontFamily: 'Ari-W9500-Regular',
             fontWeight: FontWeight.bold,
           ),
@@ -251,16 +258,17 @@ class _AppState extends State<App> {
         final score = snapshot.data ?? 0;
 
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+          padding:
+              EdgeInsets.symmetric(horizontal: 4 * scale, vertical: 1 * scale),
           decoration: BoxDecoration(
             color: const Color(0xF9DD9A00),
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
             'Score: $score',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 8,
+              fontSize: 8 * scale,
               fontFamily: 'Ari-W9500-Regular',
               fontWeight: FontWeight.bold,
             ),
