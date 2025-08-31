@@ -77,7 +77,7 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
     final h = snapDown(widget.height);
 
     final edge = math.min(w, h);
-    final innerPad = (edge * 0.18).clamp(10.0, 24.0);
+    final innerPad = (edge * 0.3).clamp(18.0, 30.0);
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -119,42 +119,34 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
             child: Padding(
               padding: EdgeInsets.all(innerPad),
               child: widget.card.isWord
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Main Kapampangan word
-                    _WordLabel(
-                      text: widget.card.content,
-                      baseFontSize: (widget.height * 0.145).clamp(11.0, 18.0),
-                    ),
-
-                    // English trans
-                    if (widget.card.englishTrans.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          '(${widget.card.englishTrans})',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 80,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.brown,
-                            fontStyle: FontStyle.italic,
-                          ),
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Main Kapampangan word
+                        _WordLabel(
+                          text: widget.card.content,
+                          baseFontSize:
+                              (widget.height * 0.145).clamp(11.0, 18.0),
                         ),
-                      ),
-                    ],
-                  ],
-                )
-              : FittedBox(
-                  fit: BoxFit.contain,
-                  child: Image.network(
-                    widget.card.content,
-                    filterQuality: FilterQuality.none,
-                  ),
-                ),
 
+                        // English trans
+                        if (widget.card.englishTrans.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          _WordLabel(
+                            text: '(${widget.card.englishTrans})',
+                            baseFontSize:
+                                (widget.height * 0.11).clamp(9.0, 14.0),
+                          ),
+                        ],
+                      ],
+                    )
+                  : FittedBox(
+                      fit: BoxFit.contain,
+                      child: Image.network(
+                        widget.card.content,
+                        filterQuality: FilterQuality.none,
+                      ),
+                    ),
             ),
           ),
         ],
