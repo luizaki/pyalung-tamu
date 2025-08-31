@@ -461,14 +461,18 @@ abstract class BaseGameScreenState<T extends BaseGameController,
   }
 
   Widget _buildDifficultyChangeWidget() {
-    final isLevelUp = controller.newDifficulty != null &&
-        controller.previousDifficulty != null &&
-        _getDifficultyLevel(controller.newDifficulty!) >
-            _getDifficultyLevel(controller.previousDifficulty!);
+    if (controller.newDifficulty == null ||
+        controller.previousDifficulty == null ||
+        controller.newDifficulty == controller.previousDifficulty) {
+      return const SizedBox.shrink();
+    }
+
+    final isLevelUp = _getDifficultyLevel(controller.newDifficulty!) >
+        _getDifficultyLevel(controller.previousDifficulty!);
 
     final changeText = isLevelUp
-        ? 'Level Up! ${_capitalizeDifficulty(controller.previousDifficulty)} → ${_capitalizeDifficulty(controller.newDifficulty)}'
-        : 'Level Down: ${_capitalizeDifficulty(controller.previousDifficulty)} → ${_capitalizeDifficulty(controller.newDifficulty)}';
+        ? 'Question difficulty increased! ${_capitalizeDifficulty(controller.previousDifficulty)} → ${_capitalizeDifficulty(controller.newDifficulty)}'
+        : 'Question difficulty decreased! ${_capitalizeDifficulty(controller.previousDifficulty)} → ${_capitalizeDifficulty(controller.newDifficulty)}';
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
