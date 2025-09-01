@@ -86,7 +86,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                     : 'GO!',
                 key: ValueKey(controller.gameState.countdownValue),
                 style: TextStyle(
-                  fontSize: fs,
+                  fontSize: fs * 0.75,
                   fontWeight: FontWeight.bold,
                   color: Colors.brown,
                 ),
@@ -143,8 +143,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     return Text(
       'Score: ${controller.getSecondaryScore()} ${_getSecondaryScoreLabel()}',
       style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
+        fontSize: 14,
         color: Colors.brown,
       ),
     );
@@ -167,8 +166,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     return Text(
       controller.formattedTime,
       style: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.bold,
+        fontSize: 12,
         color: controller.gameState.timeLeft <= 10 ? Colors.red : Colors.brown,
       ),
     );
@@ -463,14 +461,18 @@ abstract class BaseGameScreenState<T extends BaseGameController,
   }
 
   Widget _buildDifficultyChangeWidget() {
-    final isLevelUp = controller.newDifficulty != null &&
-        controller.previousDifficulty != null &&
-        _getDifficultyLevel(controller.newDifficulty!) >
-            _getDifficultyLevel(controller.previousDifficulty!);
+    if (controller.newDifficulty == null ||
+        controller.previousDifficulty == null ||
+        controller.newDifficulty == controller.previousDifficulty) {
+      return const SizedBox.shrink();
+    }
+
+    final isLevelUp = _getDifficultyLevel(controller.newDifficulty!) >
+        _getDifficultyLevel(controller.previousDifficulty!);
 
     final changeText = isLevelUp
-        ? 'Level Up! ${_capitalizeDifficulty(controller.previousDifficulty)} → ${_capitalizeDifficulty(controller.newDifficulty)}'
-        : 'Level Down: ${_capitalizeDifficulty(controller.previousDifficulty)} → ${_capitalizeDifficulty(controller.newDifficulty)}';
+        ? 'Question difficulty increased! ${_capitalizeDifficulty(controller.previousDifficulty)} → ${_capitalizeDifficulty(controller.newDifficulty)}'
+        : 'Question difficulty decreased! ${_capitalizeDifficulty(controller.previousDifficulty)} → ${_capitalizeDifficulty(controller.newDifficulty)}';
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -531,11 +533,11 @@ abstract class BaseGameScreenState<T extends BaseGameController,
           SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Create an account to save your progress and track improvements!',
+              'Create an account/login to save your progress and answer harder questions!',
               style: TextStyle(
                 color: Color(0xFF4A2C17),
                 fontSize: 13,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w300,
               ),
             ),
           ),

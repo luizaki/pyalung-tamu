@@ -25,9 +25,6 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
 
   BangkaGameController() : super(BangkaGameState());
 
-  @override
-  int get gameDuration => 30;
-
   // ================== SETUPS ==================
 
   @override

@@ -75,3 +75,11 @@ flutter:
     - assets/mitutuglung/
     - assets/siglulung/
     - assets/audio/
+
+  fonts:
+    - family: Ari-W9500-Regular
+      fonts:
+        - asset: assets/fonts/ari-w9500.ttf
+    - family: Ari-W9500-Display
+      fonts:
+        - asset: assets/fonts/ari-w9500-display.ttf

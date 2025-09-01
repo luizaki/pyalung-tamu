@@ -21,11 +21,12 @@ class _HomePageState extends State<HomePage> {
             text: 'Pyalung Tamu',
             textStyle: TextStyle(
               fontSize: 48,
-              fontWeight: FontWeight.w800,
+              fontFamily: 'Ari-W9500-Display',
+              fontWeight: FontWeight.w500,
               color: Color(0xFFF4BE0A),
             ),
             strokeColor: Colors.black,
-            strokeWidth: 3,
+            strokeWidth: 5,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -93,8 +94,9 @@ class _HomePageState extends State<HomePage> {
                           child: StrokeText(
                             text: title,
                             textStyle: const TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 30,
+                              fontFamily: 'Ari-W9500-Display',
+                              fontWeight: FontWeight.w200,
                               color: Color(0xFFFCF7D0),
                             ),
                             strokeColor: Colors.black,

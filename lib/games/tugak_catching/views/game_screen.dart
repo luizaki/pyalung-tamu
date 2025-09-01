@@ -98,9 +98,9 @@ class TugakGameScreenState
     if (controller.canTapFrog(frog)) {
       frog.isBeingQuestioned = true;
 
-      final remainingTime = controller.gameState.timeLeft < 10
+      final remainingTime = controller.gameState.timeLeft < 15
           ? controller.gameState.timeLeft
-          : 10;
+          : 15;
 
       showDialog(
         context: context,

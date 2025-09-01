@@ -154,7 +154,8 @@ class StartScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                   textStyle: TextStyle(
                     fontSize: titleSize,
-                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Ari-W9500-Display',
+                    fontWeight: FontWeight.w500,
                     color: const Color(0xFFF4BE0A),
                   ),
                   strokeColor: Colors.black,
@@ -169,6 +170,8 @@ class StartScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                   textStyle: TextStyle(
                     fontSize: instrSize,
+                    fontFamily: 'Ari-W9500-Display',
+                    fontWeight: FontWeight.w100,
                     color: const Color(0xFFFFFEDE),
                   ),
                   strokeColor: Colors.black,
