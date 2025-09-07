@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../controllers/base_game_controller.dart';
-
+import '../../../audio/audio_controller.dart';
 import '../../../services/auth_service.dart';
 
 abstract class BaseGameScreen<T extends BaseGameController>
@@ -21,6 +21,8 @@ abstract class BaseGameScreenState<T extends BaseGameController,
   @override
   void initState() {
     super.initState();
+
+    AudioController().playGameBgm();
 
     controller = createController();
     setupController();
@@ -43,6 +45,9 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     controller.removeListener(onControllerUpdate);
     controller.dispose();
     disposeGameSpecific();
+
+    AudioController().playMenuBgm();
+
     super.dispose();
   }
 

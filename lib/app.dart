@@ -35,6 +35,7 @@ class _AppState extends State<App> {
 
     _audioController = AudioController();
     _audioController.init(enabled: true);
+    _audioController.playMenuBgm();
 
     _initializeAuth();
   }
