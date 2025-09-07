@@ -123,19 +123,23 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         // Main Kapampangan word
-                        _WordLabel(
-                          text: widget.card.content,
-                          baseFontSize:
-                              (widget.height * 0.145).clamp(11.0, 18.0),
+                        Flexible(
+                          child: _WordLabel(
+                            text: widget.card.content,
+                            baseFontSize:
+                                (widget.height * 0.14).clamp(10.0, 17.0),
+                          ),
                         ),
 
                         // English trans
                         if (widget.card.englishTrans.isNotEmpty) ...[
                           const SizedBox(height: 4),
-                          _WordLabel(
-                            text: '(${widget.card.englishTrans})',
-                            baseFontSize:
-                                (widget.height * 0.11).clamp(9.0, 14.0),
+                          Flexible(
+                            child: _WordLabel(
+                              text: '(${widget.card.englishTrans})',
+                              baseFontSize:
+                                  (widget.height * 0.08).clamp(8.0, 10.0),
+                            ),
                           ),
                         ],
                       ],
@@ -175,68 +179,20 @@ class _WordLabel extends StatelessWidget {
     required this.baseFontSize,
   });
 
-  double _measureWidth(String text, double fontSize) {
-    final tp = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.w900,
-          height: 1.1,
-        ),
-      ),
-      maxLines: 3,
-      textDirection: TextDirection.ltr,
-    )..layout(minWidth: 0, maxWidth: double.infinity);
-    return tp.size.width;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, cons) {
-      final maxWidth = cons.maxWidth;
-      const double minFont = 12.0;
-
-      double finalFontSize = baseFontSize;
-
-      final words =
-          text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
-      if (words.isNotEmpty) {
-        final longestWord = words.reduce(
-          (a, b) => (a.length >= b.length) ? a : b,
-        );
-
-        final wLongest = _measureWidth(longestWord, baseFontSize);
-        if (wLongest > maxWidth) {
-          final scale = maxWidth / wLongest;
-          finalFontSize = (baseFontSize * scale).clamp(minFont, baseFontSize);
-        }
-      }
-
-      final totalWidth = _measureWidth(text, finalFontSize);
-      if (totalWidth > maxWidth) {
-        final scale = maxWidth / totalWidth;
-        finalFontSize = (finalFontSize * scale).clamp(minFont, finalFontSize);
-      }
-
-      return Center(
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            softWrap: true,
-            maxLines: 3,
-            overflow: TextOverflow.visible,
-            style: TextStyle(
-              fontSize: finalFontSize,
-              fontWeight: FontWeight.w900,
-              color: Colors.brown,
-              height: 1.1,
-            ),
-          ),
-        ),
-      );
-    });
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      softWrap: true,
+      maxLines: 3,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontSize: baseFontSize,
+        fontWeight: FontWeight.w900,
+        color: Colors.brown,
+        height: 1.0,
+      ),
+    );
   }
 }
