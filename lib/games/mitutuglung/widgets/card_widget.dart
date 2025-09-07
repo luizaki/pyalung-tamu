@@ -133,9 +133,10 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
 
                         // English trans
                         if (widget.card.englishTrans.isNotEmpty) ...[
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           Flexible(
                             child: _WordLabel(
+                              isTranslation: true,
                               text: '(${widget.card.englishTrans})',
                               baseFontSize:
                                   (widget.height * 0.08).clamp(8.0, 10.0),
@@ -173,10 +174,12 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
 class _WordLabel extends StatelessWidget {
   final String text;
   final double baseFontSize;
+  final bool isTranslation;
 
   const _WordLabel({
     required this.text,
     required this.baseFontSize,
+    this.isTranslation = false,
   });
 
   @override
@@ -189,6 +192,7 @@ class _WordLabel extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
         fontSize: baseFontSize,
+        fontFamily: isTranslation ? 'Ari-W9500-Regular' : 'Ari-W9500-Display',
         fontWeight: FontWeight.w900,
         color: Colors.brown,
         height: 1.0,
