@@ -215,8 +215,7 @@ class BangkaGameScreenState
     if (key == LogicalKeyboardKey.backspace) {
       controller.onKeyPressed('Backspace');
     } else if (key == LogicalKeyboardKey.enter ||
-        key == LogicalKeyboardKey.numpadEnter ||
-        key == LogicalKeyboardKey.space) {
+        key == LogicalKeyboardKey.numpadEnter) {
       controller.onKeyPressed(' ');
     }
   }
