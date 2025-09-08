@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../services/game_service.dart';
+import '../../../services/multiplayer_service.dart';
 import '../../shared/widgets/base_multiplayer_screen.dart';
 import './game_screen.dart';
 
@@ -99,6 +100,20 @@ class _MitutuglugMultiplayerScreenState
     );
   }
 
+  Future<void> _rematch() async {
+    final newId = await MultiplayerService().quickMatch('mitutuglung');
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MitutuglungMultiplayerScreen(
+          key: ValueKey('mp-$newId'),
+          matchId: newId,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BaseMultiplayerScreen(
@@ -106,8 +121,10 @@ class _MitutuglugMultiplayerScreenState
       showPairs: true,
       showAccuracy: true,
       child: MitutuglungGameScreen(
+        key: ValueKey('game-${widget.matchId}'),
         multiplayerMatchId: widget.matchId,
         multiplayerAdapter: _adapter,
+        onPlayAgain: _rematch,
       ),
     );
   }

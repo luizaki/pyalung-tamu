@@ -7,12 +7,17 @@ import './multiplayer_screen.dart' show MultiplayerMitutuglungAdapter;
 class MitutuglungGameScreen extends BaseGameScreen<MitutuglungGameController> {
   final String? multiplayerMatchId;
   final MultiplayerMitutuglungAdapter? multiplayerAdapter;
+  final Future<void> Function()? onPlayAgain;
 
   const MitutuglungGameScreen({
     super.key,
     this.multiplayerMatchId,
     this.multiplayerAdapter,
-  });
+    this.onPlayAgain,
+  }) : super(
+          isMultiplayer: multiplayerMatchId != null,
+          onPlayAgain: onPlayAgain,
+        );
 
   @override
   MitutuglungGameScreenState createState() => MitutuglungGameScreenState();

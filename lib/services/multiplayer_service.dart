@@ -14,26 +14,20 @@ class MultiplayerService {
 
   Future<String> quickMatch(String gameType,
       {Duration timeout = const Duration(seconds: 45)}) async {
-    final uid = supabase.auth.currentUser!.id;
-
-    final rpcRes = await supabase.rpc('claim_or_create_match', params: {
+    final matchId =
+        await supabase.rpc('find_or_create_match_by_skill', params: {
       'p_game_type': gameType,
-    });
-
-    final matchId = rpcRes as String;
+    }) as String;
 
     final start = DateTime.now();
     while (DateTime.now().difference(start) < timeout) {
       final row = await supabase
           .from('multiplayer_matches')
-          .select('status, player1_id, player2_id')
+          .select('status, player2_id')
           .eq('match_id', matchId)
           .single();
 
-      final status = row['status'] as String?;
-      final p2 = row['player2_id'];
-
-      if (status == 'active' && p2 != null) {
+      if ((row['status'] as String?) == 'active' && row['player2_id'] != null) {
         await ensureLiveRow(matchId);
         return matchId;
       }
@@ -47,8 +41,6 @@ class MultiplayerService {
   }
 
   Future<void> abandonMatch(String matchId) async {
-    final uid = supabase.auth.currentUser?.id;
-    if (uid == null) return;
     await supabase
         .from('multiplayer_matches')
         .update({'status': 'abandoned'}).eq('match_id', matchId);

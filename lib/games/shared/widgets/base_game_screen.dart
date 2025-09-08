@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../controllers/base_game_controller.dart';
 import '../../../audio/audio_controller.dart';
@@ -5,7 +6,14 @@ import '../../../services/auth_service.dart';
 
 abstract class BaseGameScreen<T extends BaseGameController>
     extends StatefulWidget {
-  const BaseGameScreen({super.key});
+  const BaseGameScreen({
+    super.key,
+    this.isMultiplayer = false,
+    this.onPlayAgain,
+  });
+
+  final bool isMultiplayer;
+  final Future<void> Function()? onPlayAgain;
 }
 
 abstract class BaseGameScreenState<T extends BaseGameController,
@@ -17,6 +25,9 @@ abstract class BaseGameScreenState<T extends BaseGameController,
       [Colors.lightBlue[200]!, Colors.blue[400]!];
 
   bool _isLoading = true;
+
+  bool _showMpPauseTip = false;
+  Timer? _mpTipTimer;
 
   @override
   void initState() {
@@ -42,6 +53,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
   @override
   void dispose() {
+    _mpTipTimer?.cancel();
     controller.removeListener(onControllerUpdate);
     controller.dispose();
     disposeGameSpecific();
@@ -63,7 +75,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
   void disposeGameSpecific();
 
-  bool get isMultiplayer => false;
+  bool get isMultiplayer => widget.isMultiplayer;
 
   // ============= COMMON UI BUIILDERS =============
 
@@ -201,7 +213,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
           icon: const Icon(Icons.pause, color: Colors.brown),
           onPressed: () {
             if (isMultiplayer) {
-              _showMultiplayerPauseDisabled(context);
+              _showMpPauseHint();
             } else {
               controller.pauseGame();
             }
@@ -209,6 +221,42 @@ abstract class BaseGameScreenState<T extends BaseGameController,
         ),
       ),
     );
+  }
+
+  Widget _buildMultiplayerPauseTip() {
+    final size = MediaQuery.of(context).size;
+    final top = (size.height * 0.03).clamp(8.0, 32.0);
+    final left = (size.width * 0.03).clamp(8.0, 32.0);
+    return Positioned(
+      top: top,
+      left: left + 64,
+      child: IgnorePointer(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xF9DD9A00),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: const Color(0xAD572100), width: 2),
+          ),
+          child: const Text(
+            'Pausing is not allowed during multiplayer matches.',
+            style: TextStyle(
+              color: Colors.brown,
+              fontWeight: FontWeight.w700,
+              fontSize: 8,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showMpPauseHint() {
+    _mpTipTimer?.cancel();
+    setState(() => _showMpPauseTip = true);
+    _mpTipTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (mounted) setState(() => _showMpPauseTip = false);
+    });
   }
 
   Widget _buildPauseOverlay() {
@@ -416,9 +464,18 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
                         // Play again
                         ElevatedButton(
-                          onPressed: () {
-                            final screenSize = MediaQuery.of(context).size;
-                            controller.restartGame(screenSize);
+                          onPressed: () async {
+                            if (isMultiplayer) {
+                              if (widget.onPlayAgain != null) {
+                                await widget.onPlayAgain!();
+                              } else {
+                                Navigator.popUntil(
+                                    context, (route) => route.isFirst);
+                              }
+                            } else {
+                              final screenSize = MediaQuery.of(context).size;
+                              controller.restartGame(screenSize);
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green[600],
@@ -603,8 +660,9 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                 ...buildGameSpecificWidgets(),
                 _buildGameUI(),
 
-                // pause button always visible, disabled in multiplayer
+                // pause button always visible; disabled in multiplayer
                 _buildPauseButton(),
+                if (_showMpPauseTip) _buildMultiplayerPauseTip(),
                 if (!isMultiplayer && controller.isGamePaused)
                   _buildPauseOverlay(),
 
@@ -616,57 +674,6 @@ abstract class BaseGameScreenState<T extends BaseGameController,
             ),
           );
         },
-      ),
-    );
-  }
-
-  void _showMultiplayerPauseDisabled(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => Center(
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-            decoration: BoxDecoration(
-              color: const Color(0xF9DD9A00),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xAD572100), width: 3),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Pausing is not allowed',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.brown,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Pausing is not allowed during multiplayer matches.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.brown,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2BB495),
-                    foregroundColor: Colors.white,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                  ),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
