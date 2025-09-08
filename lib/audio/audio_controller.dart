@@ -48,7 +48,7 @@ class AudioController with WidgetsBindingObserver, ChangeNotifier {
       await init(enabled: enabled);
     }
 
-    if (enabled) {
+    if (!enabled) {
       await _menuPlayer.pause();
       await _gamePlayer.pause();
     } else {

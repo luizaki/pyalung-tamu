@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../shared/controllers/base_game_controller.dart';
@@ -8,6 +9,7 @@ import '../models/game_state.dart';
 import '../models/card.dart';
 import '../models/card_list.dart';
 import '../models/card_pair.dart';
+import '../views/multiplayer_screen.dart' show MultiplayerMitutuglungAdapter;
 
 class MitutuglungGameController
     extends BaseGameController<MitutuglungGameState> {
@@ -29,6 +31,21 @@ class MitutuglungGameController
 
   MitutuglungGameController() : super(MitutuglungGameState());
 
+  String? _currentDifficulty;
+
+  // multiplayer
+  String? _matchId;
+  MultiplayerMitutuglungAdapter? _mp;
+  bool _mpFinished = false;
+  bool get _isMultiplayer => _matchId != null && _mp != null;
+
+  void enableMultiplayer(
+      {required String matchId,
+      required MultiplayerMitutuglungAdapter adapter}) {
+    _matchId = matchId;
+    _mp = adapter;
+  }
+
   // ================== SETUPS ==================
 
   @override
@@ -43,8 +60,6 @@ class MitutuglungGameController
   String getCurrentDifficulty() {
     return _currentDifficulty ?? 'beginner';
   }
-
-  String? _currentDifficulty;
 
   // ================== IMPLEMENTED INITS ==================
 
@@ -84,7 +99,12 @@ class MitutuglungGameController
       cards.addAll(pair.toCards());
     }
 
-    cards.shuffle();
+    final seed = _matchId?.hashCode ?? 0;
+    if (seed != 0) {
+      cards.shuffle(Random(seed));
+    } else {
+      cards.shuffle();
+    }
 
     gameState.cards = cards;
     gameState.totalPairs = _cardPairs.length;
@@ -194,6 +214,8 @@ class MitutuglungGameController
     gameState.revealedCards.clear();
     gameState.isProcessingMove = false;
 
+    _mp?.recordAttempt(correct: true);
+
     const Map<String, int> basePoints = {
       'beginner': 10,
       'intermediate': 15,
@@ -206,13 +228,15 @@ class MitutuglungGameController
 
     if (gameState.pairsFound >= gameState.totalPairs) {
       Timer(const Duration(milliseconds: 500), () {
-        completeGame();
+        _finishAndComplete();
       });
     }
   }
 
   void _handleMismatch(MitutuglungCard card1, MitutuglungCard card2) {
     onIncorrectAnswer();
+
+    _mp?.recordAttempt(correct: false);
 
     _mismatchTimer = Timer(const Duration(seconds: MISMATCH_DELAY), () {
       card1.hide();
@@ -261,5 +285,13 @@ class MitutuglungGameController
     }
 
     return grid;
+  }
+
+  Future<void> _finishAndComplete() async {
+    if (_isMultiplayer && !_mpFinished) {
+      _mpFinished = true;
+      await _mp!.finish();
+    }
+    completeGame();
   }
 }

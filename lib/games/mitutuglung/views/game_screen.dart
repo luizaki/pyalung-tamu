@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
-
 import '../../shared/widgets/base_game_screen.dart';
 import '../controllers/game_controller.dart';
 import '../widgets/card_widget.dart';
+import './multiplayer_screen.dart' show MultiplayerMitutuglungAdapter;
 
 class MitutuglungGameScreen extends BaseGameScreen<MitutuglungGameController> {
-  const MitutuglungGameScreen({super.key});
+  final String? multiplayerMatchId;
+  final MultiplayerMitutuglungAdapter? multiplayerAdapter;
+
+  const MitutuglungGameScreen({
+    super.key,
+    this.multiplayerMatchId,
+    this.multiplayerAdapter,
+  });
 
   @override
   MitutuglungGameScreenState createState() => MitutuglungGameScreenState();
@@ -17,7 +24,19 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
   MitutuglungGameController createController() => MitutuglungGameController();
 
   @override
-  void setupController() {}
+  bool get isMultiplayer => widget.multiplayerMatchId != null;
+
+  @override
+  void setupController() {
+    //lets controller report attempts & finish, if multiplayer
+    if (widget.multiplayerMatchId != null &&
+        widget.multiplayerAdapter != null) {
+      controller.enableMultiplayer(
+        matchId: widget.multiplayerMatchId!,
+        adapter: widget.multiplayerAdapter!,
+      );
+    }
+  }
 
   @override
   void onControllerUpdate() {}
@@ -66,12 +85,10 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
 
             const double kTableCoverageW = 0.98;
             const double kTableCoverageH = 0.92;
-
             const double kGridCoverageW = 0.92;
             const double kGridCoverageH = 0.84;
-
             const double kGap = 12.0;
-            const double kMinCell = 60.0; // smaller min to avoid overflow
+            const double kMinCell = 60.0;
             const double kMaxCell = 240.0;
             const double kEps = 1.0;
 
@@ -79,7 +96,6 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
             final tableBoxH = snapDown(availH * kTableCoverageH);
 
             final micro = 1.0 / dpr;
-
             final gridBoxW = snapDown(availW * kGridCoverageW) - micro;
             final gridBoxH = snapDown(availH * kGridCoverageH) - micro;
 
@@ -115,7 +131,7 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        // Table PNG
+                        // Table
                         SizedBox(
                           width: tableBoxW,
                           height: tableBoxH,
@@ -140,13 +156,11 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
                             ),
                           ),
                         ),
-
                         // Card grid
                         SizedBox(
                           width: gridW,
                           height: gridH,
                           child: FittedBox(
-                            // 🔑 keep grid inside safe area
                             fit: BoxFit.contain,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,

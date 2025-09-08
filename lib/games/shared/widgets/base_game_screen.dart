@@ -63,6 +63,8 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
   void disposeGameSpecific();
 
+  bool get isMultiplayer => false;
+
   // ============= COMMON UI BUIILDERS =============
 
   Widget _buildCountdownOverlay() {
@@ -198,7 +200,11 @@ abstract class BaseGameScreenState<T extends BaseGameController,
         child: IconButton(
           icon: const Icon(Icons.pause, color: Colors.brown),
           onPressed: () {
-            controller.pauseGame();
+            if (isMultiplayer) {
+              _showMultiplayerPauseDisabled(context);
+            } else {
+              controller.pauseGame();
+            }
           },
         ),
       ),
@@ -597,9 +603,10 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                 ...buildGameSpecificWidgets(),
                 _buildGameUI(),
 
-                // TODO: might need to remove pausing if multiplayer is implemented
+                // pause button always visible, disabled in multiplayer
                 _buildPauseButton(),
-                if (controller.isGamePaused) _buildPauseOverlay(),
+                if (!isMultiplayer && controller.isGamePaused)
+                  _buildPauseOverlay(),
 
                 if (controller.isGameOver) _buildGameOverDialog(),
 
@@ -609,6 +616,57 @@ abstract class BaseGameScreenState<T extends BaseGameController,
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _showMultiplayerPauseDisabled(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xF9DD9A00),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xAD572100), width: 3),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Pausing is not allowed',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.brown,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Pausing is not allowed during multiplayer matches.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.brown,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2BB495),
+                    foregroundColor: Colors.white,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  ),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
