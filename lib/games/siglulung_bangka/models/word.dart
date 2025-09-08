@@ -17,8 +17,7 @@ class TypedWord {
 
   bool get isCorrect {
     if (typedText.isEmpty) return true;
-    if (typedText.length > word.length) return false;
-    return typedText == word.substring(0, typedText.length);
+    return word.startsWith(typedText);
   }
 
   String get remainingText {
