@@ -6,7 +6,7 @@ enum Level { none, beginner, intermediate, advanced }
 extension LevelX on Level {
   int get v => index;
   String get label => switch (this) {
-        Level.none => 'Beginner',
+        Level.none => 'N/A',
         Level.beginner => 'Beginner',
         Level.intermediate => 'Intermediate',
         Level.advanced => 'Advanced',
@@ -86,7 +86,6 @@ GameProgress evalSiglulung(SiglulungStats s) {
   final a = _inc(s.wpm, Thresholds.wpm);
   final b = _inc(s.accuracy, Thresholds.sigAccuracy);
 
-  // 👇 Average levels
   final avg = ((a.v + b.v) / 2).round();
   final badge = Level.values[avg];
 
@@ -117,7 +116,7 @@ GameProgress evalTugak(TugakStats s) {
 
 GameProgress evalMitutuglung(MitutuglungStats s) {
   final a = _inc(s.perfectPairs, Thresholds.perfectPairs);
-  final b = _inc(s.accuracy, Thresholds.tugAccuracy);
+  final b = _inc(s.accuracy, Thresholds.mitAccuracy);
 
   final avg = ((a.v + b.v) / 2).round();
   final badge = Level.values[avg];
@@ -127,20 +126,18 @@ GameProgress evalMitutuglung(MitutuglungStats s) {
     b,
     badge,
     _pUp(s.perfectPairs, Thresholds.perfectPairs),
-    _pUp(s.accuracy, Thresholds.tugAccuracy),
+    _pUp(s.accuracy, Thresholds.mitAccuracy),
   );
 }
 
 Level evalMacro(GameProgress g1, GameProgress g2, GameProgress g3) {
   final avg = (g1.badge.v + g2.badge.v + g3.badge.v) / 3.0;
-  final i = avg < 0.5
-      ? 0
-      : avg < 1.5
-          ? 1
-          : avg < 2.5
-              ? 2
-              : 3;
-  return Level.values[i];
+
+  if (avg >= 2.5) return Level.advanced;
+  if (avg >= 1.5) return Level.intermediate;
+  if (avg >= 0.5) return Level.beginner;
+
+  return Level.none;
 }
 
 // ================== CONTROLLER ==================
