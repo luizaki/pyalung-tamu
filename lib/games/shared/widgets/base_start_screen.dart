@@ -35,7 +35,7 @@ class StartScreen extends StatelessWidget {
     final scaleH = size.height / _screenSize.height;
     final scale = (scaleW + scaleH) / 2;
 
-    final circleDim = 200.0 * scale;
+    final circleDim = 175.0 * scale;
     final circleBorder = 10.0 * scale;
     final backBtnSize = 55.0 * scale;
     final backBtnBorder = 2.0 * scale;
@@ -43,9 +43,9 @@ class StartScreen extends StatelessWidget {
     final backTop = 35.0 * scale;
     final backLeft = 30.0 * scale;
 
-    final titleSize = 64.0 * scale;
+    final titleSize = 50.0 * scale;
     final titleStroke = 6.0 * scale;
-    final instrSize = 32.0 * scale;
+    final instrSize = 22.0 * scale;
     final instrStroke = 4.0 * scale;
 
     final outerBorder = 5.0 * scale;
@@ -117,6 +117,11 @@ class StartScreen extends StatelessWidget {
 
           // Main
           Center(
+              child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: 20.0 * scale,
+              vertical: 12.0 * scale,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -162,7 +167,7 @@ class StartScreen extends StatelessWidget {
                   strokeWidth: titleStroke,
                 ),
 
-                SizedBox(height: 10 * scale),
+                SizedBox(height: 16 * scale),
 
                 // Instructions
                 StrokeText(
@@ -209,7 +214,7 @@ class StartScreen extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: playFont,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w500,
                             color: const Color(0xFFF9DD9A),
                           ),
                         ),
@@ -219,7 +224,7 @@ class StartScreen extends StatelessWidget {
                 ),
               ],
             ),
-          ),
+          )),
         ],
       ),
     );
