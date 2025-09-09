@@ -156,36 +156,39 @@ class _AppState extends State<App> {
         if (player != null)
           Positioned(
             left: 16 * scale,
-            bottom: 8 * scale,
+            bottom: 6 * scale,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Transform.scale(
-                  scale: scale.clamp(0.7, 1.2),
+                  scale: (scale * 0.8).clamp(0.6, 1.0),
                   child: UserMenu(
                     player: player,
                     onUpdate: _onUserStateChanged,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      player.username ?? 'Player',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'Ari-W9500-Regular',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12 * scale,
+                SizedBox(width: (4 * scale).clamp(2.0, 6.0)),
+                Flexible(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        player.username ?? 'Player',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Ari-W9500-Regular',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12 * scale,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 2 * scale),
-                    _buildScoreWidget(player, scale),
-                  ],
-                ),
+                      SizedBox(height: (1 * scale).clamp(0.5, 2.0)),
+                      _buildScoreWidget(player, scale),
+                    ],
+                  ),
+                )
               ],
             ),
           ),
@@ -235,8 +238,10 @@ class _AppState extends State<App> {
   Widget _buildScoreWidget(player, double scale) {
     if (player.isGuest) {
       return Container(
-        padding:
-            EdgeInsets.symmetric(horizontal: 4 * scale, vertical: 1 * scale),
+        padding: EdgeInsets.symmetric(
+          horizontal: (3 * scale).clamp(2.0, 4.0),
+          vertical: (1 * scale).clamp(0.5, 1.5),
+        ),
         decoration: BoxDecoration(
           color: const Color(0xF9DD9A00),
           borderRadius: BorderRadius.circular(4),
@@ -259,8 +264,10 @@ class _AppState extends State<App> {
         final score = snapshot.data ?? 0;
 
         return Container(
-          padding:
-              EdgeInsets.symmetric(horizontal: 4 * scale, vertical: 1 * scale),
+          padding: EdgeInsets.symmetric(
+            horizontal: (3 * scale).clamp(2.0, 5.0),
+            vertical: (1 * scale).clamp(0.5, 2.0),
+          ),
           decoration: BoxDecoration(
             color: const Color(0xF9DD9A00),
             borderRadius: BorderRadius.circular(4),
@@ -269,7 +276,7 @@ class _AppState extends State<App> {
             'Score: $score',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 8 * scale,
+              fontSize: (8 * scale).clamp(6.0, 10.0),
               fontFamily: 'Ari-W9500-Regular',
               fontWeight: FontWeight.bold,
             ),

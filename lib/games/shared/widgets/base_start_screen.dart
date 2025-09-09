@@ -40,8 +40,7 @@ class StartScreen extends StatelessWidget {
     this.isGuestOverride,
   });
 
-  bool get _multiplayerEnabled =>
-      gameType != null && multiplayerBuilder != null;
+  bool get _multiplayerEnabled => gameType != null && multiplayerBuilder != null;
 
   @override
   Widget build(BuildContext context) {
@@ -231,8 +230,9 @@ class StartScreen extends StatelessWidget {
                                               return;
                                             }
                                             if (gameType == null ||
-                                                multiplayerBuilder == null)
+                                                multiplayerBuilder == null) {
                                               return;
+                                            }
 
                                             _showJoiningDialog(context, scale);
                                             try {
@@ -401,8 +401,8 @@ class _PrimaryButton extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          customBorder: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(cardRadius)),
+          customBorder:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(cardRadius)),
           highlightColor: const Color(0xFFCA8505),
           child: Center(
             child: Padding(
@@ -462,8 +462,7 @@ class _PromptCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(cardRadius),
         border: Border.all(color: const Color(0xAD572100), width: borderW),
         boxShadow: const [
-          BoxShadow(
-              color: Colors.black26, blurRadius: 16, offset: Offset(0, 6)),
+          BoxShadow(color: Colors.black26, blurRadius: 16, offset: Offset(0, 6)),
         ],
       ),
       child: Padding(

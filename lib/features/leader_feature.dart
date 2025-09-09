@@ -1,40 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/game_service.dart';
 
-// ================== LEADERBOARD ==================
-class _LeaderboardCardWrapper extends StatelessWidget {
-  final Widget child;
-  final String backgroundAsset;
-
-  const _LeaderboardCardWrapper({
-    required this.child,
-    required this.backgroundAsset,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: Colors.transparent,
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-        side: const BorderSide(color: Color(0xFF5A3A00), width: 3),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          image: DecorationImage(
-            image: AssetImage("assets/$backgroundAsset"),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: child,
-      ),
-    );
-  }
-}
-
 // ================== MACRO LEADERBOARD ==================
 class MacroLeaderboardTable extends StatelessWidget {
   final List<LeaderboardEntry> entries;

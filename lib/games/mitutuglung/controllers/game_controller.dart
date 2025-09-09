@@ -117,6 +117,12 @@ class MitutuglungGameController
     _startPreviewPhase();
   }
 
+  @override
+  void onTimeUp() {
+    _calculateFinalScoreWithAccuracy(timeout: true);
+    completeGame();
+  }
+
   // ================ IMPLEMENTED TIMERS ================
 
   @override
@@ -247,6 +253,22 @@ class MitutuglungGameController
     });
   }
 
+  void _calculateFinalScoreWithAccuracy({bool timeout = false}) {
+    final initialScore = gameState.score;
+
+    // if they answered less than the actual pairs, update accuracy
+    if (gameState.totalAnswers < gameState.totalPairs) {
+      gameState.totalAnswers = gameState.totalPairs;
+    }
+
+    // lessen accuracy bonus on timeout games
+    final accuracyMultiplier =
+        timeout ? gameState.accuracy * 0.5 : 1 + (gameState.accuracy * 0.5);
+    final finalScore = (initialScore * accuracyMultiplier).round();
+
+    gameState.score = finalScore;
+  }
+
   // ================== USER INTERACTIONS ==================
 
   bool canTapCard(MitutuglungCard card) {
@@ -288,6 +310,7 @@ class MitutuglungGameController
   }
 
   Future<void> _finishAndComplete() async {
+    _calculateFinalScoreWithAccuracy();
     if (_isMultiplayer && !_mpFinished) {
       _mpFinished = true;
       await _mp!.finish();

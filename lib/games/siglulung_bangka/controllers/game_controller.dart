@@ -260,7 +260,7 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
         'advanced': 2.0,
       };
 
-      int points = (currentWord.word.length.clamp(3, 8)) * 2;
+      int points = (currentWord.word.length.clamp(1, 5)) * 2;
 
       onCorrectAnswer(
           points:
