@@ -6,9 +6,22 @@ import '../models/frog.dart';
 import '../widgets/frog_widget.dart';
 import '../widgets/lilypad.dart';
 import '../widgets/question_dialog.dart';
+import './multiplayer_screen.dart' show TugakMultiplayerAdapter;
 
 class TugakGameScreen extends BaseGameScreen<TugakGameController> {
-  const TugakGameScreen({super.key});
+  final String? multiplayerMatchId;
+  final TugakMultiplayerAdapter? multiplayerAdapter;
+  final Future<void> Function()? onPlayAgain;
+
+  const TugakGameScreen({
+    super.key,
+    this.multiplayerMatchId,
+    this.multiplayerAdapter,
+    this.onPlayAgain,
+  }) : super(
+          isMultiplayer: multiplayerMatchId != null,
+          onPlayAgain: onPlayAgain,
+        );
 
   @override
   TugakGameScreenState createState() => TugakGameScreenState();
@@ -17,9 +30,13 @@ class TugakGameScreen extends BaseGameScreen<TugakGameController> {
 class TugakGameScreenState
     extends BaseGameScreenState<TugakGameController, TugakGameScreen> {
   late AnimationController _jumpAnimationController;
+  bool _sentFinish = false;
 
   @override
   TugakGameController createController() => TugakGameController();
+
+  @override
+  bool get isMultiplayer => widget.multiplayerMatchId != null;
 
   @override
   void setupController() {
@@ -40,6 +57,19 @@ class TugakGameScreenState
       _jumpAnimationController
         ..reset()
         ..forward();
+    }
+
+    final adapter = widget.multiplayerAdapter;
+    if (adapter != null) {
+      final int frogs = controller.getSecondaryScore();
+      final double acc =
+          (controller.gameState.accuracy * 100.0).clamp(0.0, 100.0);
+      adapter.updateStats(frogs: frogs, accuracy: acc);
+    }
+
+    if (controller.isGameOver && !_sentFinish) {
+      _sentFinish = true;
+      widget.multiplayerAdapter?.finish();
     }
   }
 
