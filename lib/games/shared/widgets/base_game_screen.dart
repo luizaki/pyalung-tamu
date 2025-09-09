@@ -10,10 +10,12 @@ abstract class BaseGameScreen<T extends BaseGameController>
     super.key,
     this.isMultiplayer = false,
     this.onPlayAgain,
+    this.endTitleBuilder,
   });
 
   final bool isMultiplayer;
   final Future<void> Function()? onPlayAgain;
+  final String Function()? endTitleBuilder;
 }
 
 abstract class BaseGameScreenState<T extends BaseGameController,
@@ -365,6 +367,11 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     );
   }
 
+  String getEndTitle() {
+    return widget.endTitleBuilder?.call() ??
+        (isMultiplayer ? 'Match Complete!' : 'Game Over!');
+  }
+
   Widget _buildGameOverDialog() {
     final authService = AuthService();
     final isGuest = authService.isGuest;
@@ -372,6 +379,8 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     final size = MediaQuery.of(context).size;
     final maxW = (size.width * 0.32).clamp(280.0, size.width * 0.9);
     final maxH = size.height * 0.85;
+
+    final endTitle = getEndTitle();
 
     return Positioned.fill(
       child: Container(
@@ -390,10 +399,9 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Game Over title
-                    const Text(
-                      'Game Over!',
-                      style: TextStyle(
+                    Text(
+                      endTitle,
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.brown,
