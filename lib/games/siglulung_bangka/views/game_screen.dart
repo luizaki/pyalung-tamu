@@ -7,9 +7,22 @@ import '../controllers/game_controller.dart';
 import '../widgets/boat_widget.dart';
 import '../widgets/background.dart';
 import '../widgets/word_queue.dart';
+import './multiplayer_screen.dart' show SiglulungMultiplayerAdapter;
 
 class BangkaGameScreen extends BaseGameScreen<BangkaGameController> {
-  const BangkaGameScreen({super.key});
+  final String? multiplayerMatchId;
+  final SiglulungMultiplayerAdapter? multiplayerAdapter;
+  final Future<void> Function()? onPlayAgain;
+
+  const BangkaGameScreen({
+    super.key,
+    this.multiplayerMatchId,
+    this.multiplayerAdapter,
+    this.onPlayAgain,
+  }) : super(
+          isMultiplayer: multiplayerMatchId != null,
+          onPlayAgain: onPlayAgain,
+        );
 
   @override
   BangkaGameScreenState createState() => BangkaGameScreenState();
@@ -22,12 +35,16 @@ class BangkaGameScreenState
   final TextEditingController _imeController = TextEditingController();
 
   TextEditingValue _prevValue = const TextEditingValue();
+  bool _sentFinish = false;
 
   @override
   List<Color> get backgroundColors => const [
         Color(0xFF87CEEB),
         Color(0xFF4682B4),
       ];
+
+  @override
+  bool get isMultiplayer => widget.multiplayerMatchId != null;
 
   @override
   BangkaGameController createController() => BangkaGameController();
@@ -47,6 +64,19 @@ class BangkaGameScreenState
   @override
   void onControllerUpdate() {
     _ensureIme();
+
+    final adapter = widget.multiplayerAdapter;
+    if (adapter != null) {
+      final int wpm = controller.getSecondaryScore();
+      final double acc =
+          (controller.gameState.accuracy * 100.0).clamp(0.0, 100.0);
+      adapter.updateStats(wpm: wpm, accuracy: acc);
+    }
+
+    if (controller.isGameOver && !_sentFinish) {
+      _sentFinish = true;
+      widget.multiplayerAdapter?.finish();
+    }
   }
 
   @override
@@ -150,7 +180,7 @@ class BangkaGameScreenState
     return Positioned.fill(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: _ensureIme, //show keyboard on tap
+        onTap: _ensureIme,
         child: Align(
           alignment: Alignment.bottomCenter,
           child: SizedBox(

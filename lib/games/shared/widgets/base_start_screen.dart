@@ -40,7 +40,8 @@ class StartScreen extends StatelessWidget {
     this.isGuestOverride,
   });
 
-  bool get _multiplayerEnabled => gameType != null && multiplayerBuilder != null;
+  bool get _multiplayerEnabled =>
+      gameType != null && multiplayerBuilder != null;
 
   @override
   Widget build(BuildContext context) {
@@ -89,8 +90,8 @@ class StartScreen extends StatelessWidget {
 
                 final titleSize = (64.0 * scale).clamp(28.0, 64.0).toDouble();
                 final titleStroke = (6.0 * scale).clamp(2.0, 6.0).toDouble();
-                final instrSize = (28.0 * scale).clamp(14.0, 24.0).toDouble();
-                final instrStroke = (4.0 * scale).clamp(1.0, 4.0).toDouble();
+                final instrSize = (28.0 * scale).clamp(12.0, 20.0).toDouble();
+                final instrStroke = (4.0 * scale).clamp(0.5, 2.0).toDouble();
 
                 final outerBorder = (5.0 * scale).toDouble();
                 final cardRadius = (16.0 * scale).toDouble();
@@ -153,7 +154,7 @@ class StartScreen extends StatelessWidget {
                                 strokeColor: Colors.black,
                                 strokeWidth: titleStroke,
                               ),
-                              SizedBox(height: 8 * scale),
+                              SizedBox(height: 24 * scale),
                               Padding(
                                 padding: EdgeInsets.symmetric(
                                     horizontal: 20 * scale),
@@ -401,8 +402,8 @@ class _PrimaryButton extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          customBorder:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(cardRadius)),
+          customBorder: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(cardRadius)),
           highlightColor: const Color(0xFFCA8505),
           child: Center(
             child: Padding(
@@ -462,7 +463,8 @@ class _PromptCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(cardRadius),
         border: Border.all(color: const Color(0xAD572100), width: borderW),
         boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 16, offset: Offset(0, 6)),
+          BoxShadow(
+              color: Colors.black26, blurRadius: 16, offset: Offset(0, 6)),
         ],
       ),
       child: Padding(
