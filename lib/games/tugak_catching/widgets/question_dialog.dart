@@ -61,7 +61,10 @@ class QuestionDialogState extends State<QuestionDialog>
       _selectedCorrect = isCorrect;
       _locked = true;
     });
-    Future.delayed(const Duration(milliseconds: 450), () {
+
+    final delay = isCorrect ? 450 : 1200;
+
+    Future.delayed(Duration(milliseconds: delay), () {
       widget.onAnswer(i);
       if (mounted) Navigator.of(context).pop();
     });
@@ -182,54 +185,100 @@ class QuestionDialogState extends State<QuestionDialog>
                               final engChoice = engChoices[i];
 
                               final bool isSelected = _selectedIndex == i;
-                              final bool showResult =
-                                  isSelected && _selectedCorrect != null;
-                              final Color resultColor =
-                                  (_selectedCorrect ?? false)
-                                      ? Colors.green.shade700
-                                      : Colors.red.shade600;
+                              final bool isCorrectAnswer =
+                                  choice == widget.question.correctAnswer;
 
-                              final BorderSide side = showResult
+                              Color? resultColor;
+                              if (_selectedCorrect != null) {
+                                if (isSelected && _selectedCorrect == true) {
+                                  resultColor = Colors.green.shade700;
+                                } else if (isSelected &&
+                                    _selectedCorrect == false) {
+                                  resultColor = Colors.red.shade600;
+                                } else if (!_selectedCorrect! &&
+                                    isCorrectAnswer) {
+                                  resultColor = Colors.green.shade700;
+                                }
+                              }
+
+                              final BorderSide side = resultColor != null
                                   ? BorderSide(color: resultColor, width: 3)
                                   : const BorderSide(
                                       color: Colors.transparent, width: 2);
 
                               final Color textColor =
-                                  showResult ? resultColor : Colors.brown;
+                                  resultColor ?? Colors.brown;
 
-                              return SizedBox(
-                                height: perButtonH,
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: _locked
-                                      ? null
-                                      : () => _handleTap(i, choice),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFF4BE0A),
-                                    foregroundColor: textColor,
-                                    padding: EdgeInsets.zero,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(24),
-                                      side: side,
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 4),
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (_selectedCorrect != null &&
+                                      isSelected) ...[
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 8, bottom: 2),
                                       child: Text(
-                                        '$choice ($engChoice)',
-                                        textAlign: TextAlign.center,
+                                        "You answered",
                                         style: TextStyle(
-                                          fontSize: 18,
-                                          color: textColor,
-                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: resultColor ?? Colors.brown,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  if (_selectedCorrect == false &&
+                                      isCorrectAnswer) ...[
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 8, bottom: 2),
+                                      child: Text(
+                                        "Correct Answer",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.green.shade700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  SizedBox(
+                                    height: perButtonH,
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: _locked
+                                          ? null
+                                          : () => _handleTap(i, choice),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            const Color(0xFFF4BE0A),
+                                        foregroundColor: textColor,
+                                        padding: EdgeInsets.zero,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(24),
+                                          side: side,
+                                        ),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 4),
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: Text(
+                                            '$choice ($engChoice)',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              color: textColor,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
+                                ],
                               );
                             },
                             separatorBuilder: (_, __) =>

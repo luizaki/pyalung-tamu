@@ -519,6 +519,7 @@ class _PromptCard extends StatelessWidget {
                           fontSize: bodySize,
                           fontFamily: 'Ari-W9500-Regular',
                           color: const Color(0xFF3A2A1A),
+                          decoration: TextDecoration.none,
                         ),
                       ),
                     ],

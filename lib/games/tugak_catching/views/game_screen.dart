@@ -220,11 +220,9 @@ class TugakGameScreenState
           question: frog.question,
           timeoutSeconds: remainingTime,
           onAnswer: (index) {
-            frog.isBeingQuestioned = false;
             controller.onAnswerSelected(frog, index);
           },
           onTimeout: () {
-            frog.isBeingQuestioned = false;
             controller.onQuestionTimeout(frog);
           },
         ),
