@@ -50,6 +50,8 @@ class _AppState extends State<App> {
     await _authService.initialize();
     setState(() => _isInitialized = true);
 
+    await Future.delayed(const Duration(milliseconds: 300));
+
     // Show auth popup if user is not logged in
     if (_authService.currentPlayer == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -74,6 +76,8 @@ class _AppState extends State<App> {
 
   void _onUserStateChanged() async {
     setState(() {});
+
+    await Future.delayed(const Duration(milliseconds: 300));
 
     if (_authService.currentPlayer == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
