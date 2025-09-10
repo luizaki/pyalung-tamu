@@ -6,7 +6,7 @@ import '../../../services/auth_service.dart';
 
 const Size _screenSize = Size(1280, 720);
 
-class StartScreen extends StatelessWidget {
+class StartScreen extends StatefulWidget {
   final Color color1;
   final Color color2;
   final Color color3;
@@ -40,8 +40,15 @@ class StartScreen extends StatelessWidget {
     this.isGuestOverride,
   });
 
+  @override
+  State<StartScreen> createState() => _StartScreenState();
+}
+
+class _StartScreenState extends State<StartScreen> {
+  String? _pendingMatchId;
+
   bool get _multiplayerEnabled =>
-      gameType != null && multiplayerBuilder != null;
+      widget.gameType != null && widget.multiplayerBuilder != null;
 
   @override
   Widget build(BuildContext context) {
@@ -49,22 +56,22 @@ class StartScreen extends StatelessWidget {
       body: Stack(
         children: [
           Positioned.fill(
-            child: backgroundImage != null
-                ? Image.asset(backgroundImage!, fit: BoxFit.cover)
+            child: widget.backgroundImage != null
+                ? Image.asset(widget.backgroundImage!, fit: BoxFit.cover)
                 : DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          color1,
-                          color1,
-                          color2,
-                          color2,
-                          color3,
-                          color3,
-                          color4,
-                          color4
+                          widget.color1,
+                          widget.color1,
+                          widget.color2,
+                          widget.color2,
+                          widget.color3,
+                          widget.color3,
+                          widget.color4,
+                          widget.color4
                         ],
                         stops: const [0, .25, .25, .5, .5, .75, .75, 1],
                       ),
@@ -105,8 +112,7 @@ class StartScreen extends StatelessWidget {
                 final gap = (12.0 * scale).toDouble();
                 final btnWidth =
                     _multiplayerEnabled ? (playWidth - gap) / 2 : playWidth;
-
-                final firstLine = instructions.split('\n').first.trim();
+                final firstLine = widget.instructions.split('\n').first.trim();
                 final spacingAfterInstruction =
                     (instrSize * 1.35).clamp(18.0, 40.0).toDouble();
 
@@ -134,16 +140,16 @@ class StartScreen extends StatelessWidget {
                                       color: const Color(0xFFAD5721),
                                       width: circleBorder),
                                 ),
-                                child: gameIcon != null
+                                child: widget.gameIcon != null
                                     ? ClipOval(
-                                        child: Image.asset(gameIcon!,
+                                        child: Image.asset(widget.gameIcon!,
                                             fit: BoxFit.cover))
                                     : Icon(Icons.games,
                                         size: 100 * scale, color: Colors.brown),
                               ),
                               SizedBox(height: 16 * scale),
                               StrokeText(
-                                text: gameTitle,
+                                text: widget.gameTitle,
                                 textAlign: TextAlign.center,
                                 textStyle: TextStyle(
                                   fontSize: titleSize,
@@ -191,7 +197,7 @@ class StartScreen extends StatelessWidget {
                                             context,
                                             MaterialPageRoute(
                                                 builder: (context) =>
-                                                    gameScreen),
+                                                    widget.gameScreen),
                                           );
                                         },
                                       ),
@@ -208,7 +214,7 @@ class StartScreen extends StatelessWidget {
                                           playFont: playFont,
                                           onTap: () async {
                                             final bool isGuest =
-                                                isGuestOverride ??
+                                                widget.isGuestOverride ??
                                                     (() {
                                                       try {
                                                         return AuthService()
@@ -230,8 +236,9 @@ class StartScreen extends StatelessWidget {
                                               _showMustLogin(context, scale);
                                               return;
                                             }
-                                            if (gameType == null ||
-                                                multiplayerBuilder == null) {
+                                            if (widget.gameType == null ||
+                                                widget.multiplayerBuilder ==
+                                                    null) {
                                               return;
                                             }
 
@@ -239,15 +246,17 @@ class StartScreen extends StatelessWidget {
                                             try {
                                               final matchId =
                                                   await MultiplayerService()
-                                                      .quickMatch(gameType!);
+                                                      .quickMatch(
+                                                          widget.gameType!);
+                                              _pendingMatchId = matchId;
                                               if (context.mounted) {
                                                 Navigator.of(context).pop();
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        multiplayerBuilder!(
-                                                            matchId),
+                                                    builder: (_) => widget
+                                                            .multiplayerBuilder!(
+                                                        matchId),
                                                   ),
                                                 );
                                               }
@@ -320,7 +329,16 @@ class StartScreen extends StatelessWidget {
             title: 'Matchmaking',
             message: 'Finding a match...',
             showSpinner: true,
-            onOk: null,
+            onCancel: () async {
+              if (_pendingMatchId != null) {
+                await MultiplayerService().abandonMatch(_pendingMatchId!);
+                _pendingMatchId = null;
+              }
+              Navigator.of(ctx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Matchmaking cancelled')),
+              );
+            },
           ),
         );
       },
@@ -350,7 +368,7 @@ class StartScreen extends StatelessWidget {
           child: _PromptCard(
             scale: scale,
             title: 'Guest Mode',
-            message: 'Log in or create an account to view your progress',
+            message: 'Log in or create an account to play multiplayer!',
             showSpinner: false,
             onOk: () => Navigator.of(ctx).pop(),
           ),
@@ -436,6 +454,7 @@ class _PromptCard extends StatelessWidget {
   final String message;
   final bool showSpinner;
   final VoidCallback? onOk;
+  final VoidCallback? onCancel;
 
   const _PromptCard({
     required this.scale,
@@ -443,6 +462,7 @@ class _PromptCard extends StatelessWidget {
     required this.message,
     required this.showSpinner,
     this.onOk,
+    this.onCancel,
   });
 
   @override
@@ -497,6 +517,7 @@ class _PromptCard extends StatelessWidget {
                         textAlign: TextAlign.left,
                         style: TextStyle(
                           fontSize: bodySize,
+                          fontFamily: 'Ari-W9500-Regular',
                           color: const Color(0xFF3A2A1A),
                         ),
                       ),
@@ -518,21 +539,38 @@ class _PromptCard extends StatelessWidget {
                 ],
               ],
             ),
-            if (onOk != null) ...[
+            if (onCancel != null || onOk != null) ...[
               SizedBox(height: 16 * scale),
-              Align(
-                alignment: Alignment.centerRight,
-                child: SizedBox(
-                  width: (180 * scale).clamp(140, 220).toDouble(),
-                  child: _PrimaryButton(
-                    label: 'OK',
-                    outerBorder: (4.0 * scale).toDouble(),
-                    cardRadius: (12.0 * scale).toDouble(),
-                    playPadding: (10.0 * scale).toDouble(),
-                    playFont: (18.0 * scale).clamp(16.0, 20.0).toDouble(),
-                    onTap: onOk!,
-                  ),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (onCancel != null)
+                    SizedBox(
+                      width: (160 * scale).clamp(120, 200).toDouble(),
+                      child: _PrimaryButton(
+                        label: 'Cancel',
+                        outerBorder: (4.0 * scale).toDouble(),
+                        cardRadius: (12.0 * scale).toDouble(),
+                        playPadding: (10.0 * scale).toDouble(),
+                        playFont: (18.0 * scale).clamp(16.0, 20.0).toDouble(),
+                        onTap: onCancel!,
+                      ),
+                    ),
+                  if (onOk != null) ...[
+                    SizedBox(width: 12 * scale),
+                    SizedBox(
+                      width: (160 * scale).clamp(120, 200).toDouble(),
+                      child: _PrimaryButton(
+                        label: 'OK',
+                        outerBorder: (4.0 * scale).toDouble(),
+                        cardRadius: (12.0 * scale).toDouble(),
+                        playPadding: (10.0 * scale).toDouble(),
+                        playFont: (18.0 * scale).clamp(16.0, 20.0).toDouble(),
+                        onTap: onOk!,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ],
