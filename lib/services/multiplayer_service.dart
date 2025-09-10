@@ -23,14 +23,23 @@ class MultiplayerService {
     while (DateTime.now().difference(start) < timeout) {
       final row = await supabase
           .from('multiplayer_matches')
-          .select('status, player2_id')
+          .select('status, player1_id, player2_id')
           .eq('match_id', matchId)
-          .single();
+          .maybeSingle();
 
-      if ((row['status'] as String?) == 'active' && row['player2_id'] != null) {
-        await ensureLiveRow(matchId);
-        return matchId;
+      if (row != null) {
+        final status = row['status'] as String?;
+        final p1 = row['player1_id'];
+        final p2 = row['player2_id'];
+
+        final bothPlayersReady = p1 != null && p2 != null;
+
+        if (status == 'active' && bothPlayersReady) {
+          await ensureLiveRow(matchId);
+          return matchId;
+        }
       }
+
       await Future.delayed(const Duration(milliseconds: 700));
     }
 

@@ -37,6 +37,7 @@ class BaseMultiplayerScreen_BaseMultiplayerScreenState
   double myAcc = 0, oppAcc = 0;
 
   String _status = 'waiting'; // waiting | active | finished | abandoned
+  String? _opponentName;
   Timer? _timer;
 
   bool get _hudVisible => _status == 'active';
@@ -109,9 +110,28 @@ class BaseMultiplayerScreen_BaseMultiplayerScreenState
         }
       }
 
+      final player1 = match['player1_id'] as String?;
+      final player2 = match['player2_id'] as String?;
+      String? oppUsername;
+
+      if (player1 != null && player2 != null) {
+        final oppId = player1 == uid ? player2 : player1;
+
+        final oppUser = await supabase
+            .from('users')
+            .select('user_name')
+            .eq('auth_id', oppId)
+            .maybeSingle();
+
+        oppUsername = oppUser?['user_name'] as String?;
+      }
+
       if (!mounted) return;
       setState(() {
-        _status = (match['status'] as String?) ?? 'waiting';
+        _status = (match['status'] == 'active' ||
+                (player1 != null && player2 != null))
+            ? 'active'
+            : 'waiting';
         myWpm = _myWpm;
         oppWpm = _oppWpm;
         myFrogs = _myFrogs;
@@ -120,6 +140,7 @@ class BaseMultiplayerScreen_BaseMultiplayerScreenState
         oppPairs = _oppPairs;
         myAcc = _myAcc;
         oppAcc = _oppAcc;
+        _opponentName = oppUsername ?? 'Opponent';
       });
     } catch (_) {}
   }
@@ -165,6 +186,7 @@ class BaseMultiplayerScreen_BaseMultiplayerScreenState
                         oppPairs: oppPairs,
                         myAcc: myAcc,
                         oppAcc: oppAcc,
+                        opponentName: _opponentName,
                       ),
                     ),
                   )
@@ -207,6 +229,7 @@ class _ScoreBadge extends StatelessWidget {
   final bool showWpm, showFrogs, showPairs, showAccuracy;
   final int myWpm, oppWpm, myFrogs, oppFrogs, myPairs, oppPairs;
   final double myAcc, oppAcc;
+  final String? opponentName;
 
   const _ScoreBadge({
     required this.showWpm,
@@ -221,13 +244,14 @@ class _ScoreBadge extends StatelessWidget {
     required this.oppPairs,
     required this.myAcc,
     required this.oppAcc,
+    required this.opponentName,
   });
 
   @override
   Widget build(BuildContext context) {
     final rows = <_MetricRow>[];
     if (showWpm)
-      rows.add(_MetricRow('Pairs', myWpm.toDouble(), oppWpm.toDouble(),
+      rows.add(_MetricRow('WPM', myWpm.toDouble(), oppWpm.toDouble(),
           higherIsBetter: true, isPercent: false));
     if (showFrogs)
       rows.add(_MetricRow('Frogs', myFrogs.toDouble(), oppFrogs.toDouble(),
@@ -256,21 +280,21 @@ class _ScoreBadge extends StatelessWidget {
             children: [
               Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Text(
-                    'Scoreboard',
+                children: [
+                  const Text(
+                    'Score',
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       color: Colors.black,
                     ),
                   ),
-                  SizedBox(width: 12),
-                  Text('You',
+                  const SizedBox(width: 12),
+                  const Text('You',
                       style: TextStyle(
                           fontWeight: FontWeight.w700, color: Colors.black)),
-                  SizedBox(width: 14),
-                  Text('Opp',
-                      style: TextStyle(
+                  const SizedBox(width: 14),
+                  Text(opponentName ?? 'Opponent',
+                      style: const TextStyle(
                           fontWeight: FontWeight.w700, color: Colors.black)),
                 ],
               ),

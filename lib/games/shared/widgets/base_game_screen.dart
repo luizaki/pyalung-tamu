@@ -411,10 +411,9 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
                     // Divider
                     Container(
-                      height: 2,
-                      width: double.infinity,
-                      color: const Color(0xAD572100),
-                    ),
+                        height: 2,
+                        width: double.infinity,
+                        color: const Color(0xAD572100)),
                     const SizedBox(height: 10),
 
                     // Accuracy
@@ -446,7 +445,6 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
                     // Guest login reminder
                     if (isGuest) _buildGuestMessage(),
-
                     const SizedBox(height: 8),
                     Wrap(
                       alignment: WrapAlignment.center,
@@ -463,38 +461,24 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                             backgroundColor: Colors.red[600],
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
+                                horizontal: 20, vertical: 12),
                           ),
                           child: const Text('Back to Menu'),
                         ),
-
-                        // Play again
-                        ElevatedButton(
-                          onPressed: () async {
-                            if (isMultiplayer) {
-                              if (widget.onPlayAgain != null) {
-                                await widget.onPlayAgain!();
-                              } else {
-                                Navigator.popUntil(
-                                    context, (route) => route.isFirst);
-                              }
-                            } else {
+                        if (!isMultiplayer)
+                          ElevatedButton(
+                            onPressed: () {
                               final screenSize = MediaQuery.of(context).size;
                               controller.restartGame(screenSize);
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[600],
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green[600],
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
                             ),
+                            child: const Text('Play Again'),
                           ),
-                          child: const Text('Play Again'),
-                        ),
                       ],
                     ),
                   ],
