@@ -54,4 +54,28 @@ class MultiplayerService {
         .from('multiplayer_matches')
         .update({'status': 'abandoned'}).eq('match_id', matchId);
   }
+
+  Future<List<Map<String, dynamic>>> fetchLiveStats(String matchId) async {
+    final rows = await supabase
+        .from('multiplayer_live')
+        .select('user_id, wpm, frogs, pairs, accuracy, is_ready, updated_at')
+        .eq('match_id', matchId);
+
+    if (rows is List) {
+      return List<Map<String, dynamic>>.from(rows);
+    }
+    return [];
+  }
+
+  Future<List<Map<String, dynamic>>> fetchResults(String matchId) async {
+    final rows = await supabase
+        .from('multiplayer_results')
+        .select('user_id, score, accuracy, secondary_score, finished_at')
+        .eq('match_id', matchId);
+
+    if (rows is List) {
+      return List<Map<String, dynamic>>.from(rows);
+    }
+    return [];
+  }
 }
