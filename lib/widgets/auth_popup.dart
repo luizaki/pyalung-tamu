@@ -536,7 +536,7 @@ class _AuthPopupState extends State<AuthPopup> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.of(context, rootNavigator: true).pop(true);
+        _waitForAuthStateAndClose();
       }
     } else {
       if (mounted) {
@@ -586,7 +586,7 @@ class _AuthPopupState extends State<AuthPopup> {
         if (needsVerification) {
           setState(() => _currentMode = AuthMode.login);
         } else {
-          Navigator.of(context, rootNavigator: true).pop(true);
+          _waitForAuthStateAndClose();
         }
       }
     } else {
@@ -598,6 +598,32 @@ class _AuthPopupState extends State<AuthPopup> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _waitForAuthStateAndClose() async {
+    // Keep loading state active
+    int attempts = 0;
+    const maxAttempts = 50; // 5 seconds max wait
+
+    while (attempts < maxAttempts && mounted) {
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Check if user is now loaded
+      if (_authService.currentPlayer != null) {
+        if (mounted) {
+          Navigator.of(context, rootNavigator: true).pop(true);
+        }
+        return;
+      }
+
+      attempts++;
+    }
+
+    // Fallback - close anyway after timeout
+    if (mounted) {
+      setState(() => _isLoading = false);
+      Navigator.of(context, rootNavigator: true).pop(true);
     }
   }
 
