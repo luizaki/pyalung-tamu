@@ -602,14 +602,14 @@ class _AuthPopupState extends State<AuthPopup> {
   }
 
   Future<void> _waitForAuthStateAndClose() async {
-    // Keep loading state active
-    int attempts = 0;
-    const maxAttempts = 50; // 5 seconds max wait
+    int secondsPassed = 0;
+    const maxSeconds = 5;
 
-    while (attempts < maxAttempts && mounted) {
-      await Future.delayed(const Duration(milliseconds: 100));
+    while (secondsPassed < maxSeconds && mounted) {
+      // Delay first
+      await Future.delayed(const Duration(seconds: 1));
 
-      // Check if user is now loaded
+      // Check now
       if (_authService.currentPlayer != null) {
         if (mounted) {
           Navigator.of(context, rootNavigator: true).pop(true);
@@ -617,7 +617,7 @@ class _AuthPopupState extends State<AuthPopup> {
         return;
       }
 
-      attempts++;
+      secondsPassed++;
     }
 
     // Fallback - close anyway after timeout
