@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../shared/widgets/base_game_screen.dart';
 import '../controllers/game_controller.dart';
@@ -7,9 +8,22 @@ import '../controllers/game_controller.dart';
 import '../widgets/boat_widget.dart';
 import '../widgets/background.dart';
 import '../widgets/word_queue.dart';
+import './multiplayer_screen.dart' show SiglulungMultiplayerAdapter;
 
 class BangkaGameScreen extends BaseGameScreen<BangkaGameController> {
-  const BangkaGameScreen({super.key});
+  final String? multiplayerMatchId;
+  final SiglulungMultiplayerAdapter? multiplayerAdapter;
+  final Future<void> Function()? onPlayAgain;
+
+  const BangkaGameScreen({
+    super.key,
+    this.multiplayerMatchId,
+    this.multiplayerAdapter,
+    this.onPlayAgain,
+  }) : super(
+          isMultiplayer: multiplayerMatchId != null,
+          onPlayAgain: onPlayAgain,
+        );
 
   @override
   BangkaGameScreenState createState() => BangkaGameScreenState();
@@ -21,13 +35,20 @@ class BangkaGameScreenState
   final FocusNode _imeFocus = FocusNode();
   final TextEditingController _imeController = TextEditingController();
 
+  final _sb = Supabase.instance.client;
   TextEditingValue _prevValue = const TextEditingValue();
+  bool _sentFinish = false;
+  bool _requestedOutcome = false;
+  String? _endTitle;
 
   @override
   List<Color> get backgroundColors => const [
         Color(0xFF87CEEB),
         Color(0xFF4682B4),
       ];
+
+  @override
+  bool get isMultiplayer => widget.multiplayerMatchId != null;
 
   @override
   BangkaGameController createController() => BangkaGameController();
@@ -45,8 +66,99 @@ class BangkaGameScreenState
   }
 
   @override
-  void onControllerUpdate() {
+  void onControllerUpdate() async {
     _ensureIme();
+
+    final adapter = widget.multiplayerAdapter;
+    if (adapter != null) {
+      final int wpm = controller.getSecondaryScore();
+      final double acc =
+          (controller.gameState.accuracy * 100.0).clamp(0.0, 100.0);
+      adapter.updateStats(wpm: wpm, accuracy: acc);
+    }
+
+    if (controller.isGameOver && !_sentFinish) {
+      _sentFinish = true;
+      await widget.multiplayerAdapter?.finish();
+    }
+
+    if (isMultiplayer &&
+        controller.isGameOver &&
+        !_requestedOutcome &&
+        widget.multiplayerMatchId != null) {
+      _requestedOutcome = true;
+      _endTitle = await _resolveOutcomeTitle(widget.multiplayerMatchId!);
+      if (mounted) setState(() {});
+    }
+  }
+
+  Future<String> _resolveOutcomeTitle(String matchId) async {
+    try {
+      final uid = _sb.auth.currentUser?.id;
+      if (uid == null) return 'Match Complete!';
+
+      int? myScore, oppScore;
+      double? myAcc, oppAcc;
+
+      final res = await _sb
+          .from('multiplayer_results')
+          .select('user_id, score, accuracy')
+          .eq('match_id', matchId);
+
+      if (res is List && res.isNotEmpty) {
+        for (final r in res) {
+          final isMe = r['user_id'] == uid;
+          final s = (r['score'] as num?)?.toInt() ?? 0;
+          final a = (r['accuracy'] as num?)?.toDouble() ?? 0.0;
+          if (isMe) {
+            myScore = s;
+            myAcc = a;
+          } else {
+            oppScore = s;
+            oppAcc = a;
+          }
+        }
+      }
+
+      if (myScore == null || oppScore == null) {
+        final live = await _sb
+            .from('multiplayer_live')
+            .select('user_id, wpm, accuracy')
+            .eq('match_id', matchId);
+
+        if (live is List) {
+          for (final r in live) {
+            final isMe = r['user_id'] == uid;
+            final s = (r['wpm'] as num?)?.toInt() ?? 0;
+            final a = (r['accuracy'] as num?)?.toDouble() ?? 0.0;
+            if (isMe) {
+              myScore ??= s;
+              myAcc ??= a;
+            } else {
+              oppScore ??= s;
+              oppAcc ??= a;
+            }
+          }
+        }
+      }
+
+      final m = myScore ?? 0;
+      final o = oppScore ?? 0;
+      if (m > o) return 'You Win!';
+      if (m < o) return 'You Lose!';
+      if (myAcc != null && oppAcc != null) {
+        if (myAcc! > oppAcc!) return 'You Win!';
+        if (myAcc! < oppAcc!) return 'You Lose!';
+      }
+      return 'Tie!';
+    } catch (_) {
+      return 'Match Complete!';
+    }
+  }
+
+  @override
+  String getEndTitle() {
+    return isMultiplayer ? (_endTitle ?? 'Match Complete!') : 'Game Over!';
   }
 
   @override
@@ -150,7 +262,7 @@ class BangkaGameScreenState
     return Positioned.fill(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: _ensureIme, //show keyboard on tap
+        onTap: _ensureIme, // show keyboard on tap
         child: Align(
           alignment: Alignment.bottomCenter,
           child: SizedBox(

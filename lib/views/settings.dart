@@ -81,7 +81,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const Padding(
             padding: EdgeInsets.only(bottom: 4),
             child: Text(
-              'Created by FARM. Lee, Sanchez, Santos, Baquiano.',
+              'Created by FARM. Lee, Sanchez, Santos.',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 16,

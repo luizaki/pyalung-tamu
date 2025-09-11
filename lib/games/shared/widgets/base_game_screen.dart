@@ -1,11 +1,21 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../controllers/base_game_controller.dart';
-
+import '../../../audio/audio_controller.dart';
 import '../../../services/auth_service.dart';
 
 abstract class BaseGameScreen<T extends BaseGameController>
     extends StatefulWidget {
-  const BaseGameScreen({super.key});
+  const BaseGameScreen({
+    super.key,
+    this.isMultiplayer = false,
+    this.onPlayAgain,
+    this.endTitleBuilder,
+  });
+
+  final bool isMultiplayer;
+  final Future<void> Function()? onPlayAgain;
+  final String Function()? endTitleBuilder;
 }
 
 abstract class BaseGameScreenState<T extends BaseGameController,
@@ -18,9 +28,14 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
   bool _isLoading = true;
 
+  bool _showMpPauseTip = false;
+  Timer? _mpTipTimer;
+
   @override
   void initState() {
     super.initState();
+
+    AudioController().playGameBgm();
 
     controller = createController();
     setupController();
@@ -40,9 +55,13 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
   @override
   void dispose() {
+    _mpTipTimer?.cancel();
     controller.removeListener(onControllerUpdate);
     controller.dispose();
     disposeGameSpecific();
+
+    AudioController().playMenuBgm();
+
     super.dispose();
   }
 
@@ -57,6 +76,8 @@ abstract class BaseGameScreenState<T extends BaseGameController,
   void onControllerUpdate();
 
   void disposeGameSpecific();
+
+  bool get isMultiplayer => widget.isMultiplayer;
 
   // ============= COMMON UI BUIILDERS =============
 
@@ -193,11 +214,51 @@ abstract class BaseGameScreenState<T extends BaseGameController,
         child: IconButton(
           icon: const Icon(Icons.pause, color: Colors.brown),
           onPressed: () {
-            controller.pauseGame();
+            if (isMultiplayer) {
+              _showMpPauseHint();
+            } else {
+              controller.pauseGame();
+            }
           },
         ),
       ),
     );
+  }
+
+  Widget _buildMultiplayerPauseTip() {
+    final size = MediaQuery.of(context).size;
+    final top = (size.height * 0.03).clamp(8.0, 32.0);
+    final left = (size.width * 0.03).clamp(8.0, 32.0);
+    return Positioned(
+      top: top,
+      left: left + 64,
+      child: IgnorePointer(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xF9DD9A00),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: const Color(0xAD572100), width: 2),
+          ),
+          child: const Text(
+            'Pausing is not allowed during multiplayer matches.',
+            style: TextStyle(
+              color: Colors.brown,
+              fontWeight: FontWeight.w700,
+              fontSize: 8,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showMpPauseHint() {
+    _mpTipTimer?.cancel();
+    setState(() => _showMpPauseTip = true);
+    _mpTipTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (mounted) setState(() => _showMpPauseTip = false);
+    });
   }
 
   Widget _buildPauseOverlay() {
@@ -306,6 +367,11 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     );
   }
 
+  String getEndTitle() {
+    return widget.endTitleBuilder?.call() ??
+        (isMultiplayer ? 'Match Complete!' : 'Game Over!');
+  }
+
   Widget _buildGameOverDialog() {
     final authService = AuthService();
     final isGuest = authService.isGuest;
@@ -313,6 +379,8 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     final size = MediaQuery.of(context).size;
     final maxW = (size.width * 0.32).clamp(280.0, size.width * 0.9);
     final maxH = size.height * 0.85;
+
+    final endTitle = getEndTitle();
 
     return Positioned.fill(
       child: Container(
@@ -331,10 +399,9 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Game Over title
-                    const Text(
-                      'Game Over!',
-                      style: TextStyle(
+                    Text(
+                      endTitle,
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.brown,
@@ -344,10 +411,9 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
                     // Divider
                     Container(
-                      height: 2,
-                      width: double.infinity,
-                      color: const Color(0xAD572100),
-                    ),
+                        height: 2,
+                        width: double.infinity,
+                        color: const Color(0xAD572100)),
                     const SizedBox(height: 10),
 
                     // Accuracy
@@ -379,7 +445,6 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
                     // Guest login reminder
                     if (isGuest) _buildGuestMessage(),
-
                     const SizedBox(height: 8),
                     Wrap(
                       alignment: WrapAlignment.center,
@@ -396,29 +461,24 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                             backgroundColor: Colors.red[600],
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
+                                horizontal: 20, vertical: 12),
                           ),
                           child: const Text('Back to Menu'),
                         ),
-
-                        // Play again
-                        ElevatedButton(
-                          onPressed: () {
-                            final screenSize = MediaQuery.of(context).size;
-                            controller.restartGame(screenSize);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[600],
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
+                        if (!isMultiplayer)
+                          ElevatedButton(
+                            onPressed: () {
+                              final screenSize = MediaQuery.of(context).size;
+                              controller.restartGame(screenSize);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green[600],
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
                             ),
+                            child: const Text('Play Again'),
                           ),
-                          child: const Text('Play Again'),
-                        ),
                       ],
                     ),
                   ],
@@ -592,9 +652,11 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                 ...buildGameSpecificWidgets(),
                 _buildGameUI(),
 
-                // TODO: might need to remove pausing if multiplayer is implemented
+                // pause button always visible; disabled in multiplayer
                 _buildPauseButton(),
-                if (controller.isGamePaused) _buildPauseOverlay(),
+                if (_showMpPauseTip) _buildMultiplayerPauseTip(),
+                if (!isMultiplayer && controller.isGamePaused)
+                  _buildPauseOverlay(),
 
                 if (controller.isGameOver) _buildGameOverDialog(),
 

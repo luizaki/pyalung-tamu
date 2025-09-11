@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pyalung_tamu/games/tugak_catching/views/multiplayer_screen.dart';
 import '../../shared/widgets/base_start_screen.dart';
 import './game_screen.dart';
 
@@ -18,6 +19,9 @@ class TugakStartScreen extends StatelessWidget {
       instructions:
           'Tap the jumping frogs and answer the fill-in-the-blank Kapampangan questions with the correct tense form to win!',
       gameScreen: TugakGameScreen(),
+      gameType: 'tugak_catching',
+      multiplayerBuilder: (matchId) =>
+          TugakCatchingMultiplayerScreen(matchId: matchId),
     );
   }
 }

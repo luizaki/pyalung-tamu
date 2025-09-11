@@ -58,12 +58,12 @@ class GameProgress {
 
 class Thresholds {
   static const wpm = [30, 50, 70];
-  static const sigAccuracy = [85, 92, 97];
+  static const sigAccuracy = [30, 50, 70];
 
   static const fluency = [5, 10, 15];
-  static const tugAccuracy = [80, 90, 95];
+  static const tugAccuracy = [30, 50, 70];
 
-  static const perfectPairs = [1, 4, 6];
+  static const perfectPairs = [1, 3, 6];
   static const mitAccuracy = [30, 50, 70];
 }
 
