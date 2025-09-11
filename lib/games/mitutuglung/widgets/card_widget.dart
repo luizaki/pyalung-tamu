@@ -77,25 +77,30 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
     final h = snapDown(widget.height);
 
     final edge = math.min(w, h);
-    final innerPad = (edge * 0.3).clamp(18.0, 30.0);
+    final innerPad = (edge * 0.22).clamp(12.0, 24.0);
 
-    return GestureDetector(
-      onTap: widget.onTap,
-      child: AnimatedBuilder(
-        animation: _flipAnimation,
-        builder: (context, _) {
-          return Transform(
-            alignment: Alignment.center,
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001)
-              ..rotateY(math.pi * _flipAnimation.value),
-            child: SizedBox(
-              width: w,
-              height: h,
-              child: _buildCardContent(_flipAnimation.value, innerPad),
-            ),
-          );
-        },
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(
+        textScaler: const TextScaler.linear(1.0),
+      ),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedBuilder(
+          animation: _flipAnimation,
+          builder: (context, _) {
+            return Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.001)
+                ..rotateY(math.pi * _flipAnimation.value),
+              child: SizedBox(
+                width: w,
+                height: h,
+                child: _buildCardContent(_flipAnimation.value, innerPad),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -127,7 +132,8 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
                           child: _WordLabel(
                             text: widget.card.content,
                             baseFontSize:
-                                (widget.height * 0.14).clamp(10.0, 17.0),
+                                (widget.height * 0.15).clamp(10.0, 18.0),
+                            maxLines: 2,
                           ),
                         ),
 
@@ -139,17 +145,20 @@ class CardWidgetState extends State<CardWidget> with TickerProviderStateMixin {
                               isTranslation: true,
                               text: '(${widget.card.englishTrans})',
                               baseFontSize:
-                                  (widget.height * 0.08).clamp(8.0, 10.0),
+                                  (widget.height * 0.09).clamp(8.0, 11.0),
+                              maxLines: 2,
                             ),
                           ),
                         ],
                       ],
                     )
-                  : FittedBox(
-                      fit: BoxFit.contain,
-                      child: Image.network(
-                        widget.card.content,
-                        filterQuality: FilterQuality.none,
+                  : SizedBox.expand(
+                      child: FittedBox(
+                        fit: BoxFit.contain,
+                        child: Image.network(
+                          widget.card.content,
+                          filterQuality: FilterQuality.none,
+                        ),
                       ),
                     ),
             ),
@@ -175,28 +184,43 @@ class _WordLabel extends StatelessWidget {
   final String text;
   final double baseFontSize;
   final bool isTranslation;
+  final int maxLines;
 
   const _WordLabel({
     required this.text,
     required this.baseFontSize,
     this.isTranslation = false,
+    this.maxLines = 3,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      textAlign: TextAlign.center,
-      softWrap: true,
-      maxLines: 3,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        fontSize: baseFontSize,
-        fontFamily: isTranslation ? 'Ari-W9500-Regular' : 'Ari-W9500-Display',
-        fontWeight: FontWeight.w900,
-        color: Colors.brown,
-        height: 1.0,
-      ),
+    final style = TextStyle(
+      fontSize: baseFontSize,
+      fontFamily: isTranslation ? 'Ari-W9500-Regular' : 'Ari-W9500-Display',
+      fontWeight: FontWeight.w900,
+      color: Colors.brown,
+      height: 1.05,
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.center,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              softWrap: true,
+              maxLines: maxLines,
+              overflow: TextOverflow.visible,
+              style: style,
+            ),
+          ),
+        );
+      },
     );
   }
 }

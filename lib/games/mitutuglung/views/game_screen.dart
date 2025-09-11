@@ -155,17 +155,17 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
             final size = MediaQuery.of(context).size;
             final dpr = MediaQuery.of(context).devicePixelRatio;
 
-            double snapDown(double v) => (v * dpr - 0.5).floor() / dpr;
+            double pxFloor(double v) => (v * dpr).floor() / dpr;
 
-            final topPad = snapDown((size.height * 0.05).clamp(16.0, 96.0));
-            final bottomPad = snapDown((size.height * 0.04).clamp(12.0, 80.0));
-            final sidePad = snapDown((size.width * 0.025).clamp(8.0, 28.0));
+            final topPad = pxFloor((size.height * 0.05).clamp(16.0, 96.0));
+            final bottomPad = pxFloor((size.height * 0.04).clamp(12.0, 80.0));
+            final sidePad = pxFloor((size.width * 0.025).clamp(8.0, 28.0));
 
-            final availW = snapDown(
+            final availW = pxFloor(
               (constraints.maxWidth - sidePad * 2)
                   .clamp(120.0, constraints.maxWidth),
             );
-            final availH = snapDown(
+            final availH = pxFloor(
               (constraints.maxHeight - topPad - bottomPad)
                   .clamp(120.0, constraints.maxHeight),
             );
@@ -175,33 +175,19 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
             const double kGridCoverageW = 0.92;
             const double kGridCoverageH = 0.84;
             const double kGap = 12.0;
-            const double kMinCell = 60.0;
-            const double kMaxCell = 240.0;
-            const double kEps = 1.0;
 
-            final tableBoxW = snapDown(availW * kTableCoverageW);
-            final tableBoxH = snapDown(availH * kTableCoverageH);
+            final tableBoxW = pxFloor(availW * kTableCoverageW);
+            final tableBoxH = pxFloor(availH * kTableCoverageH);
 
-            final micro = 1.0 / dpr;
-            final gridBoxW = snapDown(availW * kGridCoverageW) - micro;
-            final gridBoxH = snapDown(availH * kGridCoverageH) - micro;
+            final gridBoxW = pxFloor(availW * kGridCoverageW);
+            final gridBoxH = pxFloor(availH * kGridCoverageH);
 
-            final cellByW = (gridBoxW - kGap * (cols - 1)) / cols;
-            final cellByH = (gridBoxH - kGap * (rows - 1)) / rows;
-            final baseCell = (cellByW < cellByH ? cellByW : cellByH) - kEps;
+            final cellW = pxFloor((gridBoxW - kGap * (cols - 1)) / cols);
+            final cellH = pxFloor((gridBoxH - kGap * (rows - 1)) / rows);
+            final cell = cellW < cellH ? cellW : cellH;
 
-            double cell = snapDown(baseCell.clamp(kMinCell, kMaxCell));
-            double gridW = snapDown(cell * cols + kGap * (cols - 1));
-            double gridH = snapDown(cell * rows + kGap * (rows - 1));
-
-            if (gridW > gridBoxW || gridH > gridBoxH) {
-              final fixW = (gridBoxW - kGap * (cols - 1)) / cols;
-              final fixH = (gridBoxH - kGap * (rows - 1)) / rows;
-              final corrected = (fixW < fixH ? fixW : fixH) - kEps;
-              cell = snapDown(corrected.clamp(kMinCell, kMaxCell));
-              gridW = snapDown(cell * cols + kGap * (cols - 1));
-              gridH = snapDown(cell * rows + kGap * (rows - 1));
-            }
+            final gridW = pxFloor(cell * cols + kGap * (cols - 1));
+            final gridH = pxFloor(cell * rows + kGap * (rows - 1));
 
             return Padding(
               padding: EdgeInsets.only(
@@ -247,34 +233,31 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
                         SizedBox(
                           width: gridW,
                           height: gridH,
-                          child: FittedBox(
-                            fit: BoxFit.contain,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(rows, (r) {
-                                return Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(cols, (c) {
-                                    final card = cardsGrid[r][c];
-                                    return Padding(
-                                      padding: EdgeInsets.only(
-                                        right: c == cols - 1 ? 0 : kGap,
-                                        bottom: r == rows - 1 ? 0 : kGap,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(rows, (r) {
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(cols, (c) {
+                                  final card = cardsGrid[r][c];
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                      right: c == cols - 1 ? 0 : kGap,
+                                      bottom: r == rows - 1 ? 0 : kGap,
+                                    ),
+                                    child: SizedBox(
+                                      width: cell,
+                                      height: cell,
+                                      child: CardWidget(
+                                        card: card,
+                                        onTap: () =>
+                                            controller.onCardTapped(card),
                                       ),
-                                      child: SizedBox(
-                                        width: cell,
-                                        height: cell,
-                                        child: CardWidget(
-                                          card: card,
-                                          onTap: () =>
-                                              controller.onCardTapped(card),
-                                        ),
-                                      ),
-                                    );
-                                  }),
-                                );
-                              }),
-                            ),
+                                    ),
+                                  );
+                                }),
+                              );
+                            }),
                           ),
                         ),
                       ],
