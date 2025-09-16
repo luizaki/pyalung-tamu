@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -189,7 +191,7 @@ class BangkaGameScreenState
         Size(size.width, (size.height - kb).clamp(0, size.height));
 
     final kbRatio = (kb / size.height).clamp(0.0, 0.6);
-    final liftForSprites = kb * (0.55 + 0.25 * kbRatio);
+    //final liftForSprites = kb * (0.55 + 0.25 * kbRatio);
 
     return [
       // Background
@@ -204,10 +206,13 @@ class BangkaGameScreenState
         child: AnimatedPadding(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOut,
-          padding: EdgeInsets.only(bottom: liftForSprites),
+          padding: EdgeInsets.only(
+            bottom: kb > 0 ? math.min(40.0, kb * 0.15) : 0.0,
+          ),
           child: BoatWidget(
             boat: controller.gameState.boat,
             screenSize: visibleSize,
+            wpm: controller.getSecondaryScore(),
           ),
         ),
       ),

@@ -35,6 +35,23 @@ class AudioController with WidgetsBindingObserver, ChangeNotifier {
     await _menuPlayer.setVolume(0.0);
     await _gamePlayer.setVolume(0.0);
 
+    await _menuPlayer.setReleaseMode(ReleaseMode.loop);
+    await _gamePlayer.setReleaseMode(ReleaseMode.loop);
+
+    // fallback loop for web
+    _menuPlayer.onPlayerComplete.listen((_) async {
+      if (_enabled && _active == _Channel.menu) {
+        await _menuPlayer.seek(Duration.zero);
+        await _menuPlayer.resume();
+      }
+    });
+    _gamePlayer.onPlayerComplete.listen((_) async {
+      if (_enabled && _active == _Channel.game) {
+        await _gamePlayer.seek(Duration.zero);
+        await _gamePlayer.resume();
+      }
+    });
+
     _loaded = true;
     notifyListeners();
   }
@@ -119,6 +136,7 @@ class AudioController with WidgetsBindingObserver, ChangeNotifier {
     }
     await player.stop();
     await player.setSource(AssetSource(asset));
+    await player.setReleaseMode(ReleaseMode.loop);
     await player.resume();
   }
 
