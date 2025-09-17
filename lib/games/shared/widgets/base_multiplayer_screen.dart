@@ -31,13 +31,12 @@ class BaseMultiplayerScreen_BaseMultiplayerScreenState
     extends State<BaseMultiplayerScreen> {
   final supabase = Supabase.instance.client;
 
-  int myWpm = 0, oppWpm = 0;
-  int myFrogs = 0, oppFrogs = 0;
-  int myPairs = 0, oppPairs = 0;
-  double myAcc = 0, oppAcc = 0;
+  int myWpm = 0, myFrogs = 0, myPairs = 0;
+  double myAcc = 0;
+
+  List<_OpponentStats> opponents = [];
 
   String _status = 'waiting'; // waiting | active | finished | abandoned
-  String? _opponentName;
   Timer? _timer;
 
   bool get _hudVisible => _status == 'active';
@@ -76,71 +75,85 @@ class BaseMultiplayerScreen_BaseMultiplayerScreenState
     try {
       final match = await supabase
           .from('multiplayer_matches')
-          .select('status, player1_id, player2_id')
+          .select('status, player1_id, player2_id, player3_id')
           .eq('match_id', widget.matchId)
           .single();
+
+      final p1 = match['player1_id'] as String?;
+      final p2 = match['player2_id'] as String?;
+      final p3 = match['player3_id'] as String?;
+      final status = match['status'] as String? ?? 'waiting';
 
       final rows = await supabase
           .from('multiplayer_live')
           .select('user_id, wpm, frogs, pairs, accuracy')
           .eq('match_id', widget.matchId);
 
-      int _myWpm = 0, _oppWpm = 0;
-      int _myFrogs = 0, _oppFrogs = 0;
-      int _myPairs = 0, _oppPairs = 0;
-      double _myAcc = 0, _oppAcc = 0;
+      int _myWpm = 0, _myFrogs = 0, _myPairs = 0;
+      double _myAcc = 0;
+      final oppMap = <String, _OpponentStats>{};
 
       for (final r in (rows as List)) {
-        final isMe = r['user_id'] == uid;
+        final rowUid = r['user_id'] as String;
         final wpm = r['wpm'] as int? ?? 0;
         final frogs = r['frogs'] as int? ?? 0;
         final pairs = r['pairs'] as int? ?? 0;
         final acc = (r['accuracy'] as num?)?.toDouble() ?? 0.0;
 
-        if (isMe) {
+        if (rowUid == uid) {
           _myWpm = wpm;
           _myFrogs = frogs;
           _myPairs = pairs;
           _myAcc = acc;
         } else {
-          _oppWpm = wpm;
-          _oppFrogs = frogs;
-          _oppPairs = pairs;
-          _oppAcc = acc;
+          oppMap[rowUid] = _OpponentStats(
+            userId: rowUid,
+            name: 'Opponent',
+            wpm: wpm,
+            frogs: frogs,
+            pairs: pairs,
+            acc: acc,
+          );
         }
       }
 
-      final player1 = match['player1_id'] as String?;
-      final player2 = match['player2_id'] as String?;
-      String? oppUsername;
-
-      if (player1 != null && player2 != null) {
-        final oppId = player1 == uid ? player2 : player1;
-
-        final oppUser = await supabase
+      if (oppMap.isNotEmpty) {
+        final oppIds = oppMap.keys.toList();
+        final userRows = await supabase
             .from('users')
-            .select('user_name')
-            .eq('auth_id', oppId)
-            .maybeSingle();
+            .select('auth_id, user_name')
+            .inFilter('auth_id', oppIds);
 
-        oppUsername = oppUser?['user_name'] as String?;
+        if (userRows is List) {
+          for (final u in userRows) {
+            final aid = u['auth_id'] as String?;
+            final uname = u['user_name'] as String?;
+            if (aid != null && oppMap.containsKey(aid)) {
+              oppMap[aid] = oppMap[aid]!.copyWith(
+                name: uname ?? 'Opponent',
+              );
+            }
+          }
+        }
       }
+
+      final oppList = oppMap.values.toList()
+        ..sort((a, b) => a.userId.compareTo(b.userId));
+      final trimmedOpponents =
+          oppList.length > 2 ? oppList.sublist(0, 2) : oppList;
+
+      final threePresent = (p1 != null && p2 != null && p3 != null);
+      final newStatus =
+          (status == 'active' || threePresent) ? 'active' : 'waiting';
 
       if (!mounted) return;
       setState(() {
-        _status = (match['status'] == 'active' ||
-                (player1 != null && player2 != null))
-            ? 'active'
-            : 'waiting';
+        _status = newStatus;
         myWpm = _myWpm;
-        oppWpm = _oppWpm;
         myFrogs = _myFrogs;
-        oppFrogs = _oppFrogs;
         myPairs = _myPairs;
-        oppPairs = _oppPairs;
         myAcc = _myAcc;
-        oppAcc = _oppAcc;
-        _opponentName = oppUsername ?? 'Opponent';
+        opponents = trimmedOpponents;
       });
     } catch (_) {}
   }
@@ -156,8 +169,8 @@ class BaseMultiplayerScreen_BaseMultiplayerScreenState
               alignment: Alignment.topLeft,
               child: Padding(
                 padding: const EdgeInsets.only(top: 10, left: 10),
-                child: IgnorePointer(
-                  child: _BannerPill(text: 'Waiting for opponent…'),
+                child: const IgnorePointer(
+                  child: _BannerPill(text: 'Waiting for players…'),
                 ),
               ),
             ),
@@ -178,15 +191,14 @@ class BaseMultiplayerScreen_BaseMultiplayerScreenState
                         showFrogs: widget.showFrogs,
                         showPairs: widget.showPairs,
                         showAccuracy: widget.showAccuracy,
-                        myWpm: myWpm,
-                        oppWpm: oppWpm,
-                        myFrogs: myFrogs,
-                        oppFrogs: oppFrogs,
-                        myPairs: myPairs,
-                        oppPairs: oppPairs,
-                        myAcc: myAcc,
-                        oppAcc: oppAcc,
-                        opponentName: _opponentName,
+                        me: _PlayerCol(
+                          label: 'You',
+                          wpm: myWpm.toDouble(),
+                          frogs: myFrogs.toDouble(),
+                          pairs: myPairs.toDouble(),
+                          acc: myAcc,
+                        ),
+                        opponents: opponents,
                       ),
                     ),
                   )
@@ -225,47 +237,82 @@ class _BannerPill extends StatelessWidget {
   }
 }
 
+class _PlayerCol {
+  final String label;
+  final double wpm;
+  final double frogs;
+  final double pairs;
+  final double acc;
+  const _PlayerCol({
+    required this.label,
+    required this.wpm,
+    required this.frogs,
+    required this.pairs,
+    required this.acc,
+  });
+}
+
+class _OpponentStats {
+  final String userId;
+  final String name;
+  final int wpm;
+  final int frogs;
+  final int pairs;
+  final double acc;
+
+  const _OpponentStats({
+    required this.userId,
+    required this.name,
+    required this.wpm,
+    required this.frogs,
+    required this.pairs,
+    required this.acc,
+  });
+
+  _OpponentStats copyWith({String? name}) => _OpponentStats(
+        userId: userId,
+        name: name ?? this.name,
+        wpm: wpm,
+        frogs: frogs,
+        pairs: pairs,
+        acc: acc,
+      );
+}
+
 class _ScoreBadge extends StatelessWidget {
   final bool showWpm, showFrogs, showPairs, showAccuracy;
-  final int myWpm, oppWpm, myFrogs, oppFrogs, myPairs, oppPairs;
-  final double myAcc, oppAcc;
-  final String? opponentName;
+  final _PlayerCol me;
+  final List<_OpponentStats> opponents;
 
   const _ScoreBadge({
     required this.showWpm,
     required this.showFrogs,
     required this.showPairs,
     required this.showAccuracy,
-    required this.myWpm,
-    required this.oppWpm,
-    required this.myFrogs,
-    required this.oppFrogs,
-    required this.myPairs,
-    required this.oppPairs,
-    required this.myAcc,
-    required this.oppAcc,
-    required this.opponentName,
+    required this.me,
+    required this.opponents,
   });
 
   @override
   Widget build(BuildContext context) {
-    final rows = <_MetricRow>[];
-    if (showWpm)
-      rows.add(_MetricRow('WPM', myWpm.toDouble(), oppWpm.toDouble(),
-          higherIsBetter: true, isPercent: false));
-    if (showFrogs)
-      rows.add(_MetricRow('Frogs', myFrogs.toDouble(), oppFrogs.toDouble(),
-          higherIsBetter: true, isPercent: false));
-    if (showPairs)
-      rows.add(_MetricRow('Pairs', myPairs.toDouble(), oppPairs.toDouble(),
-          higherIsBetter: true, isPercent: false));
-    if (showAccuracy)
-      rows.add(_MetricRow('Acc', myAcc, oppAcc,
-          higherIsBetter: true, isPercent: true));
-    if (rows.isEmpty) return const SizedBox.shrink();
+    final labels = <String>[];
+    if (showWpm) labels.add('WPM');
+    if (showFrogs) labels.add('Frogs');
+    if (showPairs) labels.add('Pairs');
+    if (showAccuracy) labels.add('Acc');
+    if (labels.isEmpty) return const SizedBox.shrink();
+
+    final oppA = opponents.isNotEmpty ? opponents[0] : null;
+    final oppB = opponents.length > 1 ? opponents[1] : null;
+
+    final headerNames = [
+      'You',
+      if (oppA != null) _short(oppA.name),
+      if (oppB != null) _short(oppB.name),
+    ];
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 320),
+      constraints: const BoxConstraints(maxWidth: 300),
       child: Material(
         elevation: 6,
         color: const Color(0xF9DD9A00),
@@ -274,7 +321,7 @@ class _ScoreBadge extends StatelessWidget {
           side: const BorderSide(color: Color(0xFF5A3A00), width: 2),
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+          padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -288,38 +335,97 @@ class _ScoreBadge extends StatelessWidget {
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  const Text('You',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700, color: Colors.black)),
-                  const SizedBox(width: 14),
-                  Text(opponentName ?? 'Opponent',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w700, color: Colors.black)),
+                  const SizedBox(width: 10),
+                  ...headerNames.map((n) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Text(
+                          n,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                            fontSize: 12,
+                          ),
+                        ),
+                      )),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Table(
                 defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                columnWidths: const {
-                  0: IntrinsicColumnWidth(),
-                  1: FixedColumnWidth(54),
-                  2: FixedColumnWidth(54),
+                columnWidths: {
+                  0: const IntrinsicColumnWidth(),
+                  1: const FixedColumnWidth(46),
+                  if (oppA != null) 2: const FixedColumnWidth(46),
+                  if (oppB != null) 3: const FixedColumnWidth(46),
                 },
-                children: rows
-                    .map((r) => TableRow(children: [
-                          _LabelCell(r.label),
-                          _ValueCell(value: r.formattedMe, leading: r.meLeads),
-                          _ValueCell(
-                              value: r.formattedOpp, leading: r.oppLeads),
-                        ]))
-                    .toList(),
+                children: labels.map((label) {
+                  final meVal = _metricValue(label, me);
+                  final aVal =
+                      oppA != null ? _metricValue(label, _fromOpp(oppA)) : null;
+                  final bVal =
+                      oppB != null ? _metricValue(label, _fromOpp(oppB)) : null;
+
+                  bool meLead = true;
+                  if (aVal != null) meLead = meLead && (meVal >= aVal);
+                  if (bVal != null) meLead = meLead && (meVal >= bVal);
+
+                  bool aLead = aVal != null &&
+                      aVal >= meVal &&
+                      (bVal == null || aVal >= bVal);
+                  bool bLead = bVal != null &&
+                      bVal >= meVal &&
+                      (aVal == null || bVal >= aVal);
+
+                  return TableRow(children: [
+                    _LabelCell(label),
+                    _ValueCell(value: _fmt(label, meVal), leading: meLead),
+                    if (aVal != null)
+                      _ValueCell(value: _fmt(label, aVal), leading: aLead),
+                    if (bVal != null)
+                      _ValueCell(value: _fmt(label, bVal), leading: bLead),
+                  ]);
+                }).toList(),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  static _PlayerCol _fromOpp(_OpponentStats o) => _PlayerCol(
+        label: o.name,
+        wpm: o.wpm.toDouble(),
+        frogs: o.frogs.toDouble(),
+        pairs: o.pairs.toDouble(),
+        acc: o.acc,
+      );
+
+  static double _metricValue(String label, _PlayerCol p) {
+    switch (label) {
+      case 'WPM':
+        return p.wpm;
+      case 'Frogs':
+        return p.frogs;
+      case 'Pairs':
+        return p.pairs;
+      case 'Acc':
+        return p.acc;
+      default:
+        return 0;
+    }
+  }
+
+  static String _fmt(String label, double v) {
+    if (label == 'Acc') return '${v.round()}%';
+    return (v == v.roundToDouble())
+        ? v.toStringAsFixed(0)
+        : v.toStringAsFixed(1);
+  }
+
+  static String _short(String name) {
+    if (name.isEmpty) return 'Opp';
+    return name.length <= 8 ? name : '${name.substring(0, 7)}…';
   }
 }
 
@@ -330,12 +436,13 @@ class _LabelCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+      padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 2),
       child: Text(
         text,
         style: const TextStyle(
           color: Colors.black87,
           fontWeight: FontWeight.w600,
+          fontSize: 12,
         ),
       ),
     );
@@ -350,23 +457,26 @@ class _ValueCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final base = TextStyle(
+    final base = const TextStyle(
       color: Colors.black,
       fontWeight: FontWeight.w700,
-      fontFeatures: const [FontFeature.tabularFigures()],
+      fontSize: 12,
+      fontFeatures: [FontFeature.tabularFigures()],
     );
 
     final chipColor =
         leading ? const Color(0xFF2BB495) : const Color(0xFFE6D4A3);
     final chipText = leading ? Colors.white : const Color(0xFF3A2A1A);
     final border = BorderSide(
-        color: const Color(0xFF5A3A00).withOpacity(0.65), width: 1.2);
+      color: const Color(0xFF5A3A00).withOpacity(0.65),
+      width: 1.0,
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
       child: Container(
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 6),
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 5),
         decoration: BoxDecoration(
           color: chipColor,
           borderRadius: BorderRadius.circular(6),
@@ -377,24 +487,4 @@ class _ValueCell extends StatelessWidget {
       ),
     );
   }
-}
-
-class _MetricRow {
-  final String label;
-  final double me;
-  final double opp;
-  final bool higherIsBetter;
-  final bool isPercent;
-
-  _MetricRow(this.label, this.me, this.opp,
-      {required this.higherIsBetter, required this.isPercent});
-
-  bool get meLeads => higherIsBetter ? me > opp : me < opp;
-  bool get oppLeads => higherIsBetter ? opp > me : opp < me;
-
-  String get formattedMe => isPercent ? '${me.round()}%' : _trim(me);
-  String get formattedOpp => isPercent ? '${opp.round()}%' : _trim(opp);
-
-  String _trim(double v) =>
-      (v == v.roundToDouble()) ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
 }
