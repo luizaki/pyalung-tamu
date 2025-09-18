@@ -1,9 +1,23 @@
 import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+class MatchmakingCancelled implements Exception {
+  final String message;
+  const MatchmakingCancelled([this.message = 'Matchmaking cancelled']);
+  @override
+  String toString() => message;
+}
+
+class _SearchState {
+  final Completer<String> completer = Completer<String>();
+  bool cancelled = false;
+  String? matchId;
+  bool abandonHostIfWaiting = true;
+}
+
 class MultiplayerService {
   final supabase = Supabase.instance.client;
-  static final Map<String, Completer<String>> _inFlightByType = {};
+  static final Map<String, _SearchState> _inFlight = {};
 
   Future<void> ensureLiveRow(String matchId) async {
     final uid = supabase.auth.currentUser!.id;
@@ -13,23 +27,35 @@ class MultiplayerService {
     );
   }
 
+  Future<void> cancelQuickMatch(String gameType,
+      {bool abandonHostIfWaiting = true}) async {
+    final s = _inFlight[gameType];
+    if (s == null) return;
+    s.abandonHostIfWaiting = abandonHostIfWaiting;
+    s.cancelled = true;
+  }
+
   Future<String> quickMatch(
     String gameType, {
     Duration timeout = const Duration(seconds: 45),
   }) async {
-    final existingCompleter = _inFlightByType[gameType];
-    if (existingCompleter != null) return existingCompleter.future;
+    final existing = _inFlight[gameType];
+    if (existing != null) return existing.completer.future;
 
-    final completer = Completer<String>();
-    _inFlightByType[gameType] = completer;
+    final s = _SearchState();
+    _inFlight[gameType] = s;
 
     try {
       final uid = supabase.auth.currentUser!.id;
-      final existing = await _findExistingLobby(gameType, uid);
+      if (s.cancelled) throw const MatchmakingCancelled();
+
+      await _abandonAnyHostWaiting(gameType, uid);
+
+      final existingRow = await _findExistingLobby(gameType, uid);
       String matchId;
 
-      if (existing != null) {
-        matchId = existing['match_id'] as String;
+      if (existingRow != null) {
+        matchId = existingRow['match_id'] as String;
       } else {
         int? hostBucket;
         double? hostAcc;
@@ -47,15 +73,19 @@ class MultiplayerService {
 
         final bucketMin = (hostBucket != null) ? hostBucket! - 1 : null;
         final bucketMax = (hostBucket != null) ? hostBucket! + 1 : null;
+        if (s.cancelled) throw const MatchmakingCancelled();
 
-        final dynamic rpcResult =
-            await supabase.rpc('find_or_create_match_by_skill3', params: {
-          'p_game_type': gameType,
-          'p_bucket_min': bucketMin,
-          'p_bucket_max': bucketMax,
-          'p_host_bucket': hostBucket,
-          'p_host_acc': hostAcc,
-        });
+        final dynamic rpcResult = await supabase.rpc(
+          'find_or_create_match_by_skill3',
+          params: {
+            'p_game_type': gameType,
+            'p_bucket_min': bucketMin,
+            'p_bucket_max': bucketMax,
+            'p_host_bucket': hostBucket,
+            'p_host_acc': hostAcc,
+            'p_reuse': false,
+          },
+        );
 
         matchId = (rpcResult is String)
             ? rpcResult
@@ -64,11 +94,15 @@ class MultiplayerService {
                 : rpcResult.toString();
       }
 
+      s.matchId = matchId;
+
+      if (s.cancelled) await _cleanupOnCancel(gameType, uid, s);
       await ensureLiveRow(matchId);
 
-      // wait until all players are active
       final start = DateTime.now();
       while (DateTime.now().difference(start) < timeout) {
+        if (s.cancelled) await _cleanupOnCancel(gameType, uid, s);
+
         final row = await supabase
             .from('multiplayer_matches')
             .select('status, player1_id, player2_id, player3_id')
@@ -83,25 +117,40 @@ class MultiplayerService {
           final threeReady = (p1 != null && p2 != null && p3 != null);
 
           if (threeReady || status == 'active') {
-            completer.complete(matchId);
+            if (!s.completer.isCompleted) s.completer.complete(matchId);
             return matchId;
           }
         }
         await Future.delayed(const Duration(milliseconds: 700));
       }
 
-      // Timeout
       try {
-        await supabase
+        final row = await supabase
             .from('multiplayer_matches')
-            .update({'status': 'abandoned'}).eq('match_id', matchId);
+            .select('status, player1_id, player2_id, player3_id')
+            .eq('match_id', s.matchId!)
+            .maybeSingle();
+
+        if (row != null &&
+            row['status'] == 'waiting' &&
+            row['player1_id'] == uid &&
+            row['player2_id'] == null &&
+            row['player3_id'] == null) {
+          await supabase
+              .from('multiplayer_matches')
+              .update({'status': 'abandoned'}).eq('match_id', s.matchId!);
+        }
       } catch (_) {}
+
       throw Exception('No opponents found in time');
+    } on MatchmakingCancelled catch (e) {
+      if (!s.completer.isCompleted) s.completer.completeError(e);
+      rethrow;
     } catch (e) {
-      if (!completer.isCompleted) completer.completeError(e);
+      if (!s.completer.isCompleted) s.completer.completeError(e);
       rethrow;
     } finally {
-      _inFlightByType.remove(gameType);
+      _inFlight.remove(gameType);
     }
   }
 
@@ -135,7 +184,33 @@ class MultiplayerService {
     return [];
   }
 
-  /// returns the latest lobby (waiting/active) for the gametype
+  Future<void> submitResult({
+    required String matchId,
+    required int score,
+    required double accuracy,
+    int? secondaryScore,
+  }) async {
+    await supabase.rpc('submit_result', params: {
+      'p_match_id': matchId,
+      'p_score': score,
+      'p_accuracy': accuracy,
+      'p_secondary_score': secondaryScore,
+    });
+  }
+
+  Future<void> _abandonAnyHostWaiting(String gameType, String uid) async {
+    try {
+      await supabase
+          .from('multiplayer_matches')
+          .update({'status': 'abandoned'})
+          .eq('game_type', gameType)
+          .eq('player1_id', uid)
+          .eq('status', 'waiting')
+          .filter('player2_id', 'is', null)
+          .filter('player3_id', 'is', null);
+    } catch (_) {}
+  }
+
   Future<Map<String, dynamic>?> _findExistingLobby(
       String gameType, String uid) async {
     try {
@@ -155,5 +230,36 @@ class MultiplayerService {
     } catch (_) {
       return null;
     }
+  }
+
+  Future<void> _cleanupOnCancel(
+      String gameType, String uid, _SearchState s) async {
+    if (s.matchId != null && s.abandonHostIfWaiting) {
+      try {
+        final row = await supabase
+            .from('multiplayer_matches')
+            .select('status, player1_id, player2_id, player3_id')
+            .eq('match_id', s.matchId!)
+            .maybeSingle();
+
+        if (row != null &&
+            row['status'] == 'waiting' &&
+            row['player1_id'] == uid &&
+            row['player2_id'] == null &&
+            row['player3_id'] == null) {
+          await supabase
+              .from('multiplayer_matches')
+              .update({'status': 'abandoned'}).eq('match_id', s.matchId!);
+        }
+      } catch (_) {}
+    } else {
+      await _abandonAnyHostWaiting(gameType, uid);
+    }
+
+    if (!s.completer.isCompleted) {
+      s.completer.completeError(const MatchmakingCancelled());
+    }
+    _inFlight.remove(gameType);
+    throw const MatchmakingCancelled();
   }
 }

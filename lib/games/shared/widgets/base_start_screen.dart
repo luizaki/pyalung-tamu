@@ -45,10 +45,19 @@ class StartScreen extends StatefulWidget {
 }
 
 class _StartScreenState extends State<StartScreen> {
-  String? _pendingMatchId;
+  bool _joining = false;
 
   bool get _multiplayerEnabled =>
       widget.gameType != null && widget.multiplayerBuilder != null;
+
+  @override
+  void dispose() {
+    if (_joining && widget.gameType != null) {
+      MultiplayerService()
+          .cancelQuickMatch(widget.gameType!, abandonHostIfWaiting: true);
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -193,6 +202,7 @@ class _StartScreenState extends State<StartScreen> {
                                         playPadding: playPadding,
                                         playFont: playFont,
                                         onTap: () {
+                                          if (_joining) return;
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
@@ -207,12 +217,16 @@ class _StartScreenState extends State<StartScreen> {
                                       SizedBox(
                                         width: btnWidth,
                                         child: _PrimaryButton(
-                                          label: 'Join Match',
+                                          label: _joining
+                                              ? 'Joining…'
+                                              : 'Join Match',
                                           outerBorder: outerBorder,
                                           cardRadius: cardRadius,
                                           playPadding: playPadding,
                                           playFont: playFont,
                                           onTap: () async {
+                                            if (_joining) return;
+
                                             final bool isGuest =
                                                 widget.isGuestOverride ??
                                                     (() {
@@ -242,35 +256,42 @@ class _StartScreenState extends State<StartScreen> {
                                               return;
                                             }
 
+                                            setState(() => _joining = true);
                                             _showJoiningDialog(context, scale);
+
                                             try {
                                               final matchId =
                                                   await MultiplayerService()
                                                       .quickMatch(
                                                           widget.gameType!);
-                                              _pendingMatchId = matchId;
-                                              if (context.mounted) {
-                                                Navigator.of(context).pop();
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (_) => widget
-                                                            .multiplayerBuilder!(
-                                                        matchId),
-                                                  ),
-                                                );
-                                              }
+
+                                              if (!mounted) return;
+
+                                              Navigator.of(context).pop();
+                                              setState(() => _joining = false);
+
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) => widget
+                                                          .multiplayerBuilder!(
+                                                      matchId),
+                                                ),
+                                              );
+                                            } on MatchmakingCancelled {
+                                              if (!mounted) return;
+                                              setState(() => _joining = false);
                                             } catch (e) {
-                                              if (context.mounted) {
-                                                Navigator.of(context).pop();
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                        'Failed to join match: $e'),
-                                                  ),
-                                                );
-                                              }
+                                              if (!mounted) return;
+                                              Navigator.of(context).pop();
+                                              setState(() => _joining = false);
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                      'Failed to join match: $e'),
+                                                ),
+                                              );
                                             }
                                           },
                                         ),
@@ -301,7 +322,14 @@ class _StartScreenState extends State<StartScreen> {
                           icon: Icon(Icons.arrow_back,
                               color: const Color(0xFFF4BE0A),
                               size: backIconSize),
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () async {
+                            if (_joining && widget.gameType != null) {
+                              await MultiplayerService().cancelQuickMatch(
+                                  widget.gameType!,
+                                  abandonHostIfWaiting: true);
+                            }
+                            if (mounted) Navigator.pop(context);
+                          },
                         ),
                       ),
                     ),
@@ -330,14 +358,19 @@ class _StartScreenState extends State<StartScreen> {
             message: 'Finding a match...',
             showSpinner: true,
             onCancel: () async {
-              if (_pendingMatchId != null) {
-                await MultiplayerService().abandonMatch(_pendingMatchId!);
-                _pendingMatchId = null;
+              if (widget.gameType != null) {
+                await MultiplayerService().cancelQuickMatch(
+                  widget.gameType!,
+                  abandonHostIfWaiting: true,
+                );
               }
+              if (mounted) setState(() => _joining = false);
               Navigator.of(ctx).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Matchmaking cancelled')),
-              );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Matchmaking cancelled')),
+                );
+              }
             },
           ),
         );

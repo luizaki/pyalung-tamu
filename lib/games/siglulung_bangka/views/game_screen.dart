@@ -1,16 +1,14 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../../shared/widgets/base_game_screen.dart';
 import '../controllers/game_controller.dart';
-
 import '../widgets/boat_widget.dart';
 import '../widgets/background.dart';
 import '../widgets/word_queue.dart';
 import './multiplayer_screen.dart' show SiglulungMultiplayerAdapter;
+import '../../../services/multiplayer_service.dart';
 
 class BangkaGameScreen extends BaseGameScreen<BangkaGameController> {
   final String? multiplayerMatchId;
@@ -41,7 +39,6 @@ class BangkaGameScreenState
   TextEditingValue _prevValue = const TextEditingValue();
   bool _sentFinish = false;
   bool _requestedOutcome = false;
-  String? _endTitle;
 
   @override
   List<Color> get backgroundColors => const [
@@ -79,8 +76,19 @@ class BangkaGameScreenState
       adapter.updateStats(wpm: wpm, accuracy: acc);
     }
 
-    if (controller.isGameOver && !_sentFinish) {
-      _sentFinish = true;
+    if (controller.isGameOver &&
+        !_sentFinish &&
+        widget.multiplayerMatchId != null) {
+      final matchId = widget.multiplayerMatchId!;
+      final score = controller.gameState.score;
+      final acc = (controller.gameState.accuracy * 100.0).clamp(0.0, 100.0);
+      final wpm = controller.getSecondaryScore();
+      await MultiplayerService().submitResult(
+        matchId: matchId,
+        score: score,
+        accuracy: acc,
+        secondaryScore: wpm,
+      );
       await widget.multiplayerAdapter?.finish();
     }
 
@@ -89,78 +97,15 @@ class BangkaGameScreenState
         !_requestedOutcome &&
         widget.multiplayerMatchId != null) {
       _requestedOutcome = true;
-      _endTitle = await _resolveOutcomeTitle(widget.multiplayerMatchId!);
+      try {
+        await Future.delayed(const Duration(milliseconds: 200));
+        endTitleOverride =
+            await computeMultiplayerEndTitle(widget.multiplayerMatchId!);
+      } catch (_) {
+        endTitleOverride = null;
+      }
       if (mounted) setState(() {});
     }
-  }
-
-  Future<String> _resolveOutcomeTitle(String matchId) async {
-    try {
-      final uid = _sb.auth.currentUser?.id;
-      if (uid == null) return 'Match Complete!';
-
-      int? myScore, oppScore;
-      double? myAcc, oppAcc;
-
-      final res = await _sb
-          .from('multiplayer_results')
-          .select('user_id, score, accuracy')
-          .eq('match_id', matchId);
-
-      if (res is List && res.isNotEmpty) {
-        for (final r in res) {
-          final isMe = r['user_id'] == uid;
-          final s = (r['score'] as num?)?.toInt() ?? 0;
-          final a = (r['accuracy'] as num?)?.toDouble() ?? 0.0;
-          if (isMe) {
-            myScore = s;
-            myAcc = a;
-          } else {
-            oppScore = s;
-            oppAcc = a;
-          }
-        }
-      }
-
-      if (myScore == null || oppScore == null) {
-        final live = await _sb
-            .from('multiplayer_live')
-            .select('user_id, wpm, accuracy')
-            .eq('match_id', matchId);
-
-        if (live is List) {
-          for (final r in live) {
-            final isMe = r['user_id'] == uid;
-            final s = (r['wpm'] as num?)?.toInt() ?? 0;
-            final a = (r['accuracy'] as num?)?.toDouble() ?? 0.0;
-            if (isMe) {
-              myScore ??= s;
-              myAcc ??= a;
-            } else {
-              oppScore ??= s;
-              oppAcc ??= a;
-            }
-          }
-        }
-      }
-
-      final m = myScore ?? 0;
-      final o = oppScore ?? 0;
-      if (m > o) return 'You Win!';
-      if (m < o) return 'You Lose!';
-      if (myAcc != null && oppAcc != null) {
-        if (myAcc! > oppAcc!) return 'You Win!';
-        if (myAcc! < oppAcc!) return 'You Lose!';
-      }
-      return 'Tie!';
-    } catch (_) {
-      return 'Match Complete!';
-    }
-  }
-
-  @override
-  String getEndTitle() {
-    return isMultiplayer ? (_endTitle ?? 'Match Complete!') : 'Game Over!';
   }
 
   @override

@@ -225,13 +225,15 @@ abstract class BaseGameController<T extends BaseGameState>
   // ================== GETTERS ==================
 
   bool get isGameActive => _gameState.status == GameStatus.playing;
-  bool get isGameCompleted => _gameState.status == GameStatus.completed;
-  bool get isGameEnded => _gameState.status == GameStatus.ended;
+  bool get isGameCompleted =>
+      _gameState.status ==
+      GameStatus.completed; //timer hits 0, or finsihed game
+  bool get isGameEnded =>
+      _gameState.status == GameStatus.ended; //user ends game manually
   bool get isGameOver =>
       _gameState.status == GameStatus.completed ||
-      _gameState.status == GameStatus.ended;
+      _gameState.status == GameStatus.ended; //
   bool get isGamePaused => _gameState.status == GameStatus.paused;
-  bool get isGameFinished => isGameOver;
 
   bool get difficultyChanged => _difficultyChanged;
   String? get previousDifficulty => _previousDifficulty;
