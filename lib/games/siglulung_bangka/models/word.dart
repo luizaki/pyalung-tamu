@@ -17,7 +17,14 @@ class TypedWord {
 
   bool get isCorrect {
     if (typedText.isEmpty) return true;
-    return word.startsWith(typedText);
+
+    // Check if all typed characters match the expected characters
+    for (int i = 0; i < typedText.length; i++) {
+      if (i >= word.length || typedText[i] != word[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   String get remainingText {

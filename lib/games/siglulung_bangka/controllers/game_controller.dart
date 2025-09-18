@@ -189,7 +189,8 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
     final minutes = elapsedTime.inMilliseconds / 60000.0;
 
     if (minutes > 0) {
-      gameState.currentWPM = gameState.wordsCompleted / minutes;
+      final totalWords = gameState.totalCharacters / 5.0;
+      gameState.currentWPM = (totalWords / minutes).floorToDouble();
     }
   }
 
@@ -230,6 +231,8 @@ class BangkaGameController extends BaseGameController<BangkaGameState> {
 
   void _handleBackspace(TypedWord currentWord) {
     if (currentWord.typedText.isNotEmpty) {
+      gameState.totalCharacters++;
+
       currentWord.removeCharacter();
       notifyListeners();
     }
