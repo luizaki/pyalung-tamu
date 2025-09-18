@@ -655,6 +655,11 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     }
   }
 
+  double _toPercent(num? v) {
+    final x = (v ?? 0).toDouble();
+    return (x > 1.0000001 ? x : x * 100.0).clamp(0.0, 100.0);
+  }
+
   Future<MatchOutcome> _computeMultiplayerOutcome(String matchId) async {
     final sb = Supabase.instance.client;
     final myUid = sb.auth.currentUser?.id;
@@ -664,7 +669,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     try {
       rows = await sb
           .from('multiplayer_results')
-          .select('user_id, score, accuracy')
+          .select('user_id, score, accuracy, secondary_score')
           .eq('match_id', matchId);
     } catch (_) {
       rows = const [];
@@ -672,12 +677,12 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
     List<_OutcomeRow> data = [];
     if (rows.isNotEmpty) {
-      data = rows.map<_OutcomeRow>((r) {
-        final uid = r['user_id'] as String;
-        final score = (r['score'] as num?)?.toInt() ?? 0;
-        final accRaw = (r['accuracy'] as num?)?.toDouble() ?? 0.0;
-        final acc = accRaw > 1.0000001 ? accRaw : (accRaw * 100.0);
-        return _OutcomeRow(uid, score, acc.clamp(0.0, 100.0));
+      data = rows.map<_OutcomeRow>((row) {
+        final uid = row['user_id'] as String;
+        final s =
+            (row['secondary_score'] as num?) ?? (row['score'] as num?) ?? 0;
+        final acc = _toPercent(row['accuracy'] as num?);
+        return _OutcomeRow(uid, s.toInt(), acc);
       }).toList();
     } else {
       final metric = _metricForGameType();
@@ -690,12 +695,11 @@ abstract class BaseGameScreenState<T extends BaseGameController,
         rows = const [];
       }
       if (rows.isNotEmpty) {
-        data = rows.map<_OutcomeRow>((r) {
-          final uid = r['user_id'] as String;
-          final score = (r[metric] as num?)?.toInt() ?? 0;
-          final accRaw = (r['accuracy'] as num?)?.toDouble() ?? 0.0;
-          final acc = accRaw > 1.0000001 ? accRaw : (accRaw * 100.0);
-          return _OutcomeRow(uid, score, acc.clamp(0.0, 100.0));
+        data = rows.map<_OutcomeRow>((row) {
+          final uid = row['user_id'] as String;
+          final s = (row[metric] as num?) ?? 0;
+          final acc = _toPercent(row['accuracy'] as num?);
+          return _OutcomeRow(uid, s.toInt(), acc);
         }).toList();
       }
     }
@@ -706,18 +710,15 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     final leadersByScore =
         data.where((e) => e.score == maxScore).toList(growable: false);
 
-    if (!leadersByScore.any((e) => e.userId == myUid)) {
-      return MatchOutcome.lose;
-    }
-    if (leadersByScore.length == 1) {
-      return MatchOutcome.win;
-    }
+    if (!leadersByScore.any((e) => e.userId == myUid)) return MatchOutcome.lose;
+    if (leadersByScore.length == 1) return MatchOutcome.win;
 
     final maxAcc =
         leadersByScore.map((e) => e.acc).reduce((a, b) => a > b ? a : b);
-    final leadersByAcc = leadersByScore
-        .where((e) => (e.acc - maxAcc).abs() < 1e-6)
-        .toList(growable: false);
+
+    const double eps = 0.05;
+    final leadersByAcc =
+        leadersByScore.where((e) => (e.acc - maxAcc).abs() <= eps).toList();
 
     if (leadersByAcc.length == 1) {
       return (leadersByAcc.first.userId == myUid)

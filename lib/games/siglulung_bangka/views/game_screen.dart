@@ -76,9 +76,22 @@ class BangkaGameScreenState
       adapter.updateStats(wpm: wpm, accuracy: acc);
     }
 
+    if (isMultiplayer &&
+        controller.isGameOver &&
+        !_requestedOutcome &&
+        widget.multiplayerMatchId != null) {
+      _requestedOutcome = true;
+      try {
+        endTitleOverride =
+            await computeMultiplayerEndTitle(widget.multiplayerMatchId!);
+      } catch (_) {}
+      if (mounted) setState(() {});
+    }
+
     if (controller.isGameOver &&
         !_sentFinish &&
         widget.multiplayerMatchId != null) {
+      _sentFinish = true;
       final matchId = widget.multiplayerMatchId!;
       final score = controller.gameState.score;
       final acc = (controller.gameState.accuracy * 100.0).clamp(0.0, 100.0);
@@ -90,21 +103,6 @@ class BangkaGameScreenState
         secondaryScore: wpm,
       );
       await widget.multiplayerAdapter?.finish();
-    }
-
-    if (isMultiplayer &&
-        controller.isGameOver &&
-        !_requestedOutcome &&
-        widget.multiplayerMatchId != null) {
-      _requestedOutcome = true;
-      try {
-        await Future.delayed(const Duration(milliseconds: 200));
-        endTitleOverride =
-            await computeMultiplayerEndTitle(widget.multiplayerMatchId!);
-      } catch (_) {
-        endTitleOverride = null;
-      }
-      if (mounted) setState(() {});
     }
   }
 

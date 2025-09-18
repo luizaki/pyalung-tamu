@@ -68,6 +68,18 @@ class TugakGameScreenState
       adapter.updateStats(frogs: frogs, accuracy: acc);
     }
 
+    if (isMultiplayer &&
+        controller.isGameOver &&
+        !_requestedOutcome &&
+        widget.multiplayerMatchId != null) {
+      _requestedOutcome = true;
+      try {
+        endTitleOverride =
+            await computeMultiplayerEndTitle(widget.multiplayerMatchId!);
+      } catch (_) {}
+      if (mounted) setState(() {});
+    }
+
     if (controller.isGameOver &&
         !_sentFinish &&
         widget.multiplayerMatchId != null) {
@@ -84,21 +96,6 @@ class TugakGameScreenState
         secondaryScore: frogs,
       );
       await widget.multiplayerAdapter?.finish();
-    }
-
-    if (isMultiplayer &&
-        controller.isGameOver &&
-        !_requestedOutcome &&
-        widget.multiplayerMatchId != null) {
-      _requestedOutcome = true;
-      try {
-        await Future.delayed(const Duration(milliseconds: 200));
-        endTitleOverride =
-            await computeMultiplayerEndTitle(widget.multiplayerMatchId!);
-      } catch (_) {
-        endTitleOverride = null;
-      }
-      if (mounted) setState(() {});
     }
   }
 

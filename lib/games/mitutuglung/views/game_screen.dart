@@ -52,19 +52,24 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
     if (controller.isGameOver && !_sentFinish) {
       _sentFinish = true;
 
-      if (controller.isGameOver &&
-          !_sentFinish &&
-          widget.multiplayerMatchId != null) {
+      final adapter = widget.multiplayerAdapter;
+      if (adapter != null) {
+        final pairs = controller.getSecondaryScore();
+        final acc = (controller.gameState.accuracy * 100.0).clamp(0.0, 100.0);
+        adapter.updateStats(pairs: pairs, accuracy: acc);
+      }
+
+      if (widget.multiplayerMatchId != null) {
         final matchId = widget.multiplayerMatchId!;
         final score = controller.gameState.score;
         final acc = (controller.gameState.accuracy * 100.0).clamp(0.0, 100.0);
-        final wpm = controller.getSecondaryScore();
+        final pairs = controller.getSecondaryScore();
 
         await MultiplayerService().submitResult(
           matchId: matchId,
           score: score,
           accuracy: acc,
-          secondaryScore: wpm,
+          secondaryScore: pairs,
         );
         await widget.multiplayerAdapter?.finish();
       }
@@ -76,12 +81,9 @@ class MitutuglungGameScreenState extends BaseGameScreenState<
         widget.multiplayerMatchId != null) {
       _requestedOutcome = true;
       try {
-        await Future.delayed(const Duration(milliseconds: 200));
         endTitleOverride =
             await computeMultiplayerEndTitle(widget.multiplayerMatchId!);
-      } catch (_) {
-        endTitleOverride = null;
-      }
+      } catch (_) {}
       if (mounted) setState(() {});
     }
   }

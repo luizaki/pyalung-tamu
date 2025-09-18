@@ -18,6 +18,28 @@ class MultiplayerMitutuglungAdapter {
 
   double get accuracy => _attempts == 0 ? 0 : (_hits * 100.0 / _attempts);
 
+  double _clampPct(num v) => v.toDouble().clamp(0.0, 100.0);
+
+  Future<void> updateStats({
+    required int pairs,
+    required double accuracy,
+  }) async {
+    _pairs = pairs;
+    final uid = _sb.auth.currentUser?.id;
+    if (uid == null) return;
+
+    await _sb.from('multiplayer_live').upsert(
+      {
+        'match_id': matchId,
+        'user_id': uid,
+        'pairs': pairs,
+        'accuracy': _clampPct(accuracy),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      },
+      onConflict: 'match_id,user_id',
+    );
+  }
+
   Future<void> recordAttempt({required bool correct}) async {
     _attempts += 1;
     if (correct) {
@@ -26,46 +48,33 @@ class MultiplayerMitutuglungAdapter {
     }
     final uid = _sb.auth.currentUser?.id;
     if (uid == null) return;
-    await _sb.from('multiplayer_live').update({
-      'pairs': _pairs,
-      'accuracy': accuracy,
-      'updated_at': DateTime.now().toUtc().toIso8601String(),
-    }).match({'match_id': matchId, 'user_id': uid});
+
+    await _sb.from('multiplayer_live').upsert(
+      {
+        'match_id': matchId,
+        'user_id': uid,
+        'pairs': _pairs,
+        'accuracy': _clampPct(accuracy),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      },
+      onConflict: 'match_id,user_id',
+    );
   }
 
   Future<void> finish() async {
     final uid = _sb.auth.currentUser?.id;
     if (uid == null) return;
 
-    final difficulty = await GameService().getUserDifficulty('mitutuglung');
-
-    await _sb.from('multiplayer_results').insert({
-      'match_id': matchId,
-      'user_id': uid,
-      'score': _pairs,
-      'accuracy': accuracy,
-      'secondary_score': _pairs,
-    });
-
-    final results = await _sb
-        .from('multiplayer_results')
-        .select('user_id')
-        .eq('match_id', matchId);
-
-    if ((results as List).length >= 2) {
-      await _sb
-          .from('multiplayer_matches')
-          .update({'status': 'finished'})
-          .eq('match_id', matchId)
-          .neq('status', 'finished');
-    }
-
-    await GameService().saveGameScore(
-      gameType: 'mitutuglung',
-      accuracy: accuracy.round(),
-      secondaryScore: _pairs,
-      score: _pairs,
-      difficulty: difficulty,
+    await _sb.from('multiplayer_live').upsert(
+      {
+        'match_id': matchId,
+        'user_id': uid,
+        'pairs': _pairs,
+        'accuracy': _clampPct(accuracy),
+        'is_ready': true,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      },
+      onConflict: 'match_id,user_id',
     );
   }
 }
