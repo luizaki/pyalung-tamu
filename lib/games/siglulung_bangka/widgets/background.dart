@@ -53,7 +53,7 @@ class _MovingWavesPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-class Obstacle {
+/*class Obstacle {
   Offset position;
   double size;
   String imageAsset;
@@ -67,7 +67,7 @@ class Obstacle {
     this.word,
     this.isHit = false,
   });
-}
+}*/
 
 class MovingBackground extends StatefulWidget {
   final double boatSpeed;
@@ -92,13 +92,13 @@ class _MovingBackgroundState extends State<MovingBackground>
   late AnimationController _animationController;
   late Animation<double> _animation;
 
-  final List<String> obstacleImages = [
-    'assets/siglulung/obs1.PNG',
-    'assets/siglulung/obs2.PNG',
-  ];
+  //final List<String> obstacleImages = [
+  //  'assets/siglulung/obs1.PNG',
+  //  'assets/siglulung/obs2.PNG',
+  //];
 
-  final List<Obstacle> obstacles = [];
-  final math.Random _random = math.Random();
+  //final List<Obstacle> obstacles = [];
+  //final math.Random _random = math.Random();
 
   @override
   void initState() {
@@ -108,7 +108,7 @@ class _MovingBackgroundState extends State<MovingBackground>
       duration: const Duration(seconds: 2),
       vsync: this,
     )..addListener(() {
-        _updateObstacles();
+        //_updateObstacles();
       });
 
     _animation = Tween<double>(begin: 0.0, end: 2 * math.pi)
@@ -116,11 +116,11 @@ class _MovingBackgroundState extends State<MovingBackground>
 
     if (widget.isGameActive) {
       _animationController.repeat();
-      _spawnObstacle();
+      //_spawnObstacle();
     }
   }
 
-  void _spawnObstacle() {
+  /*void _spawnObstacle() {
     if (!widget.isGameActive) return;
 
     final size = 25 + _random.nextDouble() * 20;
@@ -156,7 +156,7 @@ class _MovingBackgroundState extends State<MovingBackground>
         }
       }
     });
-  }
+  }*/
 
   @override
   void didUpdateWidget(MovingBackground oldWidget) {
@@ -164,7 +164,7 @@ class _MovingBackgroundState extends State<MovingBackground>
     if (widget.isGameActive != oldWidget.isGameActive) {
       if (widget.isGameActive) {
         _animationController.repeat();
-        _spawnObstacle();
+        //_spawnObstacle();
       } else {
         _animationController.stop();
       }
@@ -204,9 +204,9 @@ class _MovingBackgroundState extends State<MovingBackground>
                   animationTime: _animation.value,
                 ),
               ),
-              Stack(
+              /*Stack(
                 children: _buildObstaclesStack(),
-              ),
+              ),*/
             ],
           );
         },
@@ -214,7 +214,7 @@ class _MovingBackgroundState extends State<MovingBackground>
     );
   }
 
-  List<Widget> _buildObstaclesStack() {
+  /* List<Widget> _buildObstaclesStack() {
     return obstacles
         .where((o) => !o.isHit)
         .map(
@@ -229,5 +229,5 @@ class _MovingBackgroundState extends State<MovingBackground>
           ),
         )
         .toList();
-  }
+  }*/
 }

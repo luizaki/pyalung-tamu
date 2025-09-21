@@ -6,11 +6,13 @@ import '../models/boat.dart';
 class BoatWidget extends StatefulWidget {
   final Boat boat;
   final Size screenSize;
+  final int wpm;
 
   const BoatWidget({
     super.key,
     required this.boat,
     required this.screenSize,
+    this.wpm = 0,
   });
 
   @override
@@ -102,8 +104,8 @@ class _BoatWidgetState extends State<BoatWidget> with TickerProviderStateMixin {
       alignment: Alignment.topLeft,
       child: Transform.translate(
         offset: Offset(
-          widget.screenSize.width * 0.45 + (_getBobOffset() * 2),
-          widget.screenSize.height * 0.20 + _getBobOffset(),
+          _getBoatX(),
+          _getBoatY(),
         ),
         child: Transform.rotate(
           angle: _getTiltAngle(),
@@ -127,6 +129,19 @@ class _BoatWidgetState extends State<BoatWidget> with TickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  double _getBoatX() {
+    final maxWpm = 70;
+    final progress = (widget.wpm / maxWpm).clamp(0.0, 1.0);
+    final minX = widget.screenSize.width * 0.1;
+    final maxX = widget.screenSize.width * 0.85;
+    return minX + (maxX - minX) * progress + (_getBobOffset() * 2);
+  }
+
+  double _getBoatY() {
+    final baseY = widget.screenSize.height * 0.35 + _getBobOffset();
+    return baseY;
   }
 
   double _getBobOffset() {

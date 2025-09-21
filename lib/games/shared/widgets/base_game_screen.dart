@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../controllers/base_game_controller.dart';
 import '../../../audio/audio_controller.dart';
 import '../../../services/auth_service.dart';
@@ -18,15 +19,23 @@ abstract class BaseGameScreen<T extends BaseGameController>
   final String Function()? endTitleBuilder;
 }
 
+enum MatchOutcome { win, tie, lose }
+
+class _OutcomeRow {
+  final String userId;
+  final int score;
+  final double acc;
+  const _OutcomeRow(this.userId, this.score, this.acc);
+}
+
 abstract class BaseGameScreenState<T extends BaseGameController,
         U extends BaseGameScreen<T>> extends State<U>
     with TickerProviderStateMixin {
   late T controller;
 
+  String? endTitleOverride;
   List<Color> get backgroundColors =>
       [Colors.lightBlue[200]!, Colors.blue[400]!];
-
-  bool _isLoading = true;
 
   bool _showMpPauseTip = false;
   Timer? _mpTipTimer;
@@ -42,11 +51,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final screenSize = MediaQuery.of(context).size;
-
-      setState(() => _isLoading = true);
       await controller.initializeGame(screenSize);
-      setState(() => _isLoading = false);
-
       controller.startCountdown();
     });
 
@@ -150,7 +155,6 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                 width: double.infinity,
                 color: const Color(0xAD572100),
               ),
-
               const SizedBox(height: 5),
               _buildTimeWidget(),
             ],
@@ -295,12 +299,10 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
                     // Divider
                     Container(
-                      height: 2,
-                      width: double.infinity,
-                      color: const Color(0xAD572100),
-                    ),
+                        height: 2,
+                        width: double.infinity,
+                        color: const Color(0xAD572100)),
                     const SizedBox(height: 20),
-
                     Wrap(
                       alignment: WrapAlignment.center,
                       spacing: 16,
@@ -309,6 +311,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                         // Exit
                         ElevatedButton(
                           onPressed: () {
+                            controller.endGame();
                             Navigator.popUntil(
                                 context, (route) => route.isFirst);
                           },
@@ -316,9 +319,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                             backgroundColor: Colors.red[600],
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
+                                horizontal: 20, vertical: 12),
                           ),
                           child: const Text('Exit Game'),
                         ),
@@ -333,9 +334,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                             backgroundColor: Colors.orange[600],
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
+                                horizontal: 20, vertical: 12),
                           ),
                           child: const Text('Restart Game'),
                         ),
@@ -349,9 +348,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                             backgroundColor: Colors.green[600],
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
+                                horizontal: 20, vertical: 12),
                           ),
                           child: const Text('Resume Game'),
                         ),
@@ -369,7 +366,8 @@ abstract class BaseGameScreenState<T extends BaseGameController,
 
   String getEndTitle() {
     return widget.endTitleBuilder?.call() ??
-        (isMultiplayer ? 'Match Complete!' : 'Game Over!');
+        (endTitleOverride ??
+            (isMultiplayer ? 'Match Complete!' : 'Game Over!'));
   }
 
   Widget _buildGameOverDialog() {
@@ -632,7 +630,108 @@ abstract class BaseGameScreenState<T extends BaseGameController,
     }
   }
 
+  Future<String> computeMultiplayerEndTitle(String matchId) async {
+    final outcome = await _computeMultiplayerOutcome(matchId);
+    switch (outcome) {
+      case MatchOutcome.win:
+        return 'You Win!';
+      case MatchOutcome.tie:
+        return 'Tie!';
+      case MatchOutcome.lose:
+        return 'You Lose!';
+    }
+  }
+
+  String _metricForGameType() {
+    switch (controller.getGameType()) {
+      case 'siglulung_bangka':
+        return 'wpm';
+      case 'tugak_catching':
+        return 'frogs';
+      case 'mitutuglung':
+        return 'pairs';
+      default:
+        return 'score';
+    }
+  }
+
+  double _toPercent(num? v) {
+    final x = (v ?? 0).toDouble();
+    return (x > 1.0000001 ? x : x * 100.0).clamp(0.0, 100.0);
+  }
+
+  Future<MatchOutcome> _computeMultiplayerOutcome(String matchId) async {
+    final sb = Supabase.instance.client;
+    final myUid = sb.auth.currentUser?.id;
+    if (myUid == null) return MatchOutcome.lose;
+
+    List<dynamic> rows;
+    try {
+      rows = await sb
+          .from('multiplayer_results')
+          .select('user_id, score, accuracy, secondary_score')
+          .eq('match_id', matchId);
+    } catch (_) {
+      rows = const [];
+    }
+
+    List<_OutcomeRow> data = [];
+    if (rows.isNotEmpty) {
+      data = rows.map<_OutcomeRow>((row) {
+        final uid = row['user_id'] as String;
+        final s =
+            (row['secondary_score'] as num?) ?? (row['score'] as num?) ?? 0;
+        final acc = _toPercent(row['accuracy'] as num?);
+        return _OutcomeRow(uid, s.toInt(), acc);
+      }).toList();
+    } else {
+      final metric = _metricForGameType();
+      try {
+        rows = await sb
+            .from('multiplayer_live')
+            .select('user_id, $metric, accuracy')
+            .eq('match_id', matchId);
+      } catch (_) {
+        rows = const [];
+      }
+      if (rows.isNotEmpty) {
+        data = rows.map<_OutcomeRow>((row) {
+          final uid = row['user_id'] as String;
+          final s = (row[metric] as num?) ?? 0;
+          final acc = _toPercent(row['accuracy'] as num?);
+          return _OutcomeRow(uid, s.toInt(), acc);
+        }).toList();
+      }
+    }
+
+    if (data.isEmpty) return MatchOutcome.tie;
+
+    final maxScore = data.map((e) => e.score).reduce((a, b) => a > b ? a : b);
+    final leadersByScore =
+        data.where((e) => e.score == maxScore).toList(growable: false);
+
+    if (!leadersByScore.any((e) => e.userId == myUid)) return MatchOutcome.lose;
+    if (leadersByScore.length == 1) return MatchOutcome.win;
+
+    final maxAcc =
+        leadersByScore.map((e) => e.acc).reduce((a, b) => a > b ? a : b);
+
+    const double eps = 0.05;
+    final leadersByAcc =
+        leadersByScore.where((e) => (e.acc - maxAcc).abs() <= eps).toList();
+
+    if (leadersByAcc.length == 1) {
+      return (leadersByAcc.first.userId == myUid)
+          ? MatchOutcome.win
+          : MatchOutcome.lose;
+    }
+    return leadersByAcc.any((e) => e.userId == myUid)
+        ? MatchOutcome.tie
+        : MatchOutcome.lose;
+  }
+
   // ================ MAIN BUILDER ================
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -657,9 +756,7 @@ abstract class BaseGameScreenState<T extends BaseGameController,
                 if (_showMpPauseTip) _buildMultiplayerPauseTip(),
                 if (!isMultiplayer && controller.isGamePaused)
                   _buildPauseOverlay(),
-
                 if (controller.isGameOver) _buildGameOverDialog(),
-
                 if (controller.gameState.isCountingDown)
                   _buildCountdownOverlay(),
               ],
