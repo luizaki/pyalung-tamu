@@ -42,13 +42,13 @@ class _LeaderboardPageState extends State<LeaderboardPage>
     _tabController = TabController(length: 4, vsync: this)
       ..addListener(() => setState(() {}));
 
-    _overallFuture = _gameService.getOverallLeaderboard(limit: 10);
+    _overallFuture = _gameService.getOverallLeaderboard(limit: 0);
     _siglulungFuture = _gameService.getGameLeaderboard(
-        gameType: 'siglulung_bangka', limit: 10);
+        gameType: 'siglulung_bangka', limit: 0);
     _tugakFuture =
-        _gameService.getGameLeaderboard(gameType: 'tugak_catching', limit: 10);
+        _gameService.getGameLeaderboard(gameType: 'tugak_catching', limit: 0);
     _mitutuglungFuture =
-        _gameService.getGameLeaderboard(gameType: 'mitutuglung', limit: 10);
+        _gameService.getGameLeaderboard(gameType: 'mitutuglung', limit: 0);
 
     _loadCurrentUser();
   }
