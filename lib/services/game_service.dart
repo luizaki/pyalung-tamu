@@ -116,12 +116,12 @@ class GameService {
   }
 
   Future<void> _updateUserProgress(
-    int userId,
-    String gameType,
-    int score,
-    int accuracy,
-    int secondaryScore,
-  ) async {
+      int userId,
+      String gameType,
+      int score,
+      int accuracy,
+      int secondaryScore,
+      ) async {
     final currentProgress = await _supabase
         .from('user_game_progress')
         .select('*')
@@ -135,7 +135,7 @@ class GameService {
         (currentProgress['average_accuracy'] as num?)?.toDouble() ?? 0.0;
     final newAvgAccuracy =
         ((currentAvg * (currentProgress['games_played'] as int? ?? 0)) +
-                accuracy) /
+            accuracy) /
             newGamesPlayed;
 
     String newDifficulty = _calculateNewDifficulty(
@@ -148,15 +148,15 @@ class GameService {
     await _supabase
         .from('user_game_progress')
         .update({
-          'total_score': newTotalScore,
-          'games_played': newGamesPlayed,
-          'average_accuracy': newAvgAccuracy,
-          'best_secondary_score': math.max(
-              (currentProgress['best_secondary_score'] as int? ?? 0),
-              secondaryScore),
-          'current_difficulty': newDifficulty,
-          'last_played': DateTime.now().toIso8601String(),
-        })
+      'total_score': newTotalScore,
+      'games_played': newGamesPlayed,
+      'average_accuracy': newAvgAccuracy,
+      'best_secondary_score': math.max(
+          (currentProgress['best_secondary_score'] as int? ?? 0),
+          secondaryScore),
+      'current_difficulty': newDifficulty,
+      'last_played': DateTime.now().toIso8601String(),
+    })
         .eq('user_id', userId)
         .eq('game_type', gameType);
   }
@@ -227,7 +227,7 @@ class GameService {
     }
 
     final [progressData, latestScore] =
-        await _fetchStatData(user.id, 'siglulung_bangka');
+    await _fetchStatData(user.id, 'siglulung_bangka');
 
     return SiglulungStats(
       wpm: (progressData?['best_secondary_score'] as num?)?.toDouble() ?? 0,
@@ -245,7 +245,7 @@ class GameService {
     }
 
     final [progressData, latestScore] =
-        await _fetchStatData(user.id, 'tugak_catching');
+    await _fetchStatData(user.id, 'tugak_catching');
 
     return TugakStats(
       fluency: progressData?['best_secondary_score'] as int? ?? 0,
@@ -266,7 +266,7 @@ class GameService {
     }
 
     final [progressData, latestScore] =
-        await _fetchStatData(user.id, 'mitutuglung');
+    await _fetchStatData(user.id, 'mitutuglung');
 
     return MitutuglungStats(
       perfectPairs: progressData?['best_secondary_score'] as int? ?? 0,
@@ -288,9 +288,9 @@ class GameService {
 
       return (response as List)
           .map<WordData>((row) => WordData(
-                baseForm: row['base_form'] as String,
-                englishTrans: row['english_trans'] as String,
-              ))
+        baseForm: row['base_form'] as String,
+        englishTrans: row['english_trans'] as String,
+      ))
           .toList();
     } catch (e) {
       print('Error fetching random words: $e');
@@ -304,16 +304,16 @@ class GameService {
       final response = await _supabase
           .from('mitutuglung_pairs')
           .select(
-              'id, kapampangan_word, english_trans, difficulty_level, image_storage_link')
+          'id, kapampangan_word, english_trans, difficulty_level, image_storage_link')
           .eq('difficulty_level', difficulty);
 
       return (response as List)
           .map<MitutuglungCardData>((row) => MitutuglungCardData(
-                id: row['id'].toString(),
-                kapampanganWord: row['kapampangan_word'] as String,
-                englishTrans: row['english_trans'] as String,
-                imagePath: row['image_storage_link'] as String,
-              ))
+        id: row['id'].toString(),
+        kapampanganWord: row['kapampangan_word'] as String,
+        englishTrans: row['english_trans'] as String,
+        imagePath: row['image_storage_link'] as String,
+      ))
           .toList();
     } catch (e) {
       print('Error fetching Mitutuglung questions: $e');
@@ -331,16 +331,16 @@ class GameService {
 
       return (response as List)
           .map<TugakQuestionData>((row) => TugakQuestionData(
-                textWithBlank: row['text_with_blank'] as String,
-                correctTense: row['correct_tense'] as String,
-                sentenceEng: row['sentence_eng'] as String? ?? '',
-                pastTense: row['past'] as String,
-                presentTense: row['present'] as String,
-                futureTense: row['future'] as String,
-                engPast: row['eng_past'] as String? ?? '',
-                engPresent: row['eng_present'] as String? ?? '',
-                engFuture: row['eng_future'] as String? ?? '',
-              ))
+        textWithBlank: row['text_with_blank'] as String,
+        correctTense: row['correct_tense'] as String,
+        sentenceEng: row['sentence_eng'] as String? ?? '',
+        pastTense: row['past'] as String,
+        presentTense: row['present'] as String,
+        futureTense: row['future'] as String,
+        engPast: row['eng_past'] as String? ?? '',
+        engPresent: row['eng_present'] as String? ?? '',
+        engFuture: row['eng_future'] as String? ?? '',
+      ))
           .toList();
     } catch (e) {
       print('Error fetching Tugak Catching questions: $e');
@@ -374,14 +374,14 @@ class GameService {
 
         aggregated.putIfAbsent(
             userId,
-            () => {
-                  'user_name': userName,
-                  'avatar': avatar,
-                  'total_score': 0,
-                  'games_played': 0,
-                  'accuracySum': 0.0,
-                  'accuracyCount': 0,
-                });
+                () => {
+              'user_name': userName,
+              'avatar': avatar,
+              'total_score': 0,
+              'games_played': 0,
+              'accuracySum': 0.0,
+              'accuracyCount': 0,
+            });
 
         aggregated[userId]!['total_score'] += totalScore;
         aggregated[userId]!['games_played'] += gamesPlayed;
@@ -422,7 +422,7 @@ class GameService {
         );
       }
 
-      return leaderboard.take(limit).toList();
+      return (limit > 0) ? leaderboard.take(limit).toList(): leaderboard;
     } catch (e) {
       print('Error fetching overall leaderboard: $e');
       return [];
@@ -452,12 +452,11 @@ class GameService {
             )
           ''')
           .eq('game_type', gameType)
-          .order(orderColumn, ascending: false)
-          .limit(limit);
+          .order(orderColumn, ascending: false);
 
       final data = (response as List).cast<Map<String, dynamic>>();
 
-      return data.asMap().entries.map<LeaderboardEntry>((entry) {
+      final all = data.asMap().entries.map<LeaderboardEntry>((entry) {
         final i = entry.key;
         final record = entry.value;
 
@@ -481,6 +480,8 @@ class GameService {
           gameType: gameType,
         );
       }).toList();
+
+      return (limit > 0) ? all.take(limit).toList() : all;
     } catch (e) {
       print('Error fetching $gameType leaderboard: $e');
       return [];
